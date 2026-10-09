@@ -56,6 +56,7 @@ interface KnownTabTargets {
 
 const EMPTY_FOLDER_PATHS: ReadonlySet<string> = new Set<string>();
 const LOCAL_TAB_SESSION_PREFIX = 'ok-editor-tabs-v1:';
+const OFFICE_TAB_PREFIX = '\u0000office:';
 const FOLDER_TAB_PREFIX = '\u0000folder:';
 const ASSET_TAB_PREFIX = '\u0000asset:';
 const SKILL_FILE_TAB_PREFIX = '\u0000skill-file:';
@@ -83,6 +84,9 @@ function canonicalTabId(tabId: string, siblingTabIds: readonly string[] = []): s
   const parsed = parseEditorTabId(tabId);
   if (parsed.kind === 'asset' && isExcalidrawDocFile(parsed.assetPath)) {
     return docTabId(parsed.assetPath);
+  }
+  if (parsed.kind === 'office' && isExcalidrawDocFile(parsed.officePath)) {
+    return docTabId(parsed.officePath);
   }
   if (parsed.kind !== 'doc') return tabId;
   if (sharesStemWithAnotherQualifiedTab(tabId, siblingTabIds)) return tabId;
@@ -137,6 +141,7 @@ function isValidTabId(value: unknown): value is string {
     return false;
   }
   const base = value;
+  if (base.startsWith(OFFICE_TAB_PREFIX)) return base.length > OFFICE_TAB_PREFIX.length;
   if (base.startsWith(FOLDER_TAB_PREFIX)) return base.length > FOLDER_TAB_PREFIX.length;
   if (base.startsWith(ASSET_TAB_PREFIX)) return base.length > ASSET_TAB_PREFIX.length;
   if (base.startsWith(SKILL_FILE_TAB_PREFIX)) return parseSkillFileTabBody(base) !== null;
@@ -238,6 +243,10 @@ export function assetTabId(assetPath: string): string {
   return `${ASSET_TAB_PREFIX}${assetPath}`;
 }
 
+export function officeTabId(officePath: string): string {
+  return `${OFFICE_TAB_PREFIX}${officePath}`;
+}
+
 export function tabParts(
   docName: string,
   docExt: string,
@@ -291,7 +300,8 @@ export function tabIdForNavigationTarget(
         level?: SkillScope;
       }
     | { kind: 'large-file'; docName: string }
-    | { kind: 'missing'; target: string },
+    | { kind: 'missing'; target: string }
+    | { kind: 'office'; officePath: string },
 ): string | null {
   switch (target.kind) {
     case 'doc':
@@ -310,6 +320,8 @@ export function tabIdForNavigationTarget(
       return null;
     case 'skill-preview':
       return skillPreviewTabId(target);
+    case 'office':
+      return officeTabId(target.officePath);
   }
 }
 
@@ -317,6 +329,7 @@ export function parseEditorTabId(tabId: string):
   | { kind: 'doc'; docName: string }
   | { kind: 'folder'; folderPath: string }
   | { kind: 'asset'; assetPath: string }
+  | { kind: 'office'; officePath: string }
   | { kind: 'skill-file'; scope: SkillScope; name: string; path: string; host?: string }
   | {
       kind: 'skill-preview';
@@ -327,6 +340,9 @@ export function parseEditorTabId(tabId: string):
       level?: SkillScope;
     } {
   const base = tabId;
+  if (base.startsWith(OFFICE_TAB_PREFIX)) {
+    return { kind: 'office', officePath: base.slice(OFFICE_TAB_PREFIX.length) };
+  }
   if (base.startsWith(FOLDER_TAB_PREFIX)) {
     return { kind: 'folder', folderPath: base.slice(FOLDER_TAB_PREFIX.length) };
   }
@@ -522,6 +538,12 @@ export function filterOpenTabsForKnownTargets(
         (filePaths !== undefined && resolveName(filePaths, tab.assetPath) !== undefined)
       );
     }
+    if (tab.kind === 'office') {
+      return (
+        resolveName(assetPaths, tab.officePath) !== undefined ||
+        (filePaths !== undefined && resolveName(filePaths, tab.officePath) !== undefined)
+      );
+    }
     if (tab.kind === 'skill-file') return true;
     if (tab.kind === 'skill-preview') return true;
     if (tab.kind === 'doc' && parseProjectSkillBundleDoc(tab.docName)?.kind === 'skill') {
@@ -575,6 +597,11 @@ export function remapOpenTabs(
     const docName = assetToDocBySource.get(assetPath);
     return docName ? docTabId(docName) : assetTabId(remapAssetPath(assetPath));
   };
+  const remapOfficeTabBase = (officePath: string): string => {
+    const docName = assetToDocBySource.get(officePath);
+    if (docName) return docTabId(docName);
+    return officeTabId(remapAssetPath(officePath));
+  };
   const next: string[] = [];
   const seen = new Set<string>();
   for (const tab of tabs) {
@@ -587,7 +614,9 @@ export function remapOpenTabs(
           ? folderTabId(remapPathForFolderRenames(parsed.folderPath, folderMappings))
           : parsed.kind === 'asset'
             ? remapAssetTabBase(parsed.assetPath)
-            : tab;
+            : parsed.kind === 'office'
+              ? remapOfficeTabBase(parsed.officePath)
+              : tab;
     if (seen.has(mapped)) continue;
     seen.add(mapped);
     next.push(mapped);
@@ -604,7 +633,9 @@ export function remapOpenTabs(
           ? folderTabId(remapPathForFolderRenames(parsed.folderPath, folderMappings))
           : parsed.kind === 'asset'
             ? remapAssetTabBase(parsed.assetPath)
-            : tabId;
+            : parsed.kind === 'office'
+              ? remapOfficeTabBase(parsed.officePath)
+              : tabId;
     return [mapped];
   });
   return capOpenTabsPreservingPinned(next, limit, remappedPinnedTabIds);

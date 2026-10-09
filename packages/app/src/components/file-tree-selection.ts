@@ -82,6 +82,7 @@ export function resolveFileTreeSelection(
         navigationPath: null,
       };
     case 'asset':
+    case 'office':
     case 'skill-file':
     case 'skills':
     case 'skill-preview':

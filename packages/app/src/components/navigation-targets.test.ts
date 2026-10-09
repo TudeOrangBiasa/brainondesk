@@ -788,24 +788,24 @@ describe('editable text docs resolve as doc targets', () => {
   });
 });
 
-describe('office docs resolve as asset targets', () => {
-  test('a .docx target opens the asset placeholder, not the doc editor', () => {
+describe('office docs resolve as office targets', () => {
+  test('a .docx target opens the office editor, not the doc editor', () => {
     expect(resolveNavigationTarget('docs/report.docx', { pages: new Set<string>() })).toMatchObject(
       {
-        kind: 'asset',
-        assetPath: 'docs/report.docx',
+        kind: 'office',
+        officePath: 'docs/report.docx',
       },
     );
   });
 
-  test('xlsx and pptx targets resolve to asset targets', () => {
+  test('xlsx and pptx targets resolve to office targets', () => {
     expect(
       resolveNavigationTarget('sheets/budget.xlsx', { pages: new Set<string>() }),
-    ).toMatchObject({ kind: 'asset', assetPath: 'sheets/budget.xlsx' });
+    ).toMatchObject({ kind: 'office', officePath: 'sheets/budget.xlsx' });
     expect(resolveNavigationTarget('slides/deck.pptx', { pages: new Set<string>() })).toMatchObject(
       {
-        kind: 'asset',
-        assetPath: 'slides/deck.pptx',
+        kind: 'office',
+        officePath: 'slides/deck.pptx',
       },
     );
   });

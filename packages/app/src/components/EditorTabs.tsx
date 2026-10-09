@@ -65,6 +65,7 @@ import { skillEntryLiveDocName } from '@/lib/managed-artifact-doc-name';
 import { openDocInNoteWindow } from '@/lib/open-note-window';
 import { isOverlayLayerOpen } from '@/lib/overlay-layers';
 import { cn } from '@/lib/utils';
+import { useOfficeDirty } from '@/office/office-dirty-store';
 import {
   type EditorTabDragData,
   findEditorTabElement,
@@ -509,6 +510,18 @@ function TabConflictBadge({ hasConflict }: { hasConflict: boolean }) {
       aria-hidden="true"
       data-testid="editor-tab-conflict-badge"
       className="mr-1 size-3.5 shrink-0 text-amber-500"
+    />
+  );
+}
+
+function OfficeDirtyDot({ officePath }: { officePath: string }) {
+  const dirty = useOfficeDirty(officePath);
+  if (!dirty) return null;
+  return (
+    <span
+      aria-hidden="true"
+      data-testid="editor-tab-dirty-dot"
+      className="ml-1 size-1.5 shrink-0 rounded-full bg-primary"
     />
   );
 }
@@ -1163,6 +1176,7 @@ export function EditorTabs({
 
                 if (
                   tab.kind === 'asset' ||
+                  tab.kind === 'office' ||
                   tab.kind === 'skill-file' ||
                   tab.kind === 'skill-preview'
                 ) {
@@ -1170,6 +1184,9 @@ export function EditorTabs({
                   switch (tab.kind) {
                     case 'asset':
                       labelPath = tab.assetPath;
+                      break;
+                    case 'office':
+                      labelPath = tab.officePath;
                       break;
                     case 'skill-file':
                       labelPath = tab.path;
@@ -1268,6 +1285,9 @@ export function EditorTabs({
                               </span>
                             ) : null}
                             <span>{baseName}</span>
+                            {tab.kind === 'office' ? (
+                              <OfficeDirtyDot officePath={tab.officePath} />
+                            ) : null}
                           </span>
                         </button>
                       </TabPathTooltip>
