@@ -1,3 +1,4 @@
+import { UPSTREAM_CLOUD_SERVICES_ENABLED } from '@inkeep/open-knowledge-core/constants/feature-flags';
 import { useTheme } from 'next-themes';
 import { useState } from 'react';
 import { ReportBugMenuTrigger } from '@/components/ReportBugMenuTrigger';
@@ -17,7 +18,7 @@ export function TerminalWindowApp({ bridge }: TerminalWindowAppProps) {
     <ConfigProvider collabUrl={collabUrl} collabTerminal={collabUrl === null}>
       <TerminalWindowBody bridge={bridge} />
       {}
-      <ReportBugMenuTrigger systemWide={collabUrl === null} />
+      {UPSTREAM_CLOUD_SERVICES_ENABLED && <ReportBugMenuTrigger systemWide={collabUrl === null} />}
     </ConfigProvider>
   );
 }

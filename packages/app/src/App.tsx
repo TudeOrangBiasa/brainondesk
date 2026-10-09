@@ -1,4 +1,7 @@
-import { SHOW_INSTALL_SKILL } from '@inkeep/open-knowledge-core/constants/feature-flags';
+import {
+  SHOW_INSTALL_SKILL,
+  UPSTREAM_CLOUD_SERVICES_ENABLED,
+} from '@inkeep/open-knowledge-core/constants/feature-flags';
 import { mediaKindForSidebarAssetExtension } from '@inkeep/open-knowledge-core/constants/upload';
 import { lazy, type ReactNode, Suspense, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
@@ -601,9 +604,9 @@ function AppBody() {
         {}
         {desktopBridge ? <CreateProjectMenuTrigger bridge={desktopBridge} /> : null}
         {}
-        {desktopBridge ? <ReportBugMenuTrigger /> : null}
+        {desktopBridge && UPSTREAM_CLOUD_SERVICES_ENABLED ? <ReportBugMenuTrigger /> : null}
         {}
-        {desktopBridge ? <FeedbackMenuTrigger /> : null}
+        {desktopBridge && UPSTREAM_CLOUD_SERVICES_ENABLED ? <FeedbackMenuTrigger /> : null}
         {}
         <McpConsentDialog />
         {}

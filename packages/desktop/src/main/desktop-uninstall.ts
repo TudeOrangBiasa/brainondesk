@@ -11,6 +11,7 @@ import {
   type UninstallFeedbackResult,
   type UninstallFeedbackSubmission,
 } from '@inkeep/open-knowledge-core';
+import { UPSTREAM_CLOUD_SERVICES_ENABLED } from '@inkeep/open-knowledge-core/constants/feature-flags';
 
 const APP_BUNDLE_FROM_EXEC_RE = /^(.*\.app)\/Contents\/MacOS\/[^/]+$/;
 const SUPPORTED_APP_BUNDLE_NAME = 'OpenKnowledge.app';
@@ -192,6 +193,7 @@ export type DesktopUninstallFeedbackStepOutcome =
 export async function runDesktopUninstallFeedbackStep(
   deps: DesktopUninstallFeedbackStepDeps,
 ): Promise<DesktopUninstallFeedbackStepOutcome> {
+  if (deps.submit === undefined && !UPSTREAM_CLOUD_SERVICES_ENABLED) return { status: 'skipped' };
   try {
     const answers = await deps.collect();
     if (!hasUninstallFeedbackContent(answers)) return { status: 'skipped' };

@@ -16,6 +16,7 @@ export interface CommandAvailabilitySpec {
   readonly requiresCanCollapseAll?: boolean;
   readonly requiresActiveDoc?: boolean;
   readonly requiresInstallSkill?: boolean;
+  readonly requiresUpstreamCloudServices?: boolean;
 }
 
 export interface CommandContext {
@@ -28,6 +29,7 @@ export interface CommandContext {
   readonly canCollapseAll: boolean;
   readonly hasActiveDoc: boolean;
   readonly showInstallSkill: boolean;
+  readonly upstreamCloudServices?: boolean;
 }
 
 export function evaluateCommandAvailability(
@@ -42,6 +44,7 @@ export function evaluateCommandAvailability(
   if (spec.requiresCanCollapseAll && !ctx.canCollapseAll) return false;
   if (spec.requiresActiveDoc && !ctx.hasActiveDoc) return false;
   if (spec.requiresInstallSkill && !ctx.showInstallSkill) return false;
+  if (spec.requiresUpstreamCloudServices && ctx.upstreamCloudServices !== true) return false;
   if (spec.requiresTargetKinds && !spec.requiresTargetKinds.includes(ctx.activeTargetKind)) {
     return false;
   }
@@ -322,7 +325,7 @@ export const COMMAND_IDENTITIES: readonly CommandIdentity[] = [
     keywords: ['bug report issue feedback problem', 'file'],
     shortcutId: 'report-bug',
     shortcutDesktopOnly: true,
-    availability: { host: 'desktop' },
+    availability: { host: 'desktop', requiresUpstreamCloudServices: true },
     palette: { group: 'project', visibility: 'always' },
     menu: [{ section: 'help-links', order: 3, ellipsis: true, accelerator: 'CmdOrCtrl+Shift+D' }],
   },
@@ -330,7 +333,7 @@ export const COMMAND_IDENTITIES: readonly CommandIdentity[] = [
     id: 'bug-report-history',
     labelKey: 'bugReportHistory',
     keywords: ['bug report history previous reports past retry resend'],
-    availability: { host: 'desktop' },
+    availability: { host: 'desktop', requiresUpstreamCloudServices: true },
     palette: { group: 'project', visibility: 'always' },
   },
   {
@@ -338,7 +341,7 @@ export const COMMAND_IDENTITIES: readonly CommandIdentity[] = [
     menuActionId: 'send-feedback',
     labelKey: 'sendFeedback',
     keywords: ['feedback', 'suggestion', 'idea', 'rate', 'survey', 'contact', 'give'],
-    availability: {},
+    availability: { requiresUpstreamCloudServices: true },
     palette: { group: 'project', visibility: 'always' },
     menu: [{ section: 'help-links', order: 4, ellipsis: true }],
   },
@@ -624,7 +627,7 @@ export const COMMAND_IDENTITIES: readonly CommandIdentity[] = [
     id: 'check-for-updates',
     labelKey: 'checkForUpdates',
     keywords: ['update', 'upgrade', 'version', 'check', 'app'],
-    availability: { host: 'desktop' },
+    availability: { host: 'desktop', requiresUpstreamCloudServices: true },
     palette: { group: 'app', visibility: 'search-only' },
     menu: [
       { section: 'app-updates', order: 0, platform: 'mac', ellipsis: true },
