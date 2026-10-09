@@ -29,7 +29,7 @@ describe('desktopUserDataDir', () => {
         platformName: 'linux',
         env: { XDG_CONFIG_HOME: '/cfg' },
       }),
-    ).toBe('/cfg/OpenKnowledge');
+    ).toBe('/cfg/BrainOnDesk');
     expect(
       desktopUserDataDir({
         home: 'C:\\Users\\x',
