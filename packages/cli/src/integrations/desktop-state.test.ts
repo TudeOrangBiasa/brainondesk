@@ -15,14 +15,14 @@ import {
 describe('desktopUserDataDir', () => {
   test('resolves the Electron userData path per platform', () => {
     expect(desktopUserDataDir({ home: '/Users/x', platformName: 'darwin' })).toBe(
-      '/Users/x/Library/Application Support/OpenKnowledge',
+      '/Users/x/Library/Application Support/BrainOnDesk',
     );
     expect(desktopUserDataDir({ home: '/home/x', platformName: 'linux', env: {} })).toBe(
-      '/home/x/.config/OpenKnowledge',
+      '/home/x/.config/BrainOnDesk',
     );
     expect(
       desktopUserDataDir({ home: '/home/x', platformName: 'linux', env: { XDG_CONFIG_HOME: '' } }),
-    ).toBe('/home/x/.config/OpenKnowledge');
+    ).toBe('/home/x/.config/BrainOnDesk');
     expect(
       desktopUserDataDir({
         home: '/home/x',

@@ -7,8 +7,8 @@ import {
   shouldProxyToBundle,
 } from './bundle-proxy.ts';
 
-const userBundle = '/Users/alice/Applications/OpenKnowledge.app/Contents/Resources/cli/bin/ok.sh';
-const systemBundle = '/Applications/OpenKnowledge.app/Contents/Resources/cli/bin/ok.sh';
+const userBundle = '/Users/alice/Applications/BrainOnDesk.app/Contents/Resources/cli/bin/ok.sh';
+const systemBundle = '/Applications/BrainOnDesk.app/Contents/Resources/cli/bin/ok.sh';
 const userBetaBundle =
   '/Users/alice/Applications/OpenKnowledge Beta.app/Contents/Resources/cli/bin/ok.sh';
 const systemBetaBundle = '/Applications/OpenKnowledge Beta.app/Contents/Resources/cli/bin/ok.sh';
@@ -74,7 +74,7 @@ describe('shouldProxyToBundle', () => {
     expect(
       shouldProxyToBundle(
         {},
-        ['node', '/Applications/OpenKnowledge.app/Contents/Resources/cli/dist/cli.mjs', 'mcp'],
+        ['node', '/Applications/BrainOnDesk.app/Contents/Resources/cli/dist/cli.mjs', 'mcp'],
         'darwin',
       ),
     ).toEqual({ proxy: false, suppressedBy: 'self' });

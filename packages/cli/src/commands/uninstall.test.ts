@@ -21,7 +21,7 @@ describe('detectInstallMethods', () => {
   test('detects an app bundle, npm-global, and npx', () => {
     const home = mkdtempSync(join(tmpdir(), 'ok-detect-'));
     try {
-      const userApp = join(home, 'Applications', 'OpenKnowledge.app');
+      const userApp = join(home, 'Applications', 'BrainOnDesk.app');
       const npmStub = (args: string[]) =>
         args.includes('@inkeep/open-knowledge') ? '@inkeep/open-knowledge@1.2.3\n' : null;
       const methods = detectInstallMethods(
@@ -46,7 +46,7 @@ describe('detectInstallMethods', () => {
   test('reports Stable and Beta app bundles separately on macOS', () => {
     const home = '/Users/jane';
     const installed = new Set([
-      '/Applications/OpenKnowledge.app',
+      '/Applications/BrainOnDesk.app',
       join(home, 'Applications', 'OpenKnowledge Beta.app'),
     ]);
     const methods = detectInstallMethods(
@@ -58,7 +58,7 @@ describe('detectInstallMethods', () => {
     );
     expect(methods).toHaveLength(2);
     expect(methods.map((method) => method.label)).toEqual([
-      'OpenKnowledge (/Applications/OpenKnowledge.app)',
+      'BrainOnDesk (/Applications/BrainOnDesk.app)',
       'OpenKnowledge Beta (/Users/jane/Applications/OpenKnowledge Beta.app)',
     ]);
   });
@@ -66,7 +66,7 @@ describe('detectInstallMethods', () => {
   test('a Beta CLI lists the same Stable and Beta apps as a Stable CLI', () => {
     const home = '/Users/jane';
     const installed = new Set([
-      '/Applications/OpenKnowledge.app',
+      '/Applications/BrainOnDesk.app',
       '/Applications/OpenKnowledge Beta.app',
     ]);
     const labels = (execPath: string) =>
@@ -78,7 +78,7 @@ describe('detectInstallMethods', () => {
         { platform: 'darwin', env: {}, execPath },
       ).map((method) => method.label);
     const expected = [
-      'OpenKnowledge (/Applications/OpenKnowledge.app)',
+      'BrainOnDesk (/Applications/BrainOnDesk.app)',
       'OpenKnowledge Beta (/Applications/OpenKnowledge Beta.app)',
     ];
     expect(labels('/usr/local/bin/node')).toEqual(expected);
@@ -93,7 +93,7 @@ describe('detectInstallMethods', () => {
       localAppData,
       'Programs',
       '@inkeepopen-knowledge-desktop',
-      'OpenKnowledge.exe',
+      'BrainOnDesk.exe',
     );
     const methods = detectInstallMethods(
       'C:\\Users\\Jane',
@@ -112,7 +112,7 @@ describe('detectInstallMethods', () => {
   test('reports Stable and Beta Windows installs separately', () => {
     const localAppData = 'C:\\Users\\Jane\\AppData\\Local';
     const installed = new Set([
-      join(localAppData, 'Programs', '@inkeepopen-knowledge-desktop', 'OpenKnowledge.exe'),
+      join(localAppData, 'Programs', '@inkeepopen-knowledge-desktop', 'BrainOnDesk.exe'),
       join(localAppData, 'Programs', 'openknowledge-beta-desktop', 'OpenKnowledge Beta.exe'),
     ]);
     const methods = detectInstallMethods(
@@ -124,7 +124,7 @@ describe('detectInstallMethods', () => {
     );
     expect(methods).toHaveLength(2);
     expect(methods.map((method) => method.label)).toEqual([
-      expect.stringContaining('OpenKnowledge ('),
+      expect.stringContaining('BrainOnDesk ('),
       expect.stringContaining('OpenKnowledge Beta ('),
     ]);
   });
@@ -134,12 +134,12 @@ describe('detectInstallMethods', () => {
       '/home/jane',
       undefined,
       () => null,
-      (p) => p === '/opt/OpenKnowledge/openknowledge',
+      (p) => p === '/opt/BrainOnDesk/brainondesk',
       { platform: 'linux' },
     );
     expect(methods.map((m) => m.method)).toEqual(['app']);
-    expect(methods[0]?.instruction).toContain('apt remove openknowledge');
-    expect(methods[0]?.instruction).toContain('dnf remove OpenKnowledge');
+    expect(methods[0]?.instruction).toContain('apt remove brainondesk');
+    expect(methods[0]?.instruction).toContain('dnf remove brainondesk');
   });
 
   test('reports the Beta Linux install by product name', () => {
@@ -326,7 +326,7 @@ describe('runUninstall', () => {
   });
 
   test.each([
-    ['/usr/local/bin/node', 'The openknowledge:// URL scheme'],
+    ['/usr/local/bin/node', 'The brainondesk:// URL scheme'],
     ['/opt/OpenKnowledge Beta/openknowledge-beta', 'The openknowledge-beta:// URL scheme'],
   ])('names the URL scheme of the CLI that ran (%s)', async (execPath, note) => {
     const home = mkdtempSync(join(tmpdir(), 'ok-uninstall-scheme-'));

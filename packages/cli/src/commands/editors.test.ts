@@ -438,19 +438,19 @@ describe('CHAIN_V2', () => {
 
   it('probes user-local install before the system bundle path', () => {
     const userIdx = CHAIN_V2.indexOf(
-      'USER_BUNDLE="$HOME/Applications/OpenKnowledge.app/Contents/Resources/cli/bin/ok.sh"',
+      'USER_BUNDLE="$HOME/Applications/BrainOnDesk.app/Contents/Resources/cli/bin/ok.sh"',
     );
     const sysIdx = CHAIN_V2.indexOf(
-      'BUNDLE="/Applications/OpenKnowledge.app/Contents/Resources/cli/bin/ok.sh"',
+      'BUNDLE="/Applications/BrainOnDesk.app/Contents/Resources/cli/bin/ok.sh"',
     );
     expect(userIdx).toBeGreaterThanOrEqual(0);
     expect(sysIdx).toBeGreaterThan(userIdx);
   });
 
   it('probes the Linux deb bundle after both mac bundles and before npx', () => {
-    const debIdx = CHAIN_V2.indexOf('DEB_BUNDLE="/opt/OpenKnowledge/resources/cli/bin/ok.sh"');
+    const debIdx = CHAIN_V2.indexOf('DEB_BUNDLE="/opt/BrainOnDesk/resources/cli/bin/ok.sh"');
     const sysIdx = CHAIN_V2.indexOf(
-      'BUNDLE="/Applications/OpenKnowledge.app/Contents/Resources/cli/bin/ok.sh"',
+      'BUNDLE="/Applications/BrainOnDesk.app/Contents/Resources/cli/bin/ok.sh"',
     );
     const npxIdx = CHAIN_V2.indexOf('command -v npx');
     expect(debIdx).toBeGreaterThan(sysIdx);
@@ -584,7 +584,7 @@ describe('isEntryUpToDate', () => {
   it('false for the bundle-direct shape', () => {
     expect(
       isEntryUpToDate({
-        command: '/Applications/OpenKnowledge.app/Contents/Resources/cli/bin/ok.sh',
+        command: '/Applications/BrainOnDesk.app/Contents/Resources/cli/bin/ok.sh',
         args: ['mcp'],
       }),
     ).toBe(false);
