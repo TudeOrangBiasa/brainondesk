@@ -159,6 +159,8 @@ describe('MCP outputSchema strictness — auto-discovered registerTool sweep (no
     'links',
     'audit',
     'lint',
+    'office_echo',
+    'office_list_open',
   ]);
 
   test('every registerTool registration declares `text` in its outputSchema', () => {

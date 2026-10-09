@@ -116,6 +116,8 @@ const OK_AUTO_APPROVED_TOOLS = [
   'restore_version',
   'lint',
   'audit',
+  'office_echo',
+  'office_list_open',
 ] as const;
 
 describe('docked-terminal auto-approve classification', () => {

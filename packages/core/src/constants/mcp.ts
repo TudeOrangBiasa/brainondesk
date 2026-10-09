@@ -30,6 +30,8 @@ export const OPEN_KNOWLEDGE_MCP_TOOLS = [
   'import',
   'checkpoint',
   'restore_version',
+  'office_echo',
+  'office_list_open',
 ] as const;
 
 export type OpenKnowledgeMcpTool = (typeof OPEN_KNOWLEDGE_MCP_TOOLS)[number];
