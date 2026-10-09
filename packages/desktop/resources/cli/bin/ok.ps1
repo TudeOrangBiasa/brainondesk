@@ -5,7 +5,7 @@
 # ELECTRON_RUN_AS_NODE=1 - no separate Node install required.
 
 $installDir = Resolve-Path (Join-Path $PSScriptRoot '..\..\..')
-$electron = @('OpenKnowledge.exe', 'OpenKnowledge Beta.exe') |
+$electron = @('BrainOnDesk.exe', 'OpenKnowledge.exe', 'OpenKnowledge Beta.exe') |
   ForEach-Object { Join-Path $installDir $_ } |
   Where-Object { Test-Path $_ } |
   Select-Object -First 1

@@ -2551,6 +2551,10 @@ msgstr "ব্যাকলিংকের সাড়া প্রত্যা�
 msgid "Base branch"
 msgstr "ভিত্তি ব্রাঞ্চ"
 
+#: src/components/settings/AboutSection.tsx
+msgid "Based on OpenKnowledge by Inkeep (GPL-3.0)."
+msgstr ""
+
 #: src/components/settings/SettingsDialogShell.tsx
 msgctxt "settings search keyword"
 msgid "batch"

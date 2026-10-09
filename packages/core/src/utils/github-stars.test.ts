@@ -51,7 +51,7 @@ describe('getGitHubStars', () => {
 
     const request = requested[0];
     if (request === undefined) throw new Error('no request was made');
-    expect(new URL(request.url).pathname).toBe('/repos/inkeep/open-knowledge');
+    expect(new URL(request.url).pathname).toBe('/repos/TudeOrangBiasa/brainondesk');
     expect(request.headers.get('accept')).toBe('application/vnd.github+json');
     expect(request.headers.get('user-agent')).toBe('openknowledge.ai');
   });

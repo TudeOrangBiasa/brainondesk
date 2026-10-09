@@ -48,7 +48,7 @@ async function showUnknownErrorDialog(deps: EnsureGitDeps, err: Error): Promise<
       buttons: ['Quit'],
       defaultId: 0,
       cancelId: 0,
-      title: 'OpenKnowledge could not start',
+      title: 'BrainOnDesk could not start',
       message: 'An unexpected error occurred during startup.',
       detail: err.message,
     });

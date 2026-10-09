@@ -9,10 +9,10 @@ import {
 describe('desktop variant identities', () => {
   test('keeps Stable on every existing identity', () => {
     expect(DESKTOP_VARIANTS.stable).toMatchObject({
-      appId: 'com.inkeep.open-knowledge',
-      productName: 'OpenKnowledge',
-      artifactName: 'OpenKnowledge',
-      protocolScheme: 'openknowledge',
+      appId: 'io.github.tudeorangbiasa.brainondesk',
+      productName: 'BrainOnDesk',
+      artifactName: 'BrainOnDesk',
+      protocolScheme: 'brainondesk',
       updateChannel: 'latest',
       cliCommandNames: ['ok', 'open-knowledge'],
     });

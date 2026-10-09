@@ -78,8 +78,8 @@ describe('promptHolderStop', () => {
       stopTarget: 'not-called',
       title: 'This project is open in another OpenKnowledge app',
       detail:
-        '/tmp/dragon\n\nheld\n\nThis OpenKnowledge (Stable) server keeps running after any window showing the project closes, so the project stays busy until the server stops. OpenKnowledge Beta can stop it now and open the project here. Every window, editor, or agent connected to it loses its connection to this project.',
-      buttons: ['Stop OpenKnowledge (Stable) Server & Open Here', 'Cancel'],
+        '/tmp/dragon\n\nheld\n\nThis BrainOnDesk (Stable) server keeps running after any window showing the project closes, so the project stays busy until the server stops. OpenKnowledge Beta can stop it now and open the project here. Every window, editor, or agent connected to it loses its connection to this project.',
+      buttons: ['Stop BrainOnDesk (Stable) Server & Open Here', 'Cancel'],
       defaultId: 1,
       cancelId: 1,
     });
@@ -134,8 +134,8 @@ describe('promptHolderStop', () => {
         stopTarget: { pid: 65792, channel: 'stable' },
         title: 'This project is open in another OpenKnowledge app',
         detail:
-          "/tmp/dragon\n\nOpenKnowledge (Stable) holds this project's server lock (pid 65792) and may still be serving it.\n\nThis OpenKnowledge (Stable) server keeps running after any window showing the project closes, so the project stays busy until the server stops. OpenKnowledge Beta can stop it now and open the project here. Every window, editor, or agent connected to it loses its connection to this project.",
-        buttons: ['Stop OpenKnowledge (Stable) Server & Open Here', 'Cancel'],
+          "/tmp/dragon\n\nBrainOnDesk (Stable) holds this project's server lock (pid 65792) and may still be serving it.\n\nThis BrainOnDesk (Stable) server keeps running after any window showing the project closes, so the project stays busy until the server stops. OpenKnowledge Beta can stop it now and open the project here. Every window, editor, or agent connected to it loses its connection to this project.",
+        buttons: ['Stop BrainOnDesk (Stable) Server & Open Here', 'Cancel'],
         defaultId: 1,
       });
     });

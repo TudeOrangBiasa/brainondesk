@@ -87,6 +87,9 @@ export function AboutSection() {
           >
             v{version}
           </p>
+          <p className="text-1sm text-muted-foreground" data-testid="settings-about-credit">
+            <Trans>Based on OpenKnowledge by Inkeep (GPL-3.0).</Trans>
+          </p>
         </div>
         {about ? (
           <div className="flex flex-wrap items-center gap-2">

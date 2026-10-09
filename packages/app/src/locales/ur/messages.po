@@ -2555,6 +2555,10 @@ msgstr "بیک لنکس کا جواب متوقع ساخت سے میل نہیں �
 msgid "Base branch"
 msgstr "بنیادی برانچ"
 
+#: src/components/settings/AboutSection.tsx
+msgid "Based on OpenKnowledge by Inkeep (GPL-3.0)."
+msgstr ""
+
 #: src/components/settings/SettingsDialogShell.tsx
 msgctxt "settings search keyword"
 msgid "batch"

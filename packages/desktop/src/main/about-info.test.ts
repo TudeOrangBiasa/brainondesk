@@ -13,8 +13,8 @@ describe('buildAboutInfo', () => {
     ).toEqual({
       productName: 'OpenKnowledge Beta',
       version: '0.83.0-beta.8',
-      releasesUrl: 'https://github.com/inkeep/open-knowledge/releases',
-      releaseNotesUrl: 'https://github.com/inkeep/open-knowledge/releases/tag/v0.83.0-beta.8',
+      releasesUrl: 'https://github.com/TudeOrangBiasa/brainondesk/releases',
+      releaseNotesUrl: 'https://github.com/TudeOrangBiasa/brainondesk/releases/tag/v0.83.0-beta.8',
       updateChecks: 'available',
     });
   });
@@ -25,7 +25,7 @@ describe('buildAboutInfo', () => {
       variant: DESKTOP_VARIANTS.stable,
       updateChecksAvailable: false,
     });
-    expect(info.productName).toBe('OpenKnowledge');
+    expect(info.productName).toBe('BrainOnDesk');
     expect(info.updateChecks).toBe('unavailable');
   });
 });

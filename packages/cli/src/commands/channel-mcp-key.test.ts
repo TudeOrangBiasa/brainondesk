@@ -18,11 +18,11 @@ import {
 import { writeEditorMcpConfig } from './init.ts';
 
 const STABLE_UNIX_CHAIN = `# ok-mcp-v2
-USER_BUNDLE="$HOME/Applications/OpenKnowledge.app/Contents/Resources/cli/bin/ok.sh"
+USER_BUNDLE="$HOME/Applications/BrainOnDesk.app/Contents/Resources/cli/bin/ok.sh"
 [ -f "$USER_BUNDLE" ] && [ -x "$USER_BUNDLE" ] && exec "$USER_BUNDLE" mcp
-BUNDLE="/Applications/OpenKnowledge.app/Contents/Resources/cli/bin/ok.sh"
+BUNDLE="/Applications/BrainOnDesk.app/Contents/Resources/cli/bin/ok.sh"
 [ -f "$BUNDLE" ] && [ -x "$BUNDLE" ] && exec "$BUNDLE" mcp
-DEB_BUNDLE="/opt/OpenKnowledge/resources/cli/bin/ok.sh"
+DEB_BUNDLE="/opt/BrainOnDesk/resources/cli/bin/ok.sh"
 [ -f "$DEB_BUNDLE" ] && [ -x "$DEB_BUNDLE" ] && exec "$DEB_BUNDLE" mcp
 command -v npx >/dev/null 2>&1 && exec npx -y @inkeep/open-knowledge@latest mcp
 for d in "$HOME/.nvm/versions/node"/*/bin "$HOME/.fnm/node-versions"/*/installation/bin "$HOME/.asdf/installs/nodejs"/*/bin /opt/homebrew/bin /usr/local/bin "$HOME/.local/bin" "$HOME/.volta/bin"; do

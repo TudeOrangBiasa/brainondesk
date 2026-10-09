@@ -273,7 +273,7 @@ describe('collectReportBundle — standard level', () => {
     const cachesDir = makeTmpDir();
     writeAt(
       cachesDir,
-      'com.inkeep.open-knowledge.ShipIt/ShipIt_stderr.log',
+      'io.github.tudeorangbiasa.brainondesk.ShipIt/ShipIt_stderr.log',
       'ShipIt: Failed to move bundle\n',
     );
     const outputPath = join(makeTmpDir(), 'report.zip');
@@ -355,7 +355,7 @@ describe('collectReportBundle — full level', () => {
     const cachesDir = makeTmpDir();
     writeAt(
       cachesDir,
-      'com.inkeep.open-knowledge.ShipIt/ShipIt_stderr.log',
+      'io.github.tudeorangbiasa.brainondesk.ShipIt/ShipIt_stderr.log',
       `ShipIt: Failed to move bundle\ntoken ${SECRET}\n`,
     );
     const outputPath = join(makeTmpDir(), 'report.zip');

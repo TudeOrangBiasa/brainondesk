@@ -79,6 +79,6 @@ export function menuLabelForPlatform(key: MenuLabelKey, platform: string): strin
   return MENU_LABELS[key];
 }
 
-export const OPEN_KNOWLEDGE_GITHUB_URL = 'https://github.com/inkeep/open-knowledge';
+export const OPEN_KNOWLEDGE_GITHUB_URL = 'https://github.com/TudeOrangBiasa/brainondesk';
 export const OPEN_KNOWLEDGE_DOCS_URL = 'https://openknowledge.ai/docs';
 export const OPEN_KNOWLEDGE_DISCORD_URL = 'https://discord.gg/VRKk2EaGHN';

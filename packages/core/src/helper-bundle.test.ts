@@ -6,8 +6,8 @@ import {
   resolveHelperBundleBinary,
 } from './helper-bundle.ts';
 
-const PARENT_APP = '/Applications/OpenKnowledge.app';
-const PARENT_EXEC = `${PARENT_APP}/Contents/MacOS/OpenKnowledge`;
+const PARENT_APP = '/Applications/BrainOnDesk.app';
+const PARENT_EXEC = `${PARENT_APP}/Contents/MacOS/BrainOnDesk`;
 const HELPER_BINARY = `${PARENT_APP}/Contents/Frameworks/${HELPER_BUNDLE_NAME}/Contents/MacOS/${HELPER_EXECUTABLE_NAME}`;
 
 describe('resolveHelperBundleBinary', () => {
@@ -16,9 +16,9 @@ describe('resolveHelperBundleBinary', () => {
   });
 
   test('handles a user-Applications path identically', () => {
-    const userParent = '/Users/alex/Applications/OpenKnowledge.app/Contents/MacOS/OpenKnowledge';
+    const userParent = '/Users/alex/Applications/BrainOnDesk.app/Contents/MacOS/BrainOnDesk';
     expect(resolveHelperBundleBinary(userParent)).toBe(
-      `/Users/alex/Applications/OpenKnowledge.app/Contents/Frameworks/${HELPER_BUNDLE_NAME}/Contents/MacOS/${HELPER_EXECUTABLE_NAME}`,
+      `/Users/alex/Applications/BrainOnDesk.app/Contents/Frameworks/${HELPER_BUNDLE_NAME}/Contents/MacOS/${HELPER_EXECUTABLE_NAME}`,
     );
   });
 

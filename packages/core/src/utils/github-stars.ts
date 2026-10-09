@@ -1,4 +1,4 @@
-const REPO_API_URL = 'https://api.github.com/repos/inkeep/open-knowledge';
+const REPO_API_URL = 'https://api.github.com/repos/TudeOrangBiasa/brainondesk';
 
 export async function getGitHubStars(init?: RequestInit): Promise<number | null> {
   const { signal: callerSignal, ...restInit } = init ?? {};

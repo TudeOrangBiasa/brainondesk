@@ -50,13 +50,13 @@ describe('resolveDesktopProductName', () => {
     expect(DESKTOP_PRODUCTS.stable.keyringService).toBe('open-knowledge');
   });
 
-  it('gives every channel its own deep-link scheme, keeping Stable on openknowledge', () => {
+  it('gives every channel its own deep-link scheme, keeping Stable on brainondesk', () => {
     expect(
       Object.fromEntries(
         Object.entries(DESKTOP_PRODUCTS).map(([name, p]) => [name, p.protocolScheme]),
       ),
     ).toEqual({
-      stable: 'openknowledge',
+      stable: 'brainondesk',
       beta: 'openknowledge-beta',
     });
   });
@@ -64,9 +64,9 @@ describe('resolveDesktopProductName', () => {
 
 describe('desktopChannelLabel', () => {
   it.each([
-    ['stable', 'OpenKnowledge (Stable)'],
+    ['stable', 'BrainOnDesk (Stable)'],
     ['beta', 'OpenKnowledge Beta'],
-    ['cloud', 'OpenKnowledge (cloud)'],
+    ['cloud', 'BrainOnDesk (cloud)'],
   ])('%s is named %s', (channel, expected) => {
     expect(desktopChannelLabel(channel)).toBe(expected);
   });

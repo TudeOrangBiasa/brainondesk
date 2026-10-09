@@ -167,15 +167,15 @@ async function runBuilder(
 }
 
 const configSource = `
-appId: com.inkeep.open-knowledge
-productName: OpenKnowledge
+appId: io.github.tudeorangbiasa.brainondesk
+productName: BrainOnDesk
 protocols:
-  - name: OpenKnowledge URL
-    schemes: [openknowledge]
+  - name: BrainOnDesk URL
+    schemes: [brainondesk]
 publish:
   - provider: github
-    owner: inkeep
-    repo: open-knowledge
+    owner: TudeOrangBiasa
+    repo: brainondesk
     channel: latest
 mac:
   icon: build/okglass.icon
@@ -196,7 +196,7 @@ dmg:
 linux:
   icon: build/icon.png
   artifactName: \${productName}-\${arch}.\${ext}
-  executableName: openknowledge
+  executableName: brainondesk
   extraResources: []
 nsis:
   artifactName: \${productName}-Setup-\${arch}.\${ext}
@@ -258,30 +258,30 @@ describe('desktop variant builder config', () => {
       '0.77.7',
     );
     expect(config).toMatchObject({
-      appId: 'com.inkeep.open-knowledge',
-      productName: 'OpenKnowledge',
-      protocols: [{ schemes: ['openknowledge'] }],
+      appId: 'io.github.tudeorangbiasa.brainondesk',
+      productName: 'BrainOnDesk',
+      protocols: [{ schemes: ['brainondesk'] }],
       publish: [{ channel: 'latest' }],
       mac: {
         icon: 'build/okglass.icon',
-        artifactName: macArtifact('OpenKnowledge'),
+        artifactName: macArtifact('BrainOnDesk'),
         provisioningProfile: 'build/embedded.provisionprofile',
       },
-      dmg: { artifactName: platformArtifact('OpenKnowledge') },
-      nsis: { artifactName: nsisArtifact('OpenKnowledge') },
+      dmg: { artifactName: platformArtifact('BrainOnDesk') },
+      nsis: { artifactName: nsisArtifact('BrainOnDesk') },
       linux: {
-        artifactName: platformArtifact('OpenKnowledge'),
-        executableName: 'openknowledge',
+        artifactName: platformArtifact('BrainOnDesk'),
+        executableName: 'brainondesk',
       },
       deb: {
         afterInstall: paths.postInstallPath,
         afterRemove: paths.postRemovePath,
-        packageName: 'openknowledge',
+        packageName: 'brainondesk',
       },
       rpm: {
         afterInstall: paths.postInstallPath,
         afterRemove: paths.postRemovePath,
-        packageName: 'OpenKnowledge',
+        packageName: 'brainondesk',
         depends: ['libsecret'],
       },
     });
@@ -379,7 +379,7 @@ describe('desktop variant builder config', () => {
   test('names platform integration shims per variant', () => {
     expect(
       createVariantNsisInclude(
-        'openknowledge:// Software\\Classes\\openknowledge URL:OpenKnowledge',
+        'brainondesk:// Software\\Classes\\brainondesk URL:BrainOnDesk',
         'beta',
       ),
     ).toBe('openknowledge-beta:// Software\\Classes\\openknowledge-beta URL:OpenKnowledge Beta');
@@ -407,7 +407,7 @@ describe('desktop variant builder config', () => {
   test('names the detached helper bundle with the variant identity', () => {
     expect(
       createVariantHelperInfo(
-        'com.inkeep.open-knowledge.server OpenKnowledge Server OpenKnowledge Helper',
+        'io.github.tudeorangbiasa.brainondesk.server BrainOnDesk Server BrainOnDesk Helper',
         'beta',
       ),
     ).toBe(
@@ -432,13 +432,13 @@ describe('desktop variant builder config', () => {
   });
 
   test('fails closed when a packaging template loses a required anchor', () => {
-    expect(() => createVariantNsisInclude('openknowledge://', 'beta')).toThrow(/registry key/);
+    expect(() => createVariantNsisInclude('brainondesk://', 'beta')).toThrow(/registry key/);
     expect(() => createVariantPostInstall('ln -sf "$OK_WRAPPER" /usr/bin/ok', 'beta')).toThrow(
       /open-knowledge install command/,
     );
     expect(() => createVariantPostRemove('missing', 'beta')).toThrow(/removal loop/);
     expect(() => createLocalEntitlements('<dict/>')).toThrow(/associated-domains/);
-    expect(() => createVariantHelperInfo('OpenKnowledge Server', 'beta')).toThrow(
+    expect(() => createVariantHelperInfo('BrainOnDesk Server', 'beta')).toThrow(
       /bundle identifier/,
     );
   });

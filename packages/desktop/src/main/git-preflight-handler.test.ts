@@ -207,7 +207,7 @@ describe('ensureGitAvailable', () => {
     expect(boxCalls).toHaveLength(1);
     expect(boxCalls[0]?.type).toBe('error');
     expect(boxCalls[0]?.buttons).toEqual(['Quit']);
-    expect(boxCalls[0]?.title).toBe('OpenKnowledge could not start');
+    expect(boxCalls[0]?.title).toBe('BrainOnDesk could not start');
     expect(boxCalls[0]?.detail).toContain('something completely different');
     expect(openExternal).not.toHaveBeenCalled();
     expect(warn).toHaveBeenCalledTimes(1);

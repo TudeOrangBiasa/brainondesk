@@ -2555,6 +2555,10 @@ msgstr "Backlinks response did not match expected shape."
 msgid "Base branch"
 msgstr "Base branch"
 
+#: src/components/settings/AboutSection.tsx
+msgid "Based on OpenKnowledge by Inkeep (GPL-3.0)."
+msgstr "Based on OpenKnowledge by Inkeep (GPL-3.0)."
+
 #: src/components/settings/SettingsDialogShell.tsx
 msgctxt "settings search keyword"
 msgid "batch"
