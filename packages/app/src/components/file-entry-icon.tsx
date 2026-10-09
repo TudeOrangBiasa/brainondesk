@@ -1,7 +1,17 @@
 // oxlint-disable ok/no-physical-direction-utility -- pre-rule backlog — physical margin/padding/inset utilities predate the rule; drain by swapping ml/mr → ms/me, pl/pr → ps/pe, left/right → start/end, then deleting this line. See https://github.com/inkeep/open-knowledge/blob/main/lint-plugins/ok-rules/README.md#no-physical-direction-utility
 
 import { mediaKindForSidebarAssetExtension } from '@inkeep/open-knowledge-core/constants/upload';
-import { File, Film, FolderOpen, ImageIcon, Volume2 } from 'lucide-react';
+import { officeDocTypeOf } from '@inkeep/open-knowledge-core/office/doc-types';
+import {
+  File,
+  FileSpreadsheet,
+  FileText,
+  Film,
+  FolderOpen,
+  ImageIcon,
+  Presentation,
+  Volume2,
+} from 'lucide-react';
 import type { ComponentProps } from 'react';
 import { getFileExtension } from '@/components/file-tree-rename-validation';
 import { lucideIconToSvgString } from '@/editor/registry/lucide-svg';
@@ -17,6 +27,48 @@ export const EXCALIDRAW_FILE_ICON_PATH_D =
 
 function isMarkdownExt(ext: string): boolean {
   return ext === '.md' || ext === '.mdx';
+}
+
+function OfficeFileIcon({
+  icon,
+  className,
+}: {
+  icon: 'docs' | 'sheets' | 'slides';
+  className?: string;
+}) {
+  if (icon === 'docs') {
+    return (
+      <FileText
+        aria-hidden="true"
+        className={className}
+        data-testid="file-entry-icon-office-docs"
+      />
+    );
+  }
+  if (icon === 'sheets') {
+    return (
+      <FileSpreadsheet
+        aria-hidden="true"
+        className={className}
+        data-testid="file-entry-icon-office-sheets"
+      />
+    );
+  }
+  return (
+    <Presentation
+      aria-hidden="true"
+      className={className}
+      data-testid="file-entry-icon-office-slides"
+    />
+  );
+}
+
+function iconSvgForPath(path: string): string | null {
+  const icon = officeDocTypeOf(path)?.icon ?? null;
+  if (icon === 'docs') return lucideIconToSvgString(FileText);
+  if (icon === 'sheets') return lucideIconToSvgString(FileSpreadsheet);
+  if (icon === 'slides') return lucideIconToSvgString(Presentation);
+  return null;
 }
 
 function iconSvgForExt(ext: string): string {
@@ -104,7 +156,7 @@ export function fileEntryPathIconToSvgString(path: string): string {
       `<path d="${MARKDOWN_FILE_ICON_PATH_D}"/></svg>`
     );
   }
-  return iconSvgForExt(normalizedExt);
+  return iconSvgForPath(path) ?? iconSvgForExt(normalizedExt);
 }
 
 export function FileEntryIcon({
@@ -135,15 +187,17 @@ export function FileEntryIcon({
   const ext =
     bodyIndexed === false ? getFileExtension(path) : (docExt ?? (getFileExtension(path) || '.md'));
   const normalizedExt = ext.toLowerCase();
+  const officeIcon = officeDocTypeOf(path)?.icon ?? null;
   const mediaKind = mediaKindForSidebarAssetExtension(normalizedExt);
   const badge =
     showExtensionBadge && ext && normalizedExt !== '.md' ? ext.slice(1).toUpperCase() : null;
   const iconClassName = cn(className, mediaKind === 'image' && 'text-rose-500');
-
   return (
     <span className="relative inline-flex shrink-0" data-file-entry-icon={normalizedExt || 'file'}>
       {isMarkdownExt(normalizedExt) ? (
         <MarkdownFileIcon className={iconClassName} data-testid="file-entry-icon-markdown" />
+      ) : officeIcon ? (
+        <OfficeFileIcon icon={officeIcon} className={iconClassName} />
       ) : mediaKind === 'image' ? (
         <ImageIcon
           aria-hidden="true"

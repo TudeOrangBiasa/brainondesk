@@ -80,6 +80,7 @@ import * as markdownTagPromotionSubpath from '@inkeep/open-knowledge-core/markdo
 import * as metricsParseHealthSubpath from '@inkeep/open-knowledge-core/metrics/parse-health';
 import * as registrySubpath from '@inkeep/open-knowledge-core/registry';
 import * as registryTypesSubpath from '@inkeep/open-knowledge-core/registry/types';
+import * as officeDocTypesSubpath from '@inkeep/open-knowledge-core/office/doc-types';
 import * as schemasApiSubpath from '@inkeep/open-knowledge-core/schemas/api';
 import * as schemasCc1Subpath from '@inkeep/open-knowledge-core/schemas/cc1';
 import * as searchWorkspaceSearchSubpath from '@inkeep/open-knowledge-core/search/workspace-search';
@@ -233,6 +234,7 @@ const MODULE_SUBPATHS: Record<string, object> = {
   './skills-catalog/skill-cost': skillsCatalogSkillCostSubpath,
   './skills-catalog/source-fields': skillsCatalogSourceFieldsSubpath,
   './sync-paused-reason': syncPausedReasonSubpath,
+  './office/doc-types': officeDocTypesSubpath,
   './terminal-layout': terminalLayoutSubpath,
   './theme/base16': themeBase16Subpath,
   './theme/theme-plugins': themeThemePluginsSubpath,

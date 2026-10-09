@@ -246,6 +246,15 @@ export type {
   VIDEO_EXTENSIONS,
   WIKI_EMBED_EXTENSIONS,
 } from '@inkeep/open-knowledge-core/constants/upload';
+export {
+  OFFICE_DOC_TYPES,
+  isOfficeDocFile,
+  officeDocTypeOf,
+} from '@inkeep/open-knowledge-core/office/doc-types';
+export type {
+  OfficeDocType,
+  OfficeDocTypeId,
+} from '@inkeep/open-knowledge-core/office/doc-types';
 export type { CodeBlockFidelity } from '@inkeep/open-knowledge-core/extensions/code-block-fidelity';
 export type {
   collectFootnoteIdentifiers,

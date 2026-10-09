@@ -17,6 +17,7 @@ import {
   isMermaidDocFile,
   mediaKindForSidebarAssetExtension,
 } from '@inkeep/open-knowledge-core/constants/upload';
+import { isOfficeDocFile } from '@inkeep/open-knowledge-core/office/doc-types';
 import type { SkillScope } from '@inkeep/open-knowledge-core/schemas/api';
 import { resolveName } from '@inkeep/open-knowledge-core/utils/target-namespace';
 import { resolveWikiLinkTargetDocName } from '@inkeep/open-knowledge-core/utils/wiki-link-resolve';
@@ -195,9 +196,20 @@ export function resolveNavigationTarget(
     !expectsFolder &&
     (isMermaidDocFile(normalizedTarget) ||
       isExcalidrawDocFile(normalizedTarget) ||
-      isEditableTextDocFile(normalizedTarget))
+      isEditableTextDocFile(normalizedTarget)) &&
+    !isOfficeDocFile(normalizedTarget)
   ) {
     return { kind: 'doc', target: normalizedTarget, docName: normalizedTarget };
+  }
+  if (!expectsFolder && isOfficeDocFile(normalizedTarget)) {
+    return {
+      kind: 'asset',
+      target: normalizedTarget,
+      assetPath: normalizedTarget,
+      mediaKind: mediaKindForSidebarAssetExtension(
+        normalizedTarget.slice(normalizedTarget.lastIndexOf('.') + 1),
+      ),
+    };
   }
   const extensionlessTarget = extensionlessTargetPath(target);
 
