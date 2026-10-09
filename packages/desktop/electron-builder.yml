@@ -122,6 +122,13 @@ extraResources:
   # Electron + Chromium only, not OpenKnowledge itself.
   - from: "../../LICENSE"
     to: "LICENSE"
+  # BrainOnDesk attribution (NOTICE) and the non-GPL license texts that
+  # ported components require (Apache-2.0 for AugmentOffice/GenOffice code,
+  # Unicode-3.0 for Unicode data). See docs/office/LICENSING.md.
+  - from: "../../NOTICE"
+    to: "NOTICE"
+  - from: "../../LICENSES"
+    to: "LICENSES"
   # The bundled CLI (`cli/dist/cli.mjs`) keeps `@napi-rs/keyring` EXTERNAL
   # (tsdown `neverBundle` — it ships a native .node binary). At runtime its ESM
   # resolver walks its OWN tree (`cli/dist` → `cli` → `Resources` → …) and
