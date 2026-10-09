@@ -36,13 +36,13 @@ describe('desktopUserDataDir', () => {
         platformName: 'win32',
         env: { APPDATA: 'C:\\Users\\x\\AppData\\Roaming' },
       }),
-    ).toBe('C:\\Users\\x\\AppData\\Roaming\\OpenKnowledge');
+    ).toBe('C:\\Users\\x\\AppData\\Roaming\\BrainOnDesk');
     expect(desktopUserDataDir({ home: 'C:\\Users\\x', platformName: 'win32', env: {} })).toBe(
-      'C:\\Users\\x\\AppData\\Roaming\\OpenKnowledge',
+      'C:\\Users\\x\\AppData\\Roaming\\BrainOnDesk',
     );
     expect(
       desktopUserDataDir({ home: 'C:\\Users\\x', platformName: 'win32', env: { APPDATA: '' } }),
-    ).toBe('C:\\Users\\x\\AppData\\Roaming\\OpenKnowledge');
+    ).toBe('C:\\Users\\x\\AppData\\Roaming\\BrainOnDesk');
   });
 
   test('the legacy product name resolves the space-named macOS dir', () => {
