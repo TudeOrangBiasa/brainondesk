@@ -323,6 +323,12 @@
       "types": "./dist/constants-upload.d.mts",
       "default": "./dist/constants-upload.mjs"
     },
+    "./office/doc-types": {
+      "@inkeep/source": "./src/office/doc-types.ts",
+      "development": "./src/office/doc-types.ts",
+      "types": "./dist/office-doc-types.d.mts",
+      "default": "./dist/office-doc-types.mjs"
+    },
     "./extensions/code-block-fidelity": {
       "@inkeep/source": "./src/extensions/code-block-fidelity.ts",
       "development": "./src/extensions/code-block-fidelity.ts",

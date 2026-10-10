@@ -4,6 +4,7 @@ import {
   TEXT_DOC_OPEN_BYTE_LIMIT,
 } from '@inkeep/open-knowledge-core/constants/document-open';
 import type { InlineAssetMediaKind } from '@inkeep/open-knowledge-core/constants/upload';
+import { isOfficeDocFile } from '@inkeep/open-knowledge-core/office/doc-types';
 import { assetTabId, docTabId } from '@/editor/editor-tabs';
 import { hashFromAssetPath } from '@/lib/doc-hash';
 import {
@@ -81,6 +82,7 @@ export function resolveFileTreeSelection(
         navigationPath: null,
       };
     case 'asset':
+    case 'office':
     case 'skill-file':
     case 'skills':
     case 'skill-preview':
@@ -107,6 +109,14 @@ export function resolveFileTreeSelectionAction(
     return { kind: 'document', path: documentDocName };
   }
   if (entry && isAssetEntry(entry)) {
+    if (isOfficeDocFile(entry.path)) {
+      return {
+        kind: 'asset',
+        path: entry.path,
+        hash: hashFromAssetPath(entry.path),
+        mediaKind: entry.mediaKind,
+      };
+    }
     if (
       entry.mediaKind === 'mermaid' ||
       entry.mediaKind === 'excalidraw' ||

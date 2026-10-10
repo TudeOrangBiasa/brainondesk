@@ -788,6 +788,29 @@ describe('editable text docs resolve as doc targets', () => {
   });
 });
 
+describe('office docs resolve as office targets', () => {
+  test('a .docx target opens the office editor, not the doc editor', () => {
+    expect(resolveNavigationTarget('docs/report.docx', { pages: new Set<string>() })).toMatchObject(
+      {
+        kind: 'office',
+        officePath: 'docs/report.docx',
+      },
+    );
+  });
+
+  test('xlsx and pptx targets resolve to office targets', () => {
+    expect(
+      resolveNavigationTarget('sheets/budget.xlsx', { pages: new Set<string>() }),
+    ).toMatchObject({ kind: 'office', officePath: 'sheets/budget.xlsx' });
+    expect(resolveNavigationTarget('slides/deck.pptx', { pages: new Set<string>() })).toMatchObject(
+      {
+        kind: 'office',
+        officePath: 'slides/deck.pptx',
+      },
+    );
+  });
+});
+
 describe('markdown-extension normalization preserves document identity', () => {
   test('a managed-artifact skill reference normalizes before the early return', () => {
     expect(

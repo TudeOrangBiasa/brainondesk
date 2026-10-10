@@ -49,6 +49,16 @@
   },
   "overrides": [
     {
+      "includes": [
+        "packages/office-*/src/**",
+        "packages/office-*/tests/**",
+        "packages/office-*/scripts/**"
+      ],
+      "formatter": { "enabled": false },
+      "linter": { "enabled": false },
+      "assist": { "enabled": false }
+    },
+    {
       // Internal developer tooling for the static-string audit. Uses ts-morph's
       // untyped node accessors, embeds `${...}` placeholder literals, and a few
       // safe non-null assertions — none of which affect production code.

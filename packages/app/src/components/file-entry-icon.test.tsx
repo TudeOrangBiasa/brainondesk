@@ -1,4 +1,12 @@
-import { File, Film, ImageIcon, Volume2 } from 'lucide-react';
+import {
+  File,
+  FileSpreadsheet,
+  FileText,
+  Film,
+  ImageIcon,
+  Presentation,
+  Volume2,
+} from 'lucide-react';
 import { describe, expect, test } from 'vitest';
 import { lucideIconToSvgString } from '@/editor/registry/lucide-svg';
 import {
@@ -30,5 +38,16 @@ describe('fileEntryPathIconToSvgString', () => {
 
   test('keeps generic files on the fallback file icon', () => {
     expect(fileEntryPathIconToSvgString('data/example.csv')).toBe(lucideIconToSvgString(File));
+  });
+
+  test('maps office extensions to their doc-type icons', () => {
+    expect(fileEntryPathIconToSvgString('docs/report.docx')).toBe(lucideIconToSvgString(FileText));
+    expect(fileEntryPathIconToSvgString('sheets/budget.xlsx')).toBe(
+      lucideIconToSvgString(FileSpreadsheet),
+    );
+    expect(fileEntryPathIconToSvgString('slides/deck.pptx')).toBe(
+      lucideIconToSvgString(Presentation),
+    );
+    expect(fileEntryPathIconToSvgString('docs/REPORT.DOCX')).toBe(lucideIconToSvgString(FileText));
   });
 });

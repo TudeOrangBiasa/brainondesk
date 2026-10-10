@@ -26,6 +26,7 @@ function getTargetDisplayState(resolvedTarget: ResolvedContentTarget): TargetDis
       return 'folder';
     case 'missing':
     case 'asset':
+    case 'office':
       return 'missing';
   }
 }

@@ -1,0 +1,43 @@
+{
+  "name": "@inkeep/open-knowledge-office-pptx-render",
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "private": true,
+  "type": "module",
+  "description": "pptx high-fidelity render layer: EMU->px coordinate system, data-driven RenderTree (shapes/pictures/fills/strokes + text layout via opentype.js metrics). Konva adapter is a thin layer on top.",
+  "exports": {
+    ".": {
+      "@inkeep/source": "./src/index.ts",
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.mts",
+      "default": "./dist/index.mjs"
+    },
+    "./preset-geometry": {
+      "@inkeep/source": "./src/preset-geometry.ts",
+      "development": "./src/preset-geometry.ts",
+      "types": "./dist/preset-geometry.d.mts",
+      "default": "./dist/preset-geometry.mjs"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@inkeep/open-knowledge-office-pptx": "workspace:*",
+    "bidi-js": "~1.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.7.0",
+    "tsdown": "^0.22.14",
+    "tsx": "^4.20.0",
+    "typescript": "~7.0.2",
+    "vitest": "^5.0.3"
+  }
+}

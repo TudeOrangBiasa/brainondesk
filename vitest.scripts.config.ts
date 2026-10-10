@@ -7,7 +7,6 @@ export default defineConfig({
     ...okVitestBase.test,
     include: [
       'scripts/**/*.test.mjs',
-      '.github/scripts/**/*.test.mjs',
       'lint-plugins/**/*.test.mjs',
       'plugins/**/*.test.mjs',
       'test-support/**/*.test.ts',
