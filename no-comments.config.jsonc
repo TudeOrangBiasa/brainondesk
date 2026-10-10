@@ -32,6 +32,9 @@
     }
   ],
   "exclude": [
+    "packages/office-*/src/**",
+    "packages/office-*/tests/**",
+    "packages/office-*/scripts/**",
     "packages/md-conformance/**",
     "packages/app/src/locales/**",
     "packages/native-config/index.js",

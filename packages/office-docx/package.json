@@ -1,0 +1,45 @@
+{
+  "name": "@inkeep/open-knowledge-office-docx",
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "private": true,
+  "type": "module",
+  "description": "docx parsing (Block tree with docxIndex anchors), OOXML fragment generation, paragraph-patch save",
+  "exports": {
+    ".": {
+      "@inkeep/source": "./src/index.ts",
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.mts",
+      "default": "./dist/index.mjs"
+    },
+    "./math": {
+      "@inkeep/source": "./src/math.ts",
+      "development": "./src/math.ts",
+      "types": "./dist/math.d.mts",
+      "default": "./dist/math.mjs"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "fixtures": "tsx scripts/generate-fixtures.ts"
+  },
+  "dependencies": {
+    "fast-xml-parser": "~5.10.1",
+    "jszip": "~3.10.1",
+    "utif2": "~4.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.7.0",
+    "tsdown": "^0.22.14",
+    "tsx": "^4.20.0",
+    "typescript": "~7.0.2",
+    "vitest": "^5.0.3"
+  }
+}
