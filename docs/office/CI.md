@@ -29,7 +29,8 @@ Test `server` (>15 menit) dan `cli` (~6 menit, dua test bergantung pada lokasi `
 
 - Judul: `<type>(<scope>)!: <ringkasan>`, type salah satu `feat fix docs style refactor perf test build ci chore revert`, scope huruf kecil.
 - Body: `Closes #N` / `Fixes #N` / `Resolves #N`. Label `no-issue` untuk PR tanpa issue.
-- Path terlindungi butuh label `protected-paths-ok`: `.github/workflows/`, `.github/actions/`, `.github/CODEOWNERS`, `LICENSE*`, `LICENSES/`, `NOTICE*`, `LICENSE.upstream`/`NOTICE.upstream`, `THIRD_PARTY_NOTICES.md`, `scripts/verify.sh`, `scripts/check-pr-policy.mjs`. Label ini ditambahkan Tude setelah review, bukan oleh agent. Label hanya polisi tidur; perlindungan sebenarnya adalah CODEOWNERS + wajib review.
+- Label risiko wajib tepat satu: `risk:low` (agents boleh merge kalau `verify` hijau) atau `risk:high` (wajib review manusia, agents dilarang merge). `risk:high` wajib kalau sentuh path terlindungi, breaking change (`!`), atau ragu; tanpa label atau `risk:low` di PR seperti itu ditolak policy.
+- Path terlindungi butuh label `protected-paths-ok`: `.github/workflows/`, `.github/actions/`, `.github/CODEOWNERS`, `LICENSE*`, `LICENSES/`, `NOTICE*`, `LICENSE.upstream`/`NOTICE.upstream`, `THIRD_PARTY_NOTICES.md`, `scripts/verify.sh`, `scripts/check-pr-policy.mjs`. Tude menyetujui label ini setelah review; agents boleh memasangnya setelah ada persetujuan Tude di PR itu dan wajib mengutip persetujuan tersebut di body PR. Label hanya polisi tidur; perlindungan sebenarnya adalah CODEOWNERS + wajib review untuk `risk:high`.
 - Secret: gitleaks `8.30.1` (checksum diverifikasi) memindai commit `base..head` PR.
 
 ## Lokal: `pnpm verify`
