@@ -17,6 +17,7 @@ import {
   isMermaidDocFile,
   mediaKindForSidebarAssetExtension,
 } from '@inkeep/open-knowledge-core/constants/upload';
+import { isOfficeDocFile } from '@inkeep/open-knowledge-core/office/doc-types';
 import type { SkillScope } from '@inkeep/open-knowledge-core/schemas/api';
 import { resolveName } from '@inkeep/open-knowledge-core/utils/target-namespace';
 import { resolveWikiLinkTargetDocName } from '@inkeep/open-knowledge-core/utils/wiki-link-resolve';
@@ -77,6 +78,12 @@ export type ResolvedNavigationTarget =
       docName: string;
       size: number;
       limit: number;
+    }
+  | {
+      kind: 'office';
+      target: string;
+      officePath: string;
+      mediaKind: InlineAssetMediaKind | null;
     }
   | {
       kind: 'missing';
@@ -199,6 +206,16 @@ export function resolveNavigationTarget(
   ) {
     return { kind: 'doc', target: normalizedTarget, docName: normalizedTarget };
   }
+  if (!expectsFolder && isOfficeDocFile(normalizedTarget)) {
+    return {
+      kind: 'office',
+      target: normalizedTarget,
+      officePath: normalizedTarget,
+      mediaKind: mediaKindForSidebarAssetExtension(
+        normalizedTarget.slice(normalizedTarget.lastIndexOf('.') + 1),
+      ),
+    };
+  }
   const extensionlessTarget = extensionlessTargetPath(target);
 
   const resolvedDocName = expectsFolder
@@ -318,6 +335,7 @@ export function docNameForNavigationTarget(target: ResolvedNavigationTarget): st
     case 'skill-file':
     case 'skills':
     case 'skill-preview':
+    case 'office':
     case 'folder':
       return null;
   }

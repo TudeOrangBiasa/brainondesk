@@ -287,6 +287,7 @@ import { createLintWriteRoutes } from './http/lint-write-routes.ts';
 import { createLocalApiDispatch, type LocalApiDispatch } from './http/local-api-dispatch.ts';
 import { createLocalOpRoutes } from './http/local-op-routes.ts';
 import { createMetricsRoutes } from './http/metrics-routes.ts';
+import { createOfficeRoutes } from './http/office-routes.ts';
 import { getRequestId } from './http/request-id.ts';
 import { withValidation } from './http/request-validation.ts';
 import { createSeedRoutes } from './http/seed-routes.ts';
@@ -366,6 +367,7 @@ import { ServerMutationShuttingDownError } from './server-content-policy.ts';
 import type { PairedWriteOrigin } from './server-observers.ts';
 import { createAssetService } from './services/assets.ts';
 import { createFileOpsService, DuplicateNameExhaustedError } from './services/file-ops.ts';
+import { createOfficeFileService } from './services/office-files.ts';
 import { createSearchService } from './services/search.ts';
 import { createSkillImportService } from './services/skill-import.ts';
 import { createSkillInstallOpsService } from './services/skill-install-ops.ts';
@@ -4038,6 +4040,13 @@ export function createApiExtension(options: ApiExtensionOptions): Extension & {
     getAttachmentFolderPath,
     resolveTrackedFile,
   });
+  const officeFileService = createOfficeFileService({
+    contentDir,
+    projectDir,
+    assertContentPath: options.assertContentPath,
+    mutateFileIndex,
+    signalFiles: () => signalChannel?.('files'),
+  });
   const fileOpsService = createFileOpsService({
     assertContentSubtree,
     contentDir,
@@ -5308,6 +5317,7 @@ export function createApiExtension(options: ApiExtensionOptions): Extension & {
     mutateFileIndex,
   });
   const assetRoutes = createAssetRoutes({ assetService, log });
+  const officeRoutes = createOfficeRoutes({ officeFileService, log });
   const agentIntegrationsRoutes = createAgentIntegrationsRoutes({
     log,
     checkLocalOpSecurity,
@@ -5438,6 +5448,7 @@ export function createApiExtension(options: ApiExtensionOptions): Extension & {
   });
   const nativeGroups = [
     assetRoutes,
+    officeRoutes,
     agentIntegrationsRoutes,
     agentWriteRoutes,
     ...(enableTestRoutes ? [testRoutes] : []),

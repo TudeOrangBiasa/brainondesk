@@ -66,7 +66,7 @@ export function resolveLinkTargetIntent(
       pagesByBasename: options.pagesByBasename,
     });
     if (resolvedTarget.kind === 'skill-file') return skillFileNavigate(resolvedTarget);
-    if (resolvedTarget.kind === 'asset') continue;
+    if (resolvedTarget.kind === 'asset' || resolvedTarget.kind === 'office') continue;
     if (resolvedTarget.kind === 'missing') {
       missingTarget ??= resolvedTarget;
       continue;
@@ -89,7 +89,11 @@ export function resolveLinkTargetIntent(
       pagesByBasename: options.pagesByBasename,
     });
   if (resolvedFallback.kind === 'skill-file') return skillFileNavigate(resolvedFallback);
-  if (resolvedFallback.kind !== 'missing' && resolvedFallback.kind !== 'asset') {
+  if (
+    resolvedFallback.kind !== 'missing' &&
+    resolvedFallback.kind !== 'asset' &&
+    resolvedFallback.kind !== 'office'
+  ) {
     return {
       kind: 'navigate',
       displayState: resolvedFallback.kind === 'folder' ? 'folder' : 'resolved',
@@ -99,7 +103,9 @@ export function resolveLinkTargetIntent(
     };
   }
   const finalMissingTarget: MissingTarget =
-    resolvedFallback.kind === 'asset' ? { kind: 'missing', target } : resolvedFallback;
+    resolvedFallback.kind === 'asset' || resolvedFallback.kind === 'office'
+      ? { kind: 'missing', target }
+      : resolvedFallback;
 
   const seed = options.createDialogSeed ?? docNameToDialogSeed(finalMissingTarget.target);
   return {

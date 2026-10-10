@@ -8,7 +8,7 @@ The MCP server gives AI agents structured access to your knowledge base. A few t
 
 Every other read tool (`search`, `links`, `history`, etc.) and all write tools route through the Hocuspocus server, which OpenKnowledge auto-starts on the first call that needs it, under the same `OK_MCP_AUTOSTART` gate. Routed stdio calls use `cwd`, an absolute project or worktree path: it is required until a project is selected unless the client advertises exactly one root. Project-bound HTTP calls may omit `cwd` and stay confined to their configured root. The `exec` tool also uses `cwd` as its read command's directory.
 
-The surface is **19 tools**. The four write verbs — `write`, `edit`, `delete`, `move` — are native CRUD operations polymorphic over a target. `write`, `edit`, and `delete` nest per-target fields inside the address key (`write({ document: { path, content } })`) and take exactly one target per call: `document`, `folder`, `template`, or `skill` — plus `asset` for `write` and `delete`, and a `documents` batch on `write` that writes several docs in order, each entry carrying its own `summary`. `move` takes flat `from`/`to` paths and auto-detects a document, folder, or asset, with nested `template` and `skill` targets for those two.
+The surface is **21 tools**. The four write verbs — `write`, `edit`, `delete`, `move` — are native CRUD operations polymorphic over a target. `write`, `edit`, and `delete` nest per-target fields inside the address key (`write({ document: { path, content } })`) and take exactly one target per call: `document`, `folder`, `template`, or `skill` — plus `asset` for `write` and `delete`, and a `documents` batch on `write` that writes several docs in order, each entry carrying its own `summary`. `move` takes flat `from`/`to` paths and auto-detects a document, folder, or asset, with nested `template` and `skill` targets for those two.
 
 To point an MCP client at this server, locally or over a tunnel from another machine, see [Connect remote agents](/docs/remote-control/connecting-agents).
 
@@ -35,6 +35,8 @@ To point an MCP client at this server, locally or over a tunnel from another mac
 | `import` | Acquire a skill from a full skills.sh skill-page URL (`https://www.skills.sh/<owner>/<repo>/<skill>`, or `https://www.skills.sh/site/<hostname>/<skill>` for a website catalog), `owner/repo[/subpath]`, a git URL, or a local / `file://` path into the vendor-neutral `.agents/skills/<name>/` hub as versioned content — live immediately, with cross-harness projection via `install`. Pass the required `add` array with at least one install location (an editor id, `agents`, or a custom root path). Use `skill` to choose one skill from a multi-skill source or a `skills({ query })` result. Records provenance in `.ok/skills-lock.json`; a name collision lands under `<name>-imported`; scripts are imported as content and never executed |
 | `checkpoint` | Save a project-wide version snapshot — a single restore point. Returns its `version` |
 | `restore_version` | Restore one `document` or `skill` to a historical `version` (the SHA from `history` or `checkpoint`) |
+| `office_echo` | Relay a call to the live tab editing an open office file (`path` must be open in the app; unopened paths fail with a clear error) |
+| `office_list_open` | List office files currently open in live app tabs |
 
 ## Audit scopes and complete results
 

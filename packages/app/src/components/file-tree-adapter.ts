@@ -4,6 +4,7 @@ import {
   isMermaidDocFile,
   mediaKindForSidebarAssetExtension,
 } from '@inkeep/open-knowledge-core/constants/upload';
+import { isOfficeDocFile } from '@inkeep/open-knowledge-core/office/doc-types';
 import type { UploadAssetSuccess } from '@inkeep/open-knowledge-core/schemas/api';
 import type { ContextMenuItem, FileTreeDropTarget } from '@pierre/trees';
 import { getFileExtension } from '@/components/file-tree-rename-validation';
@@ -27,7 +28,8 @@ export function docNameToTreePath(
     TREE_EXTENSION_PATTERN.test(docName) ||
     isMermaidDocFile(docName) ||
     isExcalidrawDocFile(docName) ||
-    isEditableTextDocFile(docName)
+    isEditableTextDocFile(docName) ||
+    isOfficeDocFile(docName)
   ) {
     return docName;
   }

@@ -496,6 +496,15 @@ export type {
   incrementJsxStuckDeleteFailed,
   JsxNodeAction,
 } from '@inkeep/open-knowledge-core/metrics/parse-health';
+export type {
+  OfficeDocType,
+  OfficeDocTypeId,
+} from '@inkeep/open-knowledge-core/office/doc-types';
+export {
+  isOfficeDocFile,
+  OFFICE_DOC_TYPES,
+  officeDocTypeOf,
+} from '@inkeep/open-knowledge-core/office/doc-types';
 export type { createRegistry } from '@inkeep/open-knowledge-core/registry';
 export type {
   JsxComponentMeta,

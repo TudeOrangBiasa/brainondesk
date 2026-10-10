@@ -155,6 +155,26 @@ export default {
       entry: ['src/**/*.test.ts', 'scripts/*.ts', 'tests/**/*.ts', 'src/parse-worker.ts'],
       ignoreDependencies: ['yjs'],
     },
+    'packages/office-docx': {
+      entry: ['tests/**/*.ts', 'scripts/*.ts'],
+      project: 'src/**',
+    },
+    'packages/office-pptx': {
+      entry: ['tests/**/*.ts'],
+      project: 'src/**',
+    },
+    'packages/office-parse': {
+      entry: ['tests/**/*.ts'],
+      project: 'src/**',
+    },
+    'packages/office-fonts': {
+      entry: ['tests/**/*.ts'],
+      project: 'src/**',
+    },
+    'packages/office-pptx-render': {
+      entry: ['tests/**/*.ts'],
+      project: 'src/**',
+    },
     'packages/desktop': {
       entry: [
         'src/main/entry.ts',

@@ -7,6 +7,7 @@ import type {
   HandoffTarget,
   InstallState,
 } from '@inkeep/open-knowledge-core/handoff';
+import { isOfficeDocFile } from '@inkeep/open-knowledge-core/office/doc-types';
 import {
   CreateFolderSuccessSchema,
   CreatePageSuccessSchema,
@@ -908,6 +909,20 @@ export function FileTree({ ref }: { ref?: Ref<FileTreeHandle | null> }) {
       return 'none';
     }
     if (action.kind === 'asset') {
+      if (isOfficeDocFile(action.path)) {
+        openTarget(
+          {
+            kind: 'office',
+            target: action.path,
+            officePath: action.path,
+            mediaKind: action.mediaKind,
+          },
+          previewOpenOptions,
+        );
+        pushHashWithoutNavigation(action.hash);
+        notifySidebarFileSelected();
+        return 'non-doc';
+      }
       openTarget(
         {
           kind: 'asset',

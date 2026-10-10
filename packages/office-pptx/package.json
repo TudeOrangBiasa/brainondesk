@@ -1,0 +1,49 @@
+{
+  "name": "@inkeep/open-knowledge-office-pptx",
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "private": true,
+  "type": "module",
+  "description": "pptx parsing (Slide element tree with byte anchors + inheritance resolution), OOXML fragment generation, element-patch save",
+  "exports": {
+    ".": {
+      "@inkeep/source": "./src/index.ts",
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.mts",
+      "default": "./dist/index.mjs"
+    },
+    "./table-grid": {
+      "@inkeep/source": "./src/table-grid.ts",
+      "development": "./src/table-grid.ts",
+      "types": "./dist/table-grid.d.mts",
+      "default": "./dist/table-grid.mjs"
+    },
+    "./background-promote": {
+      "@inkeep/source": "./src/background-promote.ts",
+      "development": "./src/background-promote.ts",
+      "types": "./dist/background-promote.d.mts",
+      "default": "./dist/background-promote.mjs"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "fast-xml-parser": "~5.10.1",
+    "jszip": "~3.10.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.7.0",
+    "pptxgenjs": "~4.0.1",
+    "tsdown": "^0.22.14",
+    "typescript": "~7.0.2",
+    "vitest": "^5.0.3"
+  }
+}

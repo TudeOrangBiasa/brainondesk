@@ -75,6 +75,7 @@ export function projectContextualTargetKind(
       return 'folder';
     case 'asset':
     case 'skill-file':
+    case 'office':
     case 'large-file':
       return 'asset';
     case 'missing':

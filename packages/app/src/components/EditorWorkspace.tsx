@@ -80,6 +80,7 @@ type TabDropEvent = Pick<DragEndEvent, 'active' | 'over'> & Partial<Pick<DragEnd
 
 function activityDocNameForPane(pane: EditorPaneState): string | null {
   if (pane.activeTarget?.kind === 'large-file') return null;
+  if (pane.activeTarget?.kind === 'office') return null;
   return pane.activeTarget ? docNameForNavigationTarget(pane.activeTarget) : null;
 }
 

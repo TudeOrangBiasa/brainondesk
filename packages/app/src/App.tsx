@@ -1,5 +1,6 @@
 import { SHOW_INSTALL_SKILL } from '@inkeep/open-knowledge-core/constants/feature-flags';
 import { mediaKindForSidebarAssetExtension } from '@inkeep/open-knowledge-core/constants/upload';
+import { isOfficeDocFile } from '@inkeep/open-knowledge-core/office/doc-types';
 import { lazy, type ReactNode, Suspense, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { CommentQueueShortcut } from '@/comments/CommentQueueShortcut';
@@ -116,6 +117,7 @@ function selectedPathForNavigationTarget(target: ResolvedNavigationTarget): stri
     case 'folder-index':
     case 'folder':
     case 'asset':
+    case 'office':
     case 'skills':
     case 'large-file':
     case 'missing':
@@ -254,6 +256,16 @@ function NavigationHandler() {
       if (assetPath) {
         const assetExt = assetPath.split('.').pop() ?? '';
         const mediaKind = mediaKindForSidebarAssetExtension(assetExt);
+        if (isOfficeDocFile(assetPath)) {
+          mark('ok/nav/hash-change', { docName: null, kind: 'office' });
+          openHashTarget({
+            kind: 'office',
+            target: assetPath,
+            officePath: assetPath,
+            mediaKind,
+          });
+          return;
+        }
         if (mediaKind === 'excalidraw') {
           window.location.replace(hashFromDocName(assetPath));
           return;

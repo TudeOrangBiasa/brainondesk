@@ -244,6 +244,16 @@ function openKnowledgeDisplay(tool: string, args: Record<string, unknown>): Tool
             ? t`OpenKnowledge restored an earlier version`
             : t`OpenKnowledge restored an earlier version of ${subject}`,
       };
+    case 'office_echo':
+      return {
+        glyph: 'fetch',
+        text:
+          subject === null
+            ? t`OpenKnowledge called the open office file`
+            : t`OpenKnowledge called the open office file ${subject}`,
+      };
+    case 'office_list_open':
+      return { glyph: 'fetch', text: t`OpenKnowledge listed the open office files` };
     default:
       return { glyph: 'other', text: t`OpenKnowledge ran ${tool}` };
   }
@@ -324,6 +334,10 @@ function openKnowledgePurpose(tool: string): string | null {
       return t`Saves a restore point for every document in the project`;
     case 'restore_version':
       return t`Restores a document or skill to an earlier version`;
+    case 'office_echo':
+      return t`Relays a call to the live tab editing an open office file`;
+    case 'office_list_open':
+      return t`Lists the office files open in live app tabs`;
     default:
       return null;
   }

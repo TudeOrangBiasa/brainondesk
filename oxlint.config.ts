@@ -34,6 +34,7 @@ const NO_COMMENTS_SEVERITY = 'error';
 
 export default defineConfig({
   ignorePatterns: [
+    'packages/office-docx/src/vendor/**',
     '.agents/skills/**',
     '.codex/skills/**',
     '/reports/**',
@@ -129,6 +130,14 @@ export default defineConfig({
     'typescript/prefer-as-const': 'off',
   },
   overrides: [
+    {
+      files: ['packages/office-*/src/**/*.{ts,mts,mjs}'],
+      rules: {
+        'unicorn/no-useless-spread': 'off',
+        'unicorn/no-useless-fallback-in-spread': 'off',
+        'unicorn/prefer-string-starts-ends-with': 'off',
+      },
+    },
     {
       files: ['**/*.{ts,tsx}'],
       rules: {

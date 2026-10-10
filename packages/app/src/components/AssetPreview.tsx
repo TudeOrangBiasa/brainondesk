@@ -1,4 +1,5 @@
 import type { InlineAssetMediaKind } from '@inkeep/open-knowledge-core/constants/upload';
+import { officeDocTypeOf } from '@inkeep/open-knowledge-core/office/doc-types';
 import { toDesktopAssetHref } from '@inkeep/open-knowledge-core/utils/asset-href';
 import { Trans } from '@lingui/react/macro';
 import { useState } from 'react';
@@ -78,6 +79,47 @@ function AssetPreviewBody({ assetPath, mediaKind }: AssetPreviewProps) {
         fileName={fileName}
         extension={rawExtension.toLowerCase()}
       />
+    );
+  }
+
+  const officeType = officeDocTypeOf(assetPath);
+  if (officeType && !forceText) {
+    return (
+      <main
+        className="flex h-full min-h-0 flex-col items-center justify-center gap-8 bg-background p-4 text-center"
+        aria-label={fileName}
+      >
+        <div className="flex flex-col items-center gap-1">
+          <div className="max-w-full text-balance break-words tracking-tight font-light text-2xl">
+            {officeType.id === 'docs' ? (
+              <Trans>Docs editor</Trans>
+            ) : officeType.id === 'sheets' ? (
+              <Trans>Sheets editor</Trans>
+            ) : (
+              <Trans>Slides editor</Trans>
+            )}
+          </div>
+          <div className="max-w-full text-muted-foreground text-sm">{fileName}</div>
+        </div>
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="font-mono uppercase"
+            onClick={() => {
+              void dispatchAssetClick({
+                url: src,
+                projectRelPath: assetPath,
+                ext: rawExtension.toLowerCase(),
+                title: fileName,
+                forceOsDelegation: false,
+              });
+            }}
+          >
+            <Trans>Open file</Trans>
+          </Button>
+        </div>
+      </main>
     );
   }
 

@@ -35,6 +35,7 @@ import {
 } from '@/lib/tab-session-restore-suppression';
 import { useCollabUrl } from '@/lib/use-collab-url';
 import { resolveSyncWorkspace } from '@/lib/use-workspace';
+import { clearOfficeDirtyForTabs, dirtyOfficePathsInTabs } from '@/office/office-dirty-store';
 import { getEditorForDoc } from './active-editor';
 import { handleBranchSwitched } from './branch-invalidation';
 import {
@@ -303,6 +304,8 @@ function hashFromTabId(tabId: string): string {
       return hashFromDocName(tab.docName);
     case 'folder':
       return hashFromFolderPath(tab.folderPath);
+    case 'office':
+      return hashFromAssetPath(tab.officePath);
     case 'asset':
       return hashFromAssetPath(tab.assetPath);
     case 'skill-file':
@@ -338,6 +341,15 @@ function resolvedTargetForTabId(tabId: string): ResolvedNavigationTarget {
       return { kind: 'doc', target: tab.docName, docName: tab.docName };
     case 'folder':
       return { kind: 'folder', target: tab.folderPath, folderPath: tab.folderPath };
+    case 'office':
+      return {
+        kind: 'office',
+        target: tab.officePath,
+        officePath: tab.officePath,
+        mediaKind: mediaKindForSidebarAssetExtension(
+          tab.officePath.slice(tab.officePath.lastIndexOf('.') + 1),
+        ),
+      };
     case 'asset':
       return assetTargetForPath(tab.assetPath);
     case 'skill-file':
@@ -391,6 +403,7 @@ function readInitialEditorWorkspace(): EditorWorkspaceState {
 
 function providerDocNameForPane(pane: EditorPaneState): string | null {
   if (!pane.activeTarget || pane.activeTarget.kind === 'large-file') return null;
+  if (pane.activeTarget.kind === 'office') return null;
   return docNameForNavigationTarget(pane.activeTarget);
 }
 
@@ -454,6 +467,8 @@ function navigationTargetKey(target: ResolvedNavigationTarget): string {
       return `folder:${target.folderPath}`;
     case 'asset':
       return `asset:${target.assetPath}:${target.mediaKind ?? ''}`;
+    case 'office':
+      return `office:${target.officePath}:${target.mediaKind ?? ''}`;
     case 'skill-file':
       return `skill-file:${target.scope}:${target.name}:${target.path}`;
     case 'skills':
@@ -883,6 +898,17 @@ export function DocumentProvider({ children }: { children: ReactNode }) {
           ),
     );
     if (closingTabIds.size === 0) return;
+    const dirtyOfficePaths = dirtyOfficePathsInTabs([...closingTabIds]);
+    if (dirtyOfficePaths.length > 0) {
+      const names = dirtyOfficePaths
+        .map((officePath) => officePath.slice(officePath.lastIndexOf('/') + 1))
+        .join(', ');
+      const confirmed = window.confirm(
+        `Close ${dirtyOfficePaths.length === 1 ? 'this tab' : 'these tabs'} with unsaved office changes (${names})?`,
+      );
+      if (!confirmed) return;
+    }
+    clearOfficeDirtyForTabs([...closingTabIds]);
     markTabSessionClosedDuringRestore();
     if (!options.force) {
       for (const tabId of pane.openTabs.filter((candidate) => closingTabIds.has(candidate))) {
@@ -1183,6 +1209,28 @@ export function DocumentProvider({ children }: { children: ReactNode }) {
     openDocument(docName);
   };
 
+  function openOfficeTarget(
+    target: Extract<ResolvedNavigationTarget, { kind: 'office' }>,
+    options: OpenTargetOptions = {},
+    requestedPaneId?: EditorPaneId,
+  ) {
+    const paneId = requestedPaneId ?? workspaceRef.current.focusedPaneId;
+    const nextTabId = tabIdForNavigationTarget(target);
+    if (!nextTabId) return;
+    const transition = transitionEditorWorkspace(workspaceRef.current, {
+      type: 'open-target',
+      paneId,
+      tabId: nextTabId,
+      target,
+      disposition:
+        options.disposition ?? (options.tabBehavior === 'replace-active' ? 'preview' : 'permanent'),
+      consumeActiveNewTab: options.consumeActiveNewTab ?? true,
+      existingTabBehavior: 'activate-owner',
+    });
+    if (transition.replacedPreviewTabId !== null) markTabSessionClosedDuringRestore();
+    commitWorkspace(transition.workspace);
+  }
+
   function activateOrOpenSurfaceNewTab(paneId: EditorPaneId, surface: NewTabSurface) {
     const pane = workspaceRef.current.panes.find((candidate) => candidate.id === paneId);
     if (!pane) return;
@@ -1225,6 +1273,7 @@ export function DocumentProvider({ children }: { children: ReactNode }) {
     existingTabBehavior: ExistingTabOpenBehavior = 'activate-owner',
   ) => {
     if (collabUrl === null) return;
+    if (target.kind === 'office') return openOfficeTarget(target, options, requestedPaneId);
     const paneId = requestedPaneId ?? workspaceRef.current.focusedPaneId;
     const p = getPool(collabUrl);
     if (target.kind === 'skills') {
