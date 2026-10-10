@@ -164,7 +164,11 @@ export function useOfficeHost(options: UseOfficeHostOptions): UseOfficeHost {
         setStatus('conflict');
         return false;
       }
-      if (!res.ok) throw new Error(`office save failed: ${res.status}`);
+      if (!res.ok) {
+        setError(`office save failed: ${res.status}`);
+        setStatus('error');
+        return false;
+      }
       const next = await fetchSnapshot(path);
       setSnapshot(next);
       setDraftState(null);

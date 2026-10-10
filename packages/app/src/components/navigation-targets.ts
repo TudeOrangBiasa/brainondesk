@@ -80,6 +80,12 @@ export type ResolvedNavigationTarget =
       limit: number;
     }
   | {
+      kind: 'office';
+      target: string;
+      officePath: string;
+      mediaKind: InlineAssetMediaKind | null;
+    }
+  | {
       kind: 'missing';
       target: string;
     };
@@ -196,16 +202,15 @@ export function resolveNavigationTarget(
     !expectsFolder &&
     (isMermaidDocFile(normalizedTarget) ||
       isExcalidrawDocFile(normalizedTarget) ||
-      isEditableTextDocFile(normalizedTarget)) &&
-    !isOfficeDocFile(normalizedTarget)
+      isEditableTextDocFile(normalizedTarget))
   ) {
     return { kind: 'doc', target: normalizedTarget, docName: normalizedTarget };
   }
   if (!expectsFolder && isOfficeDocFile(normalizedTarget)) {
     return {
-      kind: 'asset',
+      kind: 'office',
       target: normalizedTarget,
-      assetPath: normalizedTarget,
+      officePath: normalizedTarget,
       mediaKind: mediaKindForSidebarAssetExtension(
         normalizedTarget.slice(normalizedTarget.lastIndexOf('.') + 1),
       ),
@@ -330,6 +335,7 @@ export function docNameForNavigationTarget(target: ResolvedNavigationTarget): st
     case 'skill-file':
     case 'skills':
     case 'skill-preview':
+    case 'office':
     case 'folder':
       return null;
   }

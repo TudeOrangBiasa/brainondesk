@@ -294,6 +294,11 @@ const LazySchemaConfigEditor = lazy(async () => {
   return { default: mod.SchemaConfigEditor };
 });
 
+const LazyOfficeEditorHost = lazy(async () => {
+  const mod = await import('@/components/OfficeEditorHost');
+  return { default: mod.OfficeEditorHost };
+});
+
 function ConfigEditorFallback() {
   return (
     <div
@@ -1344,6 +1349,12 @@ function EditorAreaInner({
         mediaKind={activeTarget.mediaKind}
       />
     );
+  } else if (activeTarget?.kind === 'office') {
+    viewContent = (
+      <Suspense fallback={<EditorSkeleton />}>
+        <LazyOfficeEditorHost key={activeTarget.officePath} path={activeTarget.officePath} />
+      </Suspense>
+    );
   } else if (activeTarget?.kind === 'skill-file') {
     viewContent = (
       <SkillFileViewer
@@ -1552,6 +1563,13 @@ function EditorAreaInner({
           assetPath={target.assetPath}
           mediaKind={target.mediaKind}
         />
+      );
+    }
+    if (target?.kind === 'office') {
+      return (
+        <Suspense fallback={<EditorSkeleton />}>
+          <LazyOfficeEditorHost key={target.officePath} path={target.officePath} />
+        </Suspense>
       );
     }
     if (target?.kind === 'skill-file') {
