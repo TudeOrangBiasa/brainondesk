@@ -672,3 +672,11 @@ describe('docNameToTreePath — editable text docs', () => {
     expect(docNameToTreePath('config.json')).toBe('config.json');
   });
 });
+
+describe('docNameToTreePath — office docs', () => {
+  test('maps office docNames to the tree path verbatim (no .md appended)', () => {
+    expect(docNameToTreePath('docs/report.docx')).toBe('docs/report.docx');
+    expect(docNameToTreePath('sheets/budget.XLSX')).toBe('sheets/budget.XLSX');
+    expect(docNameToTreePath('slides/deck.ppt')).toBe('slides/deck.ppt');
+  });
+});

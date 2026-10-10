@@ -1141,6 +1141,13 @@ export {
   type ParseHealthMetrics,
   resetParseHealth,
 } from './metrics/parse-health.ts';
+export {
+  isOfficeDocFile,
+  OFFICE_DOC_TYPES,
+  type OfficeDocType,
+  type OfficeDocTypeId,
+  officeDocTypeOf,
+} from './office/doc-types.ts';
 export { PROTOCOL_VERSION } from './protocol-version.ts';
 export {
   builtInComponents,

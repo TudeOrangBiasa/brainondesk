@@ -356,6 +356,58 @@ describe('resolveFileTreeSelectionAction — editable text assets', () => {
   });
 });
 
+describe('resolveFileTreeSelectionAction — office assets', () => {
+  test('routes a docx asset row to the asset tab (placeholder channel)', () => {
+    expect(
+      resolveFileTreeSelectionAction('docs/report.docx', [
+        {
+          kind: 'asset',
+          path: 'docs/report.docx',
+          assetExt: '.docx',
+          mediaKind: null,
+          size: 0,
+          modified: '',
+        },
+      ]),
+    ).toEqual({
+      kind: 'asset',
+      path: 'docs/report.docx',
+      hash: '#/__asset__/docs/report.docx',
+      mediaKind: null,
+    });
+  });
+
+  test('routes xlsx and pptx asset rows to their asset tabs', () => {
+    for (const path of ['sheets/budget.xlsx', 'slides/deck.pptx']) {
+      expect(resolveFileTreeSelectionAction(path, [])).toEqual({ kind: 'none' });
+      expect(
+        resolveFileTreeSelectionAction(path, [
+          { kind: 'asset', path, assetExt: '.tmp', mediaKind: null, size: 0, modified: '' },
+        ]),
+      ).toMatchObject({ kind: 'asset', path });
+    }
+  });
+
+  test('a docx row resolves to the asset tab id via previewTabIdForTreePath', () => {
+    expect(
+      previewTabIdForTreePath(
+        'docs/report.docx',
+        [
+          {
+            kind: 'asset',
+            path: 'docs/report.docx',
+            assetExt: '.docx',
+            mediaKind: null,
+            size: 0,
+            modified: '',
+          },
+        ],
+        new Set<string>(),
+      ),
+    ).toBe(assetTabId('docs/report.docx'));
+  });
+});
+
 describe('previewTabIdForTreePath', () => {
   test('a markdown row resolves to its extension-less document tab', () => {
     expect(
