@@ -820,7 +820,7 @@ describe('WindowManager', () => {
           errKind: 'other-channel-holder',
           holderChannel: 'stable',
           message:
-            'OpenKnowledge (Stable) is serving this project (pid 65792). Only one OpenKnowledge app can edit a project at a time.',
+            'BrainOnDesk (Stable) is serving this project (pid 65792). Only one OpenKnowledge app can edit a project at a time.',
         });
         expect(killProbe).not.toHaveBeenCalled();
         expect(env.utilities.length).toBe(0);
@@ -1079,9 +1079,9 @@ describe('WindowManager', () => {
             .map((p) => p.holderChannel),
         ).toEqual(['stable']);
         expect(run.dialog?.detail).toContain(
-          "OpenKnowledge (Stable) holds this project's server lock (pid 65792)",
+          "BrainOnDesk (Stable) holds this project's server lock (pid 65792)",
         );
-        expect(run.dialog?.detail).toContain('This OpenKnowledge (Stable) server keeps running');
+        expect(run.dialog?.detail).toContain('This BrainOnDesk (Stable) server keeps running');
         expect(run.dialog?.defaultId).toBe(1);
         expect(run.stopTargets).toEqual([{ pid: 65792, channel: 'stable' }]);
         expect({ result: run.result, reopens: run.reopens }).toEqual({
@@ -1163,8 +1163,8 @@ describe('WindowManager', () => {
           }),
         ).toEqual({
           detail:
-            'This OpenKnowledge (Stable) server keeps running after any window showing the project closes, so the project stays busy until the server stops. OpenKnowledge Beta can stop it now and open the project here. Every window, editor, or agent connected to it loses its connection to this project.',
-          button: 'Stop OpenKnowledge (Stable) Server & Open Here',
+            'This BrainOnDesk (Stable) server keeps running after any window showing the project closes, so the project stays busy until the server stops. OpenKnowledge Beta can stop it now and open the project here. Every window, editor, or agent connected to it loses its connection to this project.',
+          button: 'Stop BrainOnDesk (Stable) Server & Open Here',
         });
         expect(
           otherChannelStopOffer({
@@ -1174,7 +1174,7 @@ describe('WindowManager', () => {
           }),
         ).toEqual({
           detail:
-            'An agent or editor started this OpenKnowledge Beta server over MCP. It does not stop when that session ends: it stops on its own once nothing has had the project open for a while (30 minutes by default). OpenKnowledge (Stable) can stop it now and open the project here. Whatever the agent or editor is doing right now is interrupted, and its next request reaches the server opened here.',
+            'An agent or editor started this OpenKnowledge Beta server over MCP. It does not stop when that session ends: it stops on its own once nothing has had the project open for a while (30 minutes by default). BrainOnDesk (Stable) can stop it now and open the project here. Whatever the agent or editor is doing right now is interrupted, and its next request reaches the server opened here.',
           button: 'Stop OpenKnowledge Beta Server & Open Here',
         });
       });
@@ -1202,7 +1202,7 @@ describe('WindowManager', () => {
           kind: 'refused',
           errKind: 'other-channel-holder',
           holderChannel: 'cloud',
-          message: expect.stringMatching(/^OpenKnowledge \(cloud\) is serving this project/),
+          message: expect.stringMatching(/^BrainOnDesk \(cloud\) is serving this project/),
         });
       });
 

@@ -6,8 +6,8 @@ import {
 import { afterEach, beforeEach, describe, expect, it, test, vi } from 'vitest';
 import { maybeRedirectToHelperBundle, resolveSelfSpawn } from './self-spawn.ts';
 
-const PACKAGED_APP = '/Applications/OpenKnowledge.app';
-const PACKAGED_EXEC = `${PACKAGED_APP}/Contents/MacOS/OpenKnowledge`;
+const PACKAGED_APP = '/Applications/BrainOnDesk.app';
+const PACKAGED_EXEC = `${PACKAGED_APP}/Contents/MacOS/BrainOnDesk`;
 const PACKAGED_ENTRY = `${PACKAGED_APP}/Contents/Resources/app.asar.unpacked/dist/cli.mjs`;
 const HELPER_BINARY = `${PACKAGED_APP}/Contents/Frameworks/${HELPER_BUNDLE_NAME}/Contents/MacOS/${HELPER_EXECUTABLE_NAME}`;
 
@@ -36,8 +36,8 @@ describe('maybeRedirectToHelperBundle', () => {
   });
 
   test.each([
-    ['linux', '/Applications/OpenKnowledge.app/Contents/MacOS/OpenKnowledge'],
-    ['win32', 'C:\\Program Files\\OpenKnowledge\\OpenKnowledge.exe'],
+    ['linux', '/Applications/BrainOnDesk.app/Contents/MacOS/BrainOnDesk'],
+    ['win32', 'C:\\Program Files\\OpenKnowledge\\BrainOnDesk.exe'],
   ] as const)('non-darwin (%s) → null even if exists() would pass', (platform, execPath) => {
     expect(
       maybeRedirectToHelperBundle({
@@ -52,7 +52,7 @@ describe('maybeRedirectToHelperBundle', () => {
     '/usr/local/bin/node',
     '/opt/homebrew/bin/bun',
     '/usr/local/lib/node_modules/@inkeep/open-knowledge/dist/cli.mjs',
-    '/Applications/OpenKnowledge.app/Contents/Resources/app/cli.mjs',
+    '/Applications/BrainOnDesk.app/Contents/Resources/app/cli.mjs',
     '/tmp/scratch.app.backup/cli',
   ])('darwin + non-bundle execPath (%s) → null', (execPath) => {
     expect(
@@ -131,7 +131,7 @@ describe('resolveSelfSpawn', () => {
 
   it.each([
     ['linux', PACKAGED_EXEC],
-    ['win32', 'C:\\Program Files\\OpenKnowledge\\OpenKnowledge.exe'],
+    ['win32', 'C:\\Program Files\\OpenKnowledge\\BrainOnDesk.exe'],
   ] as const)(
     'non-darwin (%s) → command stays execPath (no LaunchServices)',
     (platform, execPath) => {

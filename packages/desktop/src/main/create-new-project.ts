@@ -332,5 +332,5 @@ export function resolveDefaultProjectsRoot(
       console.warn('[create-new-project] persisted lastUsedProjectParent existsCheck failed:', err);
     }
   }
-  return resolve(documentsDir, 'OpenKnowledge');
+  return resolve(documentsDir, 'BrainOnDesk');
 }

@@ -15,34 +15,34 @@ import {
 describe('desktopUserDataDir', () => {
   test('resolves the Electron userData path per platform', () => {
     expect(desktopUserDataDir({ home: '/Users/x', platformName: 'darwin' })).toBe(
-      '/Users/x/Library/Application Support/OpenKnowledge',
+      '/Users/x/Library/Application Support/BrainOnDesk',
     );
     expect(desktopUserDataDir({ home: '/home/x', platformName: 'linux', env: {} })).toBe(
-      '/home/x/.config/OpenKnowledge',
+      '/home/x/.config/BrainOnDesk',
     );
     expect(
       desktopUserDataDir({ home: '/home/x', platformName: 'linux', env: { XDG_CONFIG_HOME: '' } }),
-    ).toBe('/home/x/.config/OpenKnowledge');
+    ).toBe('/home/x/.config/BrainOnDesk');
     expect(
       desktopUserDataDir({
         home: '/home/x',
         platformName: 'linux',
         env: { XDG_CONFIG_HOME: '/cfg' },
       }),
-    ).toBe('/cfg/OpenKnowledge');
+    ).toBe('/cfg/BrainOnDesk');
     expect(
       desktopUserDataDir({
         home: 'C:\\Users\\x',
         platformName: 'win32',
         env: { APPDATA: 'C:\\Users\\x\\AppData\\Roaming' },
       }),
-    ).toBe('C:\\Users\\x\\AppData\\Roaming\\OpenKnowledge');
+    ).toBe('C:\\Users\\x\\AppData\\Roaming\\BrainOnDesk');
     expect(desktopUserDataDir({ home: 'C:\\Users\\x', platformName: 'win32', env: {} })).toBe(
-      'C:\\Users\\x\\AppData\\Roaming\\OpenKnowledge',
+      'C:\\Users\\x\\AppData\\Roaming\\BrainOnDesk',
     );
     expect(
       desktopUserDataDir({ home: 'C:\\Users\\x', platformName: 'win32', env: { APPDATA: '' } }),
-    ).toBe('C:\\Users\\x\\AppData\\Roaming\\OpenKnowledge');
+    ).toBe('C:\\Users\\x\\AppData\\Roaming\\BrainOnDesk');
   });
 
   test('the legacy product name resolves the space-named macOS dir', () => {

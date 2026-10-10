@@ -10,7 +10,7 @@ BIN_DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
 
 ROOT_DIR="$(cd -P "$BIN_DIR/../../.." >/dev/null 2>&1 && pwd)"
 ELECTRON=""
-for NAME in openknowledge openknowledge-beta; do
+for NAME in brainondesk openknowledge openknowledge-beta; do
   if [ -x "$ROOT_DIR/$NAME" ]; then
     ELECTRON="$ROOT_DIR/$NAME"
     break
@@ -19,7 +19,7 @@ done
 CLI="$BIN_DIR/../dist/cli.mjs"
 
 if [ ! -f "$CLI" ] || [ ! -x "$ELECTRON" ]; then
-  echo "OpenKnowledge has been removed. Reinstall the OpenKnowledge package." >&2
+  echo "BrainOnDesk has been removed. Reinstall the BrainOnDesk package." >&2
   echo '{"error":"ok-bundle-missing","hint":"OpenKnowledge app appears to have been removed. Reinstall it, or remove OK entries from your MCP config and rerun ok init."}' >&2
   exit 69
 fi

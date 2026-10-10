@@ -1,3 +1,15 @@
+# BrainOnDesk
+
+**BrainOnDesk** adalah fork dari [OpenKnowledge](https://github.com/inkeep/open-knowledge) (Inkeep, GPL-3.0-or-later) yang difokuskan untuk Fedora Linux: knowledge base lokal + editor dokumen office (DOCX/XLSX/PPTX) yang bisa dikerjakan bareng AI agent lewat ACP/MCP.
+
+- Lisensi: GPL-3.0-or-later (sama seperti upstream). Atribusi pihak ketiga ada di [`NOTICE`](NOTICE).
+- Rencana dan status: [`docs/office/PLAN.md`](docs/office/PLAN.md) · issue tracker: [TudeOrangBiasa/brainondesk](https://github.com/TudeOrangBiasa/brainondesk/issues).
+- Fork ini tidak berafiliasi dengan Inkeep. Laporkan masalah BrainOnDesk ke repo fork, bukan ke upstream.
+
+Di bawah ini adalah README asli OpenKnowledge, dipertahankan sebagai kredit dan referensi.
+
+---
+
 <p>
   <a  href="https://openknowledge.ai"><picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/ok-wordmark-dark.svg">

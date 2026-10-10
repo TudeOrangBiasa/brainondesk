@@ -1642,16 +1642,16 @@ describe('first-launch version notice (Toast B — AC7, D9)', () => {
 
   test('releaseUrlFor produces the GitHub tag URL', () => {
     expect(releaseUrlFor('1.2.3')).toBe(
-      'https://github.com/inkeep/open-knowledge/releases/tag/v1.2.3',
+      'https://github.com/TudeOrangBiasa/brainondesk/releases/tag/v1.2.3',
     );
   });
 
   test('releaseUrlFor percent-encodes path-traversal chars (Finding #11)', () => {
     expect(releaseUrlFor('../../../etc/passwd')).toBe(
-      'https://github.com/inkeep/open-knowledge/releases/tag/v..%2F..%2F..%2Fetc%2Fpasswd',
+      'https://github.com/TudeOrangBiasa/brainondesk/releases/tag/v..%2F..%2F..%2Fetc%2Fpasswd',
     );
     expect(releaseUrlFor('1.2.3/..')).toBe(
-      'https://github.com/inkeep/open-knowledge/releases/tag/v1.2.3%2F..',
+      'https://github.com/TudeOrangBiasa/brainondesk/releases/tag/v1.2.3%2F..',
     );
   });
 });

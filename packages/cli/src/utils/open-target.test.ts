@@ -30,8 +30,8 @@ function makeSpawn(
 describe('openTarget', () => {
   test('macOS with a verified bundle path names it directly, not scheme resolution', async () => {
     const capture: SpawnCapture = {};
-    const target = 'openknowledge://open?project=%2FUsers%2Fme%2Fnotes&doc=specs%2Flaunch';
-    const desktopBundlePath = '/Applications/OpenKnowledge.app';
+    const target = 'brainondesk://open?project=%2FUsers%2Fme%2Fnotes&doc=specs%2Flaunch';
+    const desktopBundlePath = '/Applications/BrainOnDesk.app';
 
     const outcome = await openTarget(target, {
       platform: 'darwin',
@@ -62,7 +62,7 @@ describe('openTarget', () => {
 
   test('macOS falls back to plain scheme resolution when no bundle path is given', async () => {
     const capture: SpawnCapture = {};
-    const target = 'openknowledge://open?project=%2FUsers%2Fme%2Fnotes&doc=specs%2Flaunch';
+    const target = 'brainondesk://open?project=%2FUsers%2Fme%2Fnotes&doc=specs%2Flaunch';
 
     const outcome = await openTarget(target, {
       platform: 'darwin',
@@ -80,7 +80,7 @@ describe('openTarget', () => {
 
     const outcome = await openTarget(target, {
       platform: 'darwin',
-      desktopBundlePath: '/Applications/OpenKnowledge.app',
+      desktopBundlePath: '/Applications/BrainOnDesk.app',
       spawn: makeSpawn(capture, { type: 'spawn' }),
     });
 
@@ -91,11 +91,11 @@ describe('openTarget', () => {
 
   test('Windows ignores a desktopBundlePath — the option is darwin-only', async () => {
     const capture: SpawnCapture = {};
-    const target = 'openknowledge://open?project=C%3A%5CUsers%5Cme%5Cnotes&doc=specs%2Flaunch';
+    const target = 'brainondesk://open?project=C%3A%5CUsers%5Cme%5Cnotes&doc=specs%2Flaunch';
 
     const outcome = await openTarget(target, {
       platform: 'win32',
-      desktopBundlePath: '/Applications/OpenKnowledge.app',
+      desktopBundlePath: '/Applications/BrainOnDesk.app',
       spawn: makeSpawn(capture, { type: 'spawn' }),
     });
 
@@ -106,7 +106,7 @@ describe('openTarget', () => {
 
   test('Windows opens the complete URL without cmd.exe parsing ampersands', async () => {
     const capture: SpawnCapture = {};
-    const target = 'openknowledge://open?project=C%3A%5CUsers%5Cme%5Cnotes&doc=specs%2Flaunch';
+    const target = 'brainondesk://open?project=C%3A%5CUsers%5Cme%5Cnotes&doc=specs%2Flaunch';
 
     const outcome = await openTarget(target, {
       platform: 'win32',
@@ -136,11 +136,11 @@ describe('openTarget', () => {
 
   test('Linux ignores a desktopBundlePath — the option is darwin-only', async () => {
     const capture: SpawnCapture = {};
-    const target = 'openknowledge://open?project=%2FUsers%2Fme%2Fnotes&doc=specs%2Flaunch';
+    const target = 'brainondesk://open?project=%2FUsers%2Fme%2Fnotes&doc=specs%2Flaunch';
 
     const outcome = await openTarget(target, {
       platform: 'linux',
-      desktopBundlePath: '/Applications/OpenKnowledge.app',
+      desktopBundlePath: '/Applications/BrainOnDesk.app',
       spawn: makeSpawn(capture, { type: 'spawn' }),
     });
 

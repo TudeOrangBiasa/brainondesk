@@ -1,13 +1,13 @@
 export const DESKTOP_PRODUCTS = {
   stable: {
-    appId: 'com.inkeep.open-knowledge',
-    productName: 'OpenKnowledge',
+    appId: 'io.github.tudeorangbiasa.brainondesk',
+    productName: 'BrainOnDesk',
     packageName: '@inkeep/open-knowledge-desktop',
-    linuxExecutableName: 'openknowledge',
-    protocolScheme: 'openknowledge',
+    linuxExecutableName: 'brainondesk',
+    protocolScheme: 'brainondesk',
     linuxPackageNames: {
-      deb: 'openknowledge',
-      rpm: 'OpenKnowledge',
+      deb: 'brainondesk',
+      rpm: 'brainondesk',
     },
     cliCommandNames: ['ok', 'open-knowledge'],
     mcpServerName: 'open-knowledge',

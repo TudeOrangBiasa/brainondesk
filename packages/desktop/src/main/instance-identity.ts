@@ -1,13 +1,14 @@
 import { basename } from 'node:path';
 
 const DEFAULT_USERDATA_NAMES = new Set([
+  'BrainOnDesk',
   'OpenKnowledge',
   'Open Knowledge',
   'OpenKnowledge Beta',
   'Electron',
 ]);
 
-const DEV_WRAPPER = /^(?:OpenKnowledge|Open Knowledge) \((.+)\)$/;
+const DEV_WRAPPER = /^(?:BrainOnDesk|OpenKnowledge|Open Knowledge) \((.+)\)$/;
 
 export function resolveInstanceLabel(userDataDir: string): string | null {
   const base = basename(userDataDir);

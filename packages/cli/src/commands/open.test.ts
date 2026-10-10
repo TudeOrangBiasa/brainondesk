@@ -9,8 +9,8 @@ import {
 import { createRealOpenDeps, type OpenDeps, runOpen } from './open.ts';
 
 const STABLE_APP: DesktopAppTarget = {
-  bundlePath: '/Applications/OpenKnowledge.app',
-  protocolScheme: 'openknowledge',
+  bundlePath: '/Applications/BrainOnDesk.app',
+  protocolScheme: 'brainondesk',
 };
 
 const BETA_APP: DesktopAppTarget = {
@@ -49,13 +49,13 @@ function makeDeps(overrides: Partial<OpenDeps> = {}): {
 }
 
 describe('runOpen', () => {
-  test('doc with a desktop bundle → openknowledge:// deep link, exit 0', async () => {
+  test('doc with a desktop bundle → brainondesk:// deep link, exit 0', async () => {
     const { deps, opened } = makeDeps({
       detectDesktopApp: () => STABLE_APP,
     });
     const code = await runOpen('bim-brain/log', { project: '/abs/proj' }, deps);
     expect(code).toBe(0);
-    expect(opened).toEqual(['openknowledge://open?project=%2Fabs%2Fproj&doc=bim-brain%2Flog']);
+    expect(opened).toEqual(['brainondesk://open?project=%2Fabs%2Fproj&doc=bim-brain%2Flog']);
   });
 
   test('doc with a desktop bundle threads the verified bundle path to openTarget', async () => {
@@ -63,7 +63,7 @@ describe('runOpen', () => {
       detectDesktopApp: () => STABLE_APP,
     });
     await runOpen('bim-brain/log', { project: '/abs/proj' }, deps);
-    expect(openedOptions).toEqual([{ desktopBundlePath: '/Applications/OpenKnowledge.app' }]);
+    expect(openedOptions).toEqual([{ desktopBundlePath: '/Applications/BrainOnDesk.app' }]);
   });
 
   test('doc, no bundle but UI running → browser route, exit 0', async () => {
@@ -107,8 +107,8 @@ describe('runOpen', () => {
     });
     const code = await runOpen('specs/foo/', { project: '/p' }, deps);
     expect(code).toBe(0);
-    expect(opened).toEqual(['openknowledge://open?project=%2Fp&folder=specs%2Ffoo']);
-    expect(openedOptions).toEqual([{ desktopBundlePath: '/Applications/OpenKnowledge.app' }]);
+    expect(opened).toEqual(['brainondesk://open?project=%2Fp&folder=specs%2Ffoo']);
+    expect(openedOptions).toEqual([{ desktopBundlePath: '/Applications/BrainOnDesk.app' }]);
   });
 
   test('folder, no bundle but UI running → browser folder route, exit 0', async () => {
@@ -128,7 +128,7 @@ describe('runOpen', () => {
     });
     const code = await runOpen('specs/foo', { project: '/p' }, deps);
     expect(code).toBe(0);
-    expect(opened).toEqual(['openknowledge://open?project=%2Fp&folder=specs%2Ffoo']);
+    expect(opened).toEqual(['brainondesk://open?project=%2Fp&folder=specs%2Ffoo']);
   });
 
   test('trailing slash infers folder intent even when disk classify says doc', async () => {
@@ -147,10 +147,8 @@ describe('runOpen', () => {
     });
     const code = await runOpen('trip-log', { skill: true, project: '/p' }, deps);
     expect(code).toBe(0);
-    expect(opened).toEqual([
-      'openknowledge://open?project=%2Fp&doc=__skill__%2Fproject%2Ftrip-log',
-    ]);
-    expect(openedOptions).toEqual([{ desktopBundlePath: '/Applications/OpenKnowledge.app' }]);
+    expect(opened).toEqual(['brainondesk://open?project=%2Fp&doc=__skill__%2Fproject%2Ftrip-log']);
+    expect(openedOptions).toEqual([{ desktopBundlePath: '/Applications/BrainOnDesk.app' }]);
   });
 
   test('skill --scope global, no bundle but UI running → browser skill route', async () => {
@@ -235,7 +233,7 @@ describe('runOpen', () => {
     });
     const code = await runOpen('notes/My Doc#1', { project: '/p' }, deps);
     expect(code).toBe(0);
-    expect(opened).toEqual(['openknowledge://open?project=%2Fp&doc=notes%2FMy%20Doc%231']);
+    expect(opened).toEqual(['brainondesk://open?project=%2Fp&doc=notes%2FMy%20Doc%231']);
   });
 
   test('browser route encodes per-segment, preserving the slash', async () => {
@@ -260,7 +258,7 @@ describe('createRealOpenDeps wiring', () => {
     const deps = createRealOpenDeps(() => ({
       available: true,
       reason: 'available',
-      bundlePath: '/Applications/OpenKnowledge.app',
+      bundlePath: '/Applications/BrainOnDesk.app',
       product: 'stable',
       cliProduct: 'stable',
     }));
@@ -271,7 +269,7 @@ describe('createRealOpenDeps wiring', () => {
     const deps = createRealOpenDeps(() => ({
       available: false,
       reason: 'headless',
-      bundlePath: '/Applications/OpenKnowledge.app',
+      bundlePath: '/Applications/BrainOnDesk.app',
       product: 'stable',
       cliProduct: 'stable',
     }));
@@ -338,11 +336,11 @@ describe('Beta desktop app', () => {
     const { deps, opened } = withRealDetection(() =>
       detectDesktop({
         ...macBetaCli,
-        execPath: '/Applications/OpenKnowledge.app/Contents/MacOS/OpenKnowledge',
+        execPath: '/Applications/BrainOnDesk.app/Contents/MacOS/BrainOnDesk',
       }),
     );
     await runOpen('notes/plan', { project: '/p' }, deps);
-    expect(opened).toEqual(['openknowledge://open?project=%2Fp&doc=notes%2Fplan']);
+    expect(opened).toEqual(['brainondesk://open?project=%2Fp&doc=notes%2Fplan']);
   });
 });
 

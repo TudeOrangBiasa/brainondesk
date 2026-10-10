@@ -9,7 +9,7 @@
 ;      duplicates. WM_SETTINGCHANGE broadcast so new shells pick it up
 ;      without relogin (cmd.exe sessions already open won't).
 ;
-;   2. openknowledge:// protocol (D2/Q8): HKCU\Software\Classes keys.
+;   2. brainondesk:// protocol (D2/Q8): HKCU\Software\Classes keys.
 ;      electron-builder's `protocols` config is macOS-Info.plist-only, so
 ;      NSIS writes the registry shape here; the app also self-heals it at
 ;      startup via app.setAsDefaultProtocolClient (reclaim posture), so
@@ -65,13 +65,13 @@
     WriteRegExpandStr HKCU "Environment" "Path" "$0;$1"
   SendMessage ${HWND_BROADCAST} ${WM_WININICHANGE} 0 "STR:Environment" /TIMEOUT=5000
 
-  ; ---- openknowledge:// protocol (per-user, no elevation) ----
-  WriteRegStr HKCU "Software\Classes\openknowledge" "" "URL:OpenKnowledge"
-  WriteRegStr HKCU "Software\Classes\openknowledge" "URL Protocol" ""
-  WriteRegStr HKCU "Software\Classes\openknowledge\DefaultIcon" "" "$INSTDIR\${APP_EXECUTABLE_FILENAME},0"
-  WriteRegStr HKCU "Software\Classes\openknowledge\shell" "" "open"
-  WriteRegStr HKCU "Software\Classes\openknowledge\shell\open" "" "Open with ${PRODUCT_NAME}"
-  WriteRegStr HKCU "Software\Classes\openknowledge\shell\open\command" "" '"$INSTDIR\${APP_EXECUTABLE_FILENAME}" "%1"'
+  ; ---- brainondesk:// protocol (per-user, no elevation) ----
+  WriteRegStr HKCU "Software\Classes\brainondesk" "" "URL:BrainOnDesk"
+  WriteRegStr HKCU "Software\Classes\brainondesk" "URL Protocol" ""
+  WriteRegStr HKCU "Software\Classes\brainondesk\DefaultIcon" "" "$INSTDIR\${APP_EXECUTABLE_FILENAME},0"
+  WriteRegStr HKCU "Software\Classes\brainondesk\shell" "" "open"
+  WriteRegStr HKCU "Software\Classes\brainondesk\shell\open" "" "Open with ${PRODUCT_NAME}"
+  WriteRegStr HKCU "Software\Classes\brainondesk\shell\open\command" "" '"$INSTDIR\${APP_EXECUTABLE_FILENAME}" "%1"'
 !macroend
 
 !macro customUnInstall
@@ -101,11 +101,11 @@
     SendMessage ${HWND_BROADCAST} ${WM_WININICHANGE} 0 "STR:Environment" /TIMEOUT=5000
 un_path_done:
 
-  ; ---- openknowledge:// protocol keys ----
+  ; ---- brainondesk:// protocol keys ----
   ; Only drop the class if it still points at this install — a later
   ; reinstall elsewhere (or another channel) may own it now.
-  ReadRegStr $0 HKCU "Software\Classes\openknowledge\shell\open\command" ""
+  ReadRegStr $0 HKCU "Software\Classes\brainondesk\shell\open\command" ""
   ${UnStrStr} $1 "$0" "$INSTDIR"
   StrCmp $1 "" +2
-    DeleteRegKey HKCU "Software\Classes\openknowledge"
+    DeleteRegKey HKCU "Software\Classes\brainondesk"
 !macroend

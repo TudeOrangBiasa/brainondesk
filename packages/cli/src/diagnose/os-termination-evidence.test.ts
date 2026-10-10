@@ -590,7 +590,7 @@ describe('Windows event log collection', () => {
     expect(windowsEventLogArgs('Application')).toEqual([
       'qe',
       'Application',
-      "/q:*[System[(EventID=1000 or EventID=1001 or EventID=1002) and TimeCreated[timediff(@SystemTime) <= 604800000]] and EventData[Data='OpenKnowledge.exe' or Data='OpenKnowledge Beta.exe']]",
+      "/q:*[System[(EventID=1000 or EventID=1001 or EventID=1002) and TimeCreated[timediff(@SystemTime) <= 604800000]] and EventData[Data='BrainOnDesk.exe' or Data='OpenKnowledge Beta.exe']]",
       '/f:xml',
       '/rd:true',
       '/c:200',

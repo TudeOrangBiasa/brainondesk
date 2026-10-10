@@ -1,6 +1,6 @@
-appId: com.inkeep.open-knowledge
-productName: OpenKnowledge
-copyright: Copyright © 2026 Inkeep
+appId: io.github.tudeorangbiasa.brainondesk
+productName: BrainOnDesk
+copyright: Copyright © 2026 Inkeep, TudeOrangBiasa
 
 # Pin the Electron version explicitly — under pnpm's isolated node_modules
 # layout electron-builder's auto-version-detection walks the package manifest
@@ -335,7 +335,7 @@ mac:
     # without this key the dialog still appears, having fallen back to the
     # stock Electron string, and misdescribes what is being granted.
     NSMicrophoneUsageDescription: >-
-      A program running in OpenKnowledge's terminal wants to use the microphone.
+      A program running in BrainOnDesk's terminal wants to use the microphone.
   # Notarization runs in `scripts/afterSign.mjs` per spec §8.9 (custom afterSign
   # pipeline). electron-builder's built-in notarize runs whenever this key is
   # not `false` and APPLE_* credentials are set, so leaving it unset notarizes
@@ -354,7 +354,7 @@ mac:
   #   `<productName> Helper`; see `build/helper-bundle/Info.plist`.
   extraFiles:
     - from: build/helper-bundle/Info.plist
-      to: Frameworks/OpenKnowledge Server.app/Contents/Info.plist
+      to: Frameworks/BrainOnDesk Server.app/Contents/Info.plist
 
 dmg:
   # `dmg.sign` defaults to false in electron-builder 26 and dmg-builder signs
@@ -504,11 +504,11 @@ linux:
   # name) because three other artifacts embed it: resources/cli/bin/
   # ok-linux.sh ($ROOT_DIR/openknowledge), the deb maintainer scripts'
   # ${executable} macro, and the .desktop Exec/Icon lines.
-  executableName: openknowledge
+  executableName: brainondesk
   # productivity → no direct freedesktop mapping; Office is the
   # conventional slot for knowledge/editor tools.
   category: Office
-  synopsis: Collaborative markdown knowledge base
+  synopsis: Local knowledge base and office editor with AI agents
   # deb only (integration-grade: .desktop protocol registration +
   # /usr/bin/ok symlink via postinst). electron-builder appends
   # MimeType=x-scheme-handler/openknowledge to the generated .desktop from
@@ -665,8 +665,8 @@ afterPack: scripts/afterPack.mjs
 afterSign: scripts/afterSign.mjs
 
 protocols:
-  - name: OpenKnowledge URL
-    schemes: [openknowledge]
+  - name: BrainOnDesk URL
+    schemes: [brainondesk]
     role: Editor
 
 # Finder "Open With → OpenKnowledge" for loose markdown files. `role: Editor`
@@ -683,8 +683,8 @@ fileAssociations:
 
 publish:
   - provider: github
-    owner: inkeep
-    repo: open-knowledge
+    owner: TudeOrangBiasa
+    repo: brainondesk
     # Stable defaults live here. `scripts/run-electron-builder.mjs` derives the
     # Beta product identity, protocol, icon, CLI integration, and
     # channel from `OK_DESKTOP_VARIANT` before invoking electron-builder.

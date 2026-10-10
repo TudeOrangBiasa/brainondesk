@@ -30,7 +30,7 @@ const DESKTOP_PRODUCT_VARIANTS = {
     name: 'stable',
     appId: DESKTOP_PRODUCTS.stable.appId,
     productName: DESKTOP_PRODUCTS.stable.productName,
-    artifactName: 'OpenKnowledge',
+    artifactName: 'BrainOnDesk',
     packageName: DESKTOP_PRODUCTS.stable.packageName,
     protocolScheme: DESKTOP_PRODUCTS.stable.protocolScheme,
     updateChannel: 'latest',

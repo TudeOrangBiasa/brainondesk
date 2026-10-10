@@ -2555,6 +2555,10 @@ msgstr "Odpowiedź o linkach zwrotnych nie miała oczekiwanego formatu."
 msgid "Base branch"
 msgstr "Gałąź bazowa"
 
+#: src/components/settings/AboutSection.tsx
+msgid "Based on OpenKnowledge by Inkeep (GPL-3.0)."
+msgstr ""
+
 #: src/components/settings/SettingsDialogShell.tsx
 msgctxt "settings search keyword"
 msgid "batch"

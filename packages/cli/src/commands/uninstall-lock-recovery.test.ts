@@ -78,7 +78,7 @@ describe.skipIf(process.platform === 'win32')('uninstall lock recovery in an iso
     'cleans global state with mixed lock residue (deinit selected=%s)',
     async (deinit) => {
       const home = join(root, 'home');
-      const settings = join(home, 'Library', 'Application Support', 'OpenKnowledge', 'state.json');
+      const settings = join(home, 'Library', 'Application Support', 'BrainOnDesk', 'state.json');
       const skill = join(home, '.ok', 'skills', 'mine', 'SKILL.md');
       write(settings, '{"recentProjects":[]}');
       write(join(home, '.ok', 'auth.yml'), 'fixture auth');

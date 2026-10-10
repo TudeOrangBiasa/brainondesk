@@ -25,8 +25,8 @@ function statForFile(path: string): DetectDeps['statSync'] {
   return (p) => (p === path ? { isFile: () => true, isDirectory: () => false } : null);
 }
 
-const APP_EXEC = '/Applications/OpenKnowledge.app/Contents/MacOS/OpenKnowledge';
-const HOME_EXEC = '/Users/andrew/Applications/OpenKnowledge.app/Contents/MacOS/OpenKnowledge';
+const APP_EXEC = '/Applications/BrainOnDesk.app/Contents/MacOS/BrainOnDesk';
+const HOME_EXEC = '/Users/andrew/Applications/BrainOnDesk.app/Contents/MacOS/BrainOnDesk';
 const BETA_APP_EXEC = '/Applications/OpenKnowledge Beta.app/Contents/MacOS/OpenKnowledge Beta';
 const HOME_BETA_APP_EXEC =
   '/Users/andrew/Applications/OpenKnowledge Beta.app/Contents/MacOS/OpenKnowledge Beta';
@@ -56,10 +56,10 @@ describe('detectDesktop — platform gate (FR10)', () => {
 
 describe('detectDesktop — Windows/Linux install resolution', () => {
   const WIN_EXE =
-    'C:\\Users\\u\\AppData\\Local\\Programs\\@inkeepopen-knowledge-desktop\\OpenKnowledge.exe';
+    'C:\\Users\\u\\AppData\\Local\\Programs\\@inkeepopen-knowledge-desktop\\BrainOnDesk.exe';
   const BETA_WIN_EXE =
     'C:\\Users\\u\\AppData\\Local\\Programs\\openknowledge-beta-desktop\\OpenKnowledge Beta.exe';
-  const DEB_EXE = '/opt/OpenKnowledge/openknowledge';
+  const DEB_EXE = '/opt/BrainOnDesk/brainondesk';
   const BETA_DEB_EXE = '/opt/OpenKnowledge Beta/openknowledge-beta';
 
   test('win32: %LOCALAPPDATA% per-user install → available', () => {
@@ -185,13 +185,13 @@ describe('detectDesktop — bundle resolution (FR10 D2 a/b/c)', () => {
     const result = detectDesktop(baseDeps({ statSync: statForFile(APP_EXEC) }));
     expect(result.available).toBe(true);
     expect(result.reason).toBe('available');
-    expect(result.bundlePath).toBe('/Applications/OpenKnowledge.app');
+    expect(result.bundlePath).toBe('/Applications/BrainOnDesk.app');
   });
 
   test('darwin + bundle only in ~/Applications → available, home path', () => {
     const result = detectDesktop(baseDeps({ statSync: statForFile(HOME_EXEC) }));
     expect(result.available).toBe(true);
-    expect(result.bundlePath).toBe('/Users/andrew/Applications/OpenKnowledge.app');
+    expect(result.bundlePath).toBe('/Users/andrew/Applications/BrainOnDesk.app');
   });
 
   test('darwin + only Beta in /Applications → available', () => {
@@ -210,7 +210,7 @@ describe('detectDesktop — bundle resolution (FR10 D2 a/b/c)', () => {
     const result = detectDesktop(
       baseDeps({ statSync: (path) => (installed.has(path) ? { isFile: () => true } : null) }),
     );
-    expect(result.bundlePath).toBe('/Applications/OpenKnowledge.app');
+    expect(result.bundlePath).toBe('/Applications/BrainOnDesk.app');
   });
 
   test('darwin + no bundle → no-bundle', () => {
@@ -222,12 +222,12 @@ describe('detectDesktop — bundle resolution (FR10 D2 a/b/c)', () => {
     const result = detectDesktop(
       baseDeps({
         env: { ELECTRON_RUN_AS_NODE: '1' },
-        execPath: '/Applications/OpenKnowledge.app/Contents/MacOS/OpenKnowledge',
+        execPath: '/Applications/BrainOnDesk.app/Contents/MacOS/BrainOnDesk',
         statSync: () => null,
       }),
     );
     expect(result.available).toBe(true);
-    expect(result.bundlePath).toBe('/Applications/OpenKnowledge.app');
+    expect(result.bundlePath).toBe('/Applications/BrainOnDesk.app');
   });
 
   test('bundled-CLI introspection reports the Beta product for the Beta bundle', () => {
@@ -251,7 +251,7 @@ describe('detectDesktop — bundle resolution (FR10 D2 a/b/c)', () => {
       }),
     );
     expect(result.available).toBe(true);
-    expect(result.bundlePath).toBe('/Applications/OpenKnowledge.app');
+    expect(result.bundlePath).toBe('/Applications/BrainOnDesk.app');
   });
 
   test('stat throws unexpectedly → no-bundle (probeBundle catches before reason can bubble)', () => {
@@ -321,13 +321,13 @@ describe('detectDesktop — unsupported channel override', () => {
     expect(result).toEqual({
       available: true,
       reason: 'available',
-      bundlePath: '/Applications/OpenKnowledge.app',
+      bundlePath: '/Applications/BrainOnDesk.app',
       product: 'stable',
       cliProduct: 'stable',
     });
     expect(warn).toHaveBeenCalledTimes(1);
     expect(warn).toHaveBeenCalledWith(
-      `Treating this CLI as OpenKnowledge (Stable) for this command: Unsupported ${OK_CHANNEL_ENV}="nightly". Expected stable or beta.`,
+      `Treating this CLI as BrainOnDesk (Stable) for this command: Unsupported ${OK_CHANNEL_ENV}="nightly". Expected stable or beta.`,
     );
   });
 
@@ -363,13 +363,13 @@ describe('detectDesktop — unsupported channel override', () => {
 
 describe('detectDesktop — headless gate (FR9 — CI is intentionally NOT a trigger)', () => {
   const WIN_EXE =
-    'C:\\Users\\u\\AppData\\Local\\Programs\\@inkeepopen-knowledge-desktop\\OpenKnowledge.exe';
+    'C:\\Users\\u\\AppData\\Local\\Programs\\@inkeepopen-knowledge-desktop\\BrainOnDesk.exe';
 
   test('isTTY=false → headless', () => {
     const result = detectDesktop(baseDeps({ isTTY: false, statSync: statForFile(APP_EXEC) }));
     expect(result.available).toBe(false);
     expect(result.reason).toBe('headless');
-    expect(result.bundlePath).toBe('/Applications/OpenKnowledge.app');
+    expect(result.bundlePath).toBe('/Applications/BrainOnDesk.app');
   });
 
   test('isTTY=undefined → headless (treated as false)', () => {
@@ -496,18 +496,18 @@ describe('launchDesktop — spawn shape (FR11)', () => {
       {
         available: true,
         reason: 'available',
-        bundlePath: '/Applications/OpenKnowledge.app',
+        bundlePath: '/Applications/BrainOnDesk.app',
         product: 'stable',
         cliProduct: 'stable',
       },
     );
 
     expect(captured.command).toBe('open');
-    expect(captured.args).toEqual(['-a', '/Applications/OpenKnowledge.app']);
+    expect(captured.args).toEqual(['-a', '/Applications/BrainOnDesk.app']);
     expect(captured.opts?.detached).toBe(true);
     expect(captured.opts?.stdio).toBe('ignore');
     expect(unrefCalled).toBe(true);
-    expect(logged).toContain('Launching OpenKnowledge desktop');
+    expect(logged).toContain('Launching BrainOnDesk desktop');
     expect(logged).toContain('OK_FORCE_BROWSER=1');
     expect(logged).toContain('ok start');
   });
@@ -539,7 +539,7 @@ describe('launchDesktop — spawn shape (FR11)', () => {
     launchDesktop({ spawn: fakeSpawn, log: (m) => (logged = m), platform: 'darwin' }, detection);
 
     expect(detection).toMatchObject({ product: 'stable', cliProduct: 'beta' });
-    expect(logged).toContain('Launching OpenKnowledge desktop');
+    expect(logged).toContain('Launching BrainOnDesk desktop');
     expect(logged).toContain('`ok-beta start`');
   });
 
@@ -573,8 +573,8 @@ describe('launchDesktop — spawn shape (FR11)', () => {
 
       const exe =
         platform === 'win32'
-          ? 'C:\\Users\\u\\AppData\\Local\\Programs\\@inkeepopen-knowledge-desktop\\OpenKnowledge.exe'
-          : '/opt/OpenKnowledge/openknowledge';
+          ? 'C:\\Users\\u\\AppData\\Local\\Programs\\@inkeepopen-knowledge-desktop\\BrainOnDesk.exe'
+          : '/opt/BrainOnDesk/brainondesk';
       launchDesktop(
         { spawn: fakeSpawn, log: () => {}, platform },
         {
@@ -609,7 +609,7 @@ describe('launchDesktop — spawn shape (FR11)', () => {
         {
           available: true,
           reason: 'available',
-          bundlePath: '/Applications/OpenKnowledge.app',
+          bundlePath: '/Applications/BrainOnDesk.app',
           product: 'stable',
           cliProduct: 'stable',
         },
@@ -624,7 +624,7 @@ describe('launchDesktop — spawn shape (FR11)', () => {
   });
 
   test('uses bundle ID com.inkeep.open-knowledge (matches electron-builder appId)', () => {
-    expect(DESKTOP_BUNDLE_ID).toBe('com.inkeep.open-knowledge');
+    expect(DESKTOP_BUNDLE_ID).toBe('io.github.tudeorangbiasa.brainondesk');
   });
 });
 

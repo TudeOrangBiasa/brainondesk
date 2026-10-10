@@ -2551,6 +2551,10 @@ msgstr "बैकलिंक प्रतिक्रिया अपेक्�
 msgid "Base branch"
 msgstr "आधार ब्रांच"
 
+#: src/components/settings/AboutSection.tsx
+msgid "Based on OpenKnowledge by Inkeep (GPL-3.0)."
+msgstr ""
+
 #: src/components/settings/SettingsDialogShell.tsx
 msgctxt "settings search keyword"
 msgid "batch"

@@ -91,7 +91,7 @@ describe('ok-linux.sh wrapper', () => {
     expect(result.status).toBe(69);
     const lines = result.stderr.trimEnd().split('\n');
     expect(lines).toHaveLength(2);
-    expect(lines[0]).toBe('OpenKnowledge has been removed. Reinstall the OpenKnowledge package.');
+    expect(lines[0]).toBe('BrainOnDesk has been removed. Reinstall the BrainOnDesk package.');
     const parsed = JSON.parse(lines[1] ?? '');
     expect(parsed.error).toBe('ok-bundle-missing');
   });

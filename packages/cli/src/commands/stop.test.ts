@@ -204,7 +204,7 @@ describe('runStop channel guard', () => {
     const { outcome, killed, errors } = run('stable');
     expect((await outcome).declined).toEqual({ otherChannel: 'stable' });
     expect(killed).toEqual([]);
-    expect(errors[0]).toContain('OpenKnowledge (Stable)');
+    expect(errors[0]).toContain('BrainOnDesk (Stable)');
     expect(errors[0]).toContain('--force');
   });
 

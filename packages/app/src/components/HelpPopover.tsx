@@ -52,7 +52,7 @@ const sections: ResourceSection[] = [
     heading: msg`Resources`,
     links: [
       { label: msg`Docs`, href: DOCS_URL, icon: BookOpen },
-      { label: msg`Download app`, href: 'https://openknowledge.ai/download', icon: Download },
+      { label: msg`Download app`, href: `${GITHUB_REPO_URL}/releases`, icon: Download },
     ],
   },
   {

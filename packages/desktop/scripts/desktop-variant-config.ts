@@ -168,19 +168,19 @@ export function createVariantNsisInclude(source: string, variantName: DesktopVar
   const variant = DESKTOP_VARIANTS[variantName];
   const withScheme = replaceAllRequired(
     source,
-    'openknowledge://',
+    'brainondesk://',
     `${variant.protocolScheme}://`,
     'the openknowledge:// URL scheme in build/installer.nsh',
   );
   const withRegistryKey = replaceAllRequired(
     withScheme,
-    'Software\\Classes\\openknowledge',
+    'Software\\Classes\\brainondesk',
     `Software\\Classes\\${variant.protocolScheme}`,
     'the openknowledge registry key in build/installer.nsh',
   );
   return replaceAllRequired(
     withRegistryKey,
-    'URL:OpenKnowledge',
+    'URL:BrainOnDesk',
     `URL:${variant.productName}`,
     'the OpenKnowledge protocol label in build/installer.nsh',
   );
@@ -225,19 +225,19 @@ export function createVariantHelperInfo(source: string, variantName: DesktopVari
   const variant = DESKTOP_VARIANTS[variantName];
   const withAppId = replaceAllRequired(
     source,
-    'com.inkeep.open-knowledge.server',
+    'io.github.tudeorangbiasa.brainondesk.server',
     `${variant.appId}.server`,
     'the helper bundle identifier in build/helper-bundle/Info.plist',
   );
   const withServerName = replaceAllRequired(
     withAppId,
-    'OpenKnowledge Server',
+    'BrainOnDesk Server',
     `${variant.productName} Server`,
     'the helper bundle name in build/helper-bundle/Info.plist',
   );
   return replaceAllRequired(
     withServerName,
-    'OpenKnowledge Helper',
+    'BrainOnDesk Helper',
     `${variant.productName} Helper`,
     'the helper executable name in build/helper-bundle/Info.plist',
   );

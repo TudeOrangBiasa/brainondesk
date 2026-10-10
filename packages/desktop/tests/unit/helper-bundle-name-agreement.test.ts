@@ -30,7 +30,7 @@ function extractPlistString(content: string, key: string): string | null {
   return content.match(re)?.[1] ?? null;
 }
 
-const ELECTRON_BUILDER_PRODUCT_NAME = 'OpenKnowledge';
+const ELECTRON_BUILDER_PRODUCT_NAME = 'BrainOnDesk';
 
 describe('helper-bundle name agreement across spawn site / Info.plist / afterPack', () => {
   test('CFBundleExecutable in Info.plist matches HELPER_EXECUTABLE_NAME in @inkeep/open-knowledge-core', () => {

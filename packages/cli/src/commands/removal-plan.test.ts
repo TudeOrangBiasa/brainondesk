@@ -64,10 +64,10 @@ function seedHome(home: string): void {
   write(join(home, '.ok', 'logs', 'server.jsonl'), '{}\n');
   write(join(home, '.ok', 'skills', 'my-note-skill', 'SKILL.md'), '# mine\n');
   write(
-    join(home, 'Library', 'Application Support', 'OpenKnowledge', 'state.json'),
+    join(home, 'Library', 'Application Support', 'BrainOnDesk', 'state.json'),
     JSON.stringify({ recentProjects: [] }),
   );
-  write(join(home, 'Library', 'Application Support', 'OpenKnowledge', 'path-install.json'), '{}');
+  write(join(home, 'Library', 'Application Support', 'BrainOnDesk', 'path-install.json'), '{}');
   write(
     join(home, 'Library', 'Application Support', 'Open Knowledge', 'state.json'),
     JSON.stringify({ theirData: true }),
@@ -155,7 +155,7 @@ describe('buildUninstallPlan ordering', () => {
       home: '/Users/x',
       env: {},
       expected: [
-        '/Users/x/Library/Application Support/OpenKnowledge',
+        '/Users/x/Library/Application Support/BrainOnDesk',
         '/Users/x/Library/Application Support/Open Knowledge',
         `/Users/x/Library/Caches/${DESKTOP_UPDATER_CACHE_DIR_NAME}`,
       ],
@@ -168,7 +168,7 @@ describe('buildUninstallPlan ordering', () => {
         LOCALAPPDATA: 'C:\\Users\\x\\AppData\\Local',
       },
       expected: [
-        'C:\\Users\\x\\AppData\\Roaming\\OpenKnowledge',
+        'C:\\Users\\x\\AppData\\Roaming\\BrainOnDesk',
         `C:\\Users\\x\\AppData\\Local\\${DESKTOP_UPDATER_CACHE_DIR_NAME}`,
       ],
     },
@@ -176,7 +176,7 @@ describe('buildUninstallPlan ordering', () => {
       platform: 'linux' as const,
       home: '/home/x',
       env: { XDG_CONFIG_HOME: '/xdg/config', XDG_CACHE_HOME: '/xdg/cache' },
-      expected: ['/xdg/config/OpenKnowledge', `/xdg/cache/${DESKTOP_UPDATER_CACHE_DIR_NAME}`],
+      expected: ['/xdg/config/BrainOnDesk', `/xdg/cache/${DESKTOP_UPDATER_CACHE_DIR_NAME}`],
     },
   ])('plans only owned desktop data on $platform', ({ platform, home, env, expected }) => {
     const applicationData = applicationDataOps(home, platform, env);
@@ -202,14 +202,14 @@ describe('buildUninstallPlan ordering', () => {
 
     const human = formatRemovalPlan(plan);
     expect(human).toContain('Application data:');
-    expect(human).toContain('Remove ~/.config/OpenKnowledge');
+    expect(human).toContain('Remove ~/.config/BrainOnDesk');
     expect(human).toContain(`Remove ~/.cache/${DESKTOP_UPDATER_CACHE_DIR_NAME}`);
 
     const json = removalPlanToJson(plan);
     expect(json.mode).toBe('dry-run');
     expect(json.planned.map((item) => item.label)).toEqual(
       expect.arrayContaining([
-        'Remove ~/.config/OpenKnowledge',
+        'Remove ~/.config/BrainOnDesk',
         `Remove ~/.cache/${DESKTOP_UPDATER_CACHE_DIR_NAME}`,
       ]),
     );
@@ -413,7 +413,7 @@ describe('runRemoval — uninstall end to end', () => {
       expect(existsSync(join(home, '.ok', 'logs'))).toBe(false);
       expect(existsSync(join(home, '.ok', 'skills', 'my-note-skill', 'SKILL.md'))).toBe(true);
 
-      expect(existsSync(join(home, 'Library', 'Application Support', 'OpenKnowledge'))).toBe(false);
+      expect(existsSync(join(home, 'Library', 'Application Support', 'BrainOnDesk'))).toBe(false);
       expect(existsSync(join(home, 'Library', 'Application Support', 'Open Knowledge'))).toBe(true);
       expect(existsSync(join(home, 'Library', 'Caches', DESKTOP_UPDATER_CACHE_DIR_NAME))).toBe(
         false,
@@ -1254,7 +1254,7 @@ describe('safe uninstall cleanup', () => {
         expect(readFileSync(join(blocked, '.mcp.json'), 'utf-8')).toContain(MCP_SERVER_NAME);
         expect(existsSync(join(home, '.ok', 'auth.yml'))).toBe(true);
         expect(
-          existsSync(join(home, 'Library', 'Application Support', 'OpenKnowledge', 'state.json')),
+          existsSync(join(home, 'Library', 'Application Support', 'BrainOnDesk', 'state.json')),
         ).toBe(true);
         expect(existsSync(join(independent, '.ok'))).toBe(false);
         expect(outcome.failed.length).toBeGreaterThan(0);
@@ -1356,7 +1356,7 @@ describe('uninstall owns only its own channel', () => {
           'Remove ~/.ok (keeping ~/.ok/machine-id, ~/.ok/skills, ~/.ok/skills-lock.json, ~/.ok/local/installed-skills.json, ~/.ok/local/skill-placements.json, ~/.ok/local/skill-move-retained.json, ~/.ok/local/server-authority.sqlite, ~/.ok/local/server-authority.sqlite-journal, ~/.ok/local/server-authority-leases, shared by every channel)',
       });
       const paths = planPaths(plan.ops);
-      expect(paths).toContain(join(home, 'Library', 'Application Support', 'OpenKnowledge'));
+      expect(paths).toContain(join(home, 'Library', 'Application Support', 'BrainOnDesk'));
       expect(paths).toContain(join(home, 'Library', 'Caches', DESKTOP_UPDATER_CACHE_DIR_NAME));
       expect(paths.filter((p) => relative(home, p).toLowerCase().includes('beta'))).toEqual([]);
 
