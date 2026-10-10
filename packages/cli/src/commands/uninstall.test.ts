@@ -89,12 +89,7 @@ describe('detectInstallMethods', () => {
 
   test('detects the Windows NSIS install and points at Settings → Apps', () => {
     const localAppData = 'C:\\Users\\Jane\\AppData\\Local';
-    const exe = join(
-      localAppData,
-      'Programs',
-      '@inkeepopen-knowledge-desktop',
-      'BrainOnDesk.exe',
-    );
+    const exe = join(localAppData, 'Programs', '@inkeepopen-knowledge-desktop', 'BrainOnDesk.exe');
     const methods = detectInstallMethods(
       'C:\\Users\\Jane',
       undefined,

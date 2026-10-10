@@ -140,7 +140,7 @@ describe('drift copy', () => {
     expect(
       restartFailureMessage({ ok: false, reason: 'other-channel', holderChannel: 'stable' }),
     ).toBe(
-      "OpenKnowledge (Stable) is serving this project, so this app won't stop it. Close this window and open the project again to stop OpenKnowledge (Stable)'s server and open the project here.",
+      "BrainOnDesk (Stable) is serving this project, so this app won't stop it. Close this window and open the project again to stop BrainOnDesk (Stable)'s server and open the project here.",
     );
   });
 });
