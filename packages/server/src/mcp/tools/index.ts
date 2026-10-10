@@ -16,6 +16,7 @@ import { register as registerInstall } from './install.ts';
 import { register as registerLinks } from './links.ts';
 import { register as registerLint } from './lint.ts';
 import { register as registerMove } from './move.ts';
+import { registerOfficeTools as registerOffice } from './office.ts';
 import { register as registerPalette } from './palette.ts';
 import { register as registerRestoreVersion } from './restore-version.ts';
 import { register as registerSearch } from './search.ts';
@@ -175,5 +176,10 @@ export function registerAllTools(server: ServerInstance, opts: RegisterAllToolsO
     serverUrl: opts.serverUrl,
     config: opts.config,
     resolveCwd: named('share_link'),
+  });
+  registerOffice(registrationServer, {
+    config: opts.config,
+    resolveCwd: named('office_echo'),
+    identityRef: opts.identityRef,
   });
 }

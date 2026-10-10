@@ -22,7 +22,7 @@ OpenKnowledge (OK) is a markdown-CRDT collaboration platform exposed via MCP. Th
 4. **Direct questions:** a plain business question ("which customers…", "what did we decide about…") routes to `search` / `exec` + a cited chat answer — no "research" keyword needed. Persist only when durable + multi-doc + not already covered, and *offer* first. See `references/corpus-qa.md`.
 5. **Authoring or improving a skill** ("write/make/improve a skill", "turn this into a skill"): STOP and invoke **`/open-knowledge-write-skill`** for scope (project/global), contract, evaluation, and install. Author through `write({ skill })`, never a document path. Skills are real folders under editor `skills/` dirs (`.claude` · `.cursor` · `.codex` · `.github` · `.opencode` · `.pi` · `.agents`): one source plus managed copies/symlinks. **Read/edit via `skills` and `edit({ skill })` — they route to the source.** Never hand-edit a non-source copy: recorded, unedited copies refresh from the source when the skill watcher runs or the server starts, so a source edit can precede the refresh. Editing a copy directly forks it and stops refresh.
 
-## Tool index — 19 tools (router; calling contracts live in tool descriptions and input schemas)
+## Tool index — 21 tools (router; calling contracts live in tool descriptions and input schemas)
 
 - `exec` — read files and directories with document context.
 - `search` — retrieve ranked workspace matches.
@@ -43,6 +43,8 @@ OpenKnowledge (OK) is a markdown-CRDT collaboration platform exposed via MCP. Th
 - `config` — read resolved configuration.
 - `preview_url` — get the browser preview URL.
 - `share_link` — get a GitHub-backed sharing link.
+- `office_echo` — relay a call to the live tab editing an open office file.
+- `office_list_open` — list office files open in live app tabs.
 
 **Read `ran`** on successful lint/audit results: a family absent from `ran` was not checked, and `[]` means no checks were selected. For link VALIDATION use audit; links reports relationships and raw dead-link state. Caveats: `references/linking.md`.
 
