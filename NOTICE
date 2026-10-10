@@ -1,0 +1,36 @@
+BrainOnDesk
+Copyright 2026 TudeOrangBiasa and BrainOnDesk contributors
+
+BrainOnDesk is a fork of OpenKnowledge (https://github.com/inkeep/open-knowledge),
+Copyright Inkeep, Inc., licensed under the GNU General Public License v3.0 or
+later. BrainOnDesk as a whole is distributed under GPL-3.0-or-later; see
+LICENSE. "OpenKnowledge" and "Inkeep" are names of their respective owners and
+are used here only to credit the upstream project.
+
+------------------------------------------------------------------------------
+Components ported from AugmentOffice / GenOffice (Apache-2.0)
+------------------------------------------------------------------------------
+
+Office editor code (docs, sheets, slides, pdf and their engines) is ported
+from AugmentOffice (https://github.com/TudeOrangBiasa/augmentoffice), a fork of
+GenOffice (https://github.com/genspark-ai/genoffice). Those files remain under
+the Apache License, Version 2.0 (LICENSES/Apache-2.0.txt), carry an
+"SPDX-License-Identifier: Apache-2.0" header, and are listed with their source
+commit and modifications in the UPSTREAM.md file of the package that contains
+them. The following notice is reproduced from GenOffice as required by
+Section 4(d) of the Apache License:
+
+    GenOffice
+    Copyright 2026 Mainfunc, Inc.
+
+    This product includes software developed at Mainfunc, Inc.
+
+Files derived from apps/pdf/src/shared/radicals.ts contain a generated mapping
+derived from the Unicode Character Database 17.0.0,
+EquivalentUnifiedIdeograph.txt (2025-08-01):
+https://www.unicode.org/Public/17.0.0/ucd/EquivalentUnifiedIdeograph.txt
+Copyright (c) 1991-2026 Unicode, Inc. This data is distributed under the
+Unicode License v3; see LICENSES/Unicode-3.0.txt.
+
+Third-party packages bundled into the application are listed in
+THIRD_PARTY_NOTICES.md.
