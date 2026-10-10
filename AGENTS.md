@@ -1,6 +1,19 @@
-# OpenKnowledge Agent Guide
+# BrainOnDesk Agent Guide
 
-This is the public OpenKnowledge repository. Keep changes compatible with the published package and standalone clone experience.
+This is BrainOnDesk, a GPL-3.0 fork of OpenKnowledge focused on a local-first desktop app with office editors. Package names still use `@inkeep/open-knowledge-*` until the rebrand ticket changes them.
+
+## Verification gate (required)
+
+Every PR must pass the `verify` GitHub Actions check before it can merge. Agents must:
+
+1. Run `pnpm verify` locally and get `verify: all gates passed` before pushing. It mirrors CI: frozen install, PR policy, gitleaks (if installed), lint, typecheck, unit tests for core/app/desktop, and the desktop bundle build. Set `VERIFY_SKIP_INSTALL=1` to skip the install step on reruns.
+2. Title the PR as a Conventional Commit (`feat(office): ...`, `fix(core): ...`, `ci: ...`).
+3. Put `Closes #N` in the PR body. Use the `no-issue` label only when Tude asks for a PR without an issue.
+4. Fill in the checklist in `.github/pull_request_template.md`, including the verify evidence.
+5. Not edit protected paths (`.github/workflows/`, `.github/actions/`, `.github/CODEOWNERS`, `LICENSE*`, `LICENSES/`, `NOTICE*`, `*.upstream` license files, `THIRD_PARTY_NOTICES.md`, `scripts/verify.sh`, `scripts/check-pr-policy.mjs`) unless the task says so. Those PRs need the `protected-paths-ok` label, which only Tude adds after review. Never add that label yourself.
+6. Open PRs as drafts, never merge, and never weaken a gate to get green: fix the cause, or report the failure with its log.
+
+Details and the reasoning behind each gate: [docs/office/CI.md](./docs/office/CI.md).
 
 ## Start Here
 
@@ -76,12 +89,11 @@ If `pnpm run lint` fails on a comment, the diagnostic names the class, the fix, 
 
 Shell scripts are declared in scope by `no-comments.config.jsonc`, but the sweep that reads the hash grammars is not part of this mirror, so `pnpm run lint` here checks the JavaScript and TypeScript families only. A `.sh` file is gated upstream; the same policy applies to it, and a reviewer will hold it to that.
 
-## Public Mirror Rules
+## Fork Rules
 
-- This repo is generated from an allowlist. Do not rely on hidden source-only folders being present.
-- Public PRs are reviewed by maintainers and accepted changes sync back here automatically. A PR may close rather than show as merged; that is expected for this mirror.
-- Top-level public docs such as `README.md`, `CONTRIBUTING.md`, and `AGENTS.md` are overlay files. Keep them public-safe and standalone.
-- Do not add secrets, private customer context, internal-only specs, local paths, or generated debug artifacts.
+- Upstream OpenKnowledge is generated from a private monorepo; some source-only folders referenced by tooling are absent here. Do not rely on them.
+- PRs merge normally on `main` of this fork. Nothing syncs back to Inkeep automatically, and nothing here may call Inkeep services, secrets, or release infrastructure.
+- Do not add secrets, private customer context, internal-only specs, local paths, or generated debug artifacts. CI runs gitleaks on every PR.
 - Keep dependency updates paired with `pnpm-lock.yaml`. Run `pnpm run notices` when third-party notices may change.
 
 ## Changesets
@@ -96,14 +108,16 @@ Every behavior-changing PR ships a `.changeset/<kebab-name>.md` file. The body b
 - Don't write inline references to sibling-package versions (e.g. `@inkeep/open-knowledge-core@0.5.0-beta.6`) — the fixed-group lock-step bumps are computed at release time and any number you'd write would be wrong.
 - Skip changesets for docs-only edits, test-only edits, or CI-only edits that don't change runtime behavior.
 
-Cadence: merging a PR with a changeset triggers a beta publish within minutes via the event-driven `release.yml` on the public mirror.
+This fork has no automated release pipeline; changesets are kept so release notes can be assembled when packaging starts.
 
 ## Before Finishing
 
 While iterating, run the tests for what you changed with `pnpm --dir packages/<pkg> run test`, plus `pnpm run lint` and `pnpm run typecheck`, widening to affected consumers for shared inputs. A red remains a blocker: diagnose it against the changed inputs, repair only an in-scope cause, and record an unrelated environment blocker with its log and owner. Then run:
 
 ```bash
-pnpm run check
+pnpm verify
 ```
+
+`pnpm run check` is the wider upstream suite (includes the slow server and CLI tests); run it when you change server or CLI code.
 
 For UI or editor changes, also run the affected package tests from `packages/app`.

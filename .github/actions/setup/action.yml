@@ -1,0 +1,43 @@
+name: setup
+description: Node from .node-version, pnpm via corepack, cached pnpm store and Turbo cache, frozen install.
+
+inputs:
+  turbo-cache-key:
+    description: Job-specific prefix for the Turbo cache entry.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version-file: .node-version
+
+    - name: Enable corepack
+      shell: bash
+      run: |
+        corepack enable
+        pnpm --version
+        echo "PNPM_STORE=$(pnpm store path --silent)" >> "$GITHUB_ENV"
+
+    - name: Cache pnpm store
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ env.PNPM_STORE }}
+        key: pnpm-store-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+        restore-keys: pnpm-store-${{ runner.os }}-
+
+    - name: Cache Turbo
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: .turbo/cache
+        key: turbo-${{ inputs.turbo-cache-key }}-${{ runner.os }}-${{ github.sha }}
+        restore-keys: turbo-${{ inputs.turbo-cache-key }}-${{ runner.os }}-
+
+    - name: Rust toolchain from rust-toolchain.toml
+      shell: bash
+      run: rustup show active-toolchain || rustup toolchain install
+
+    - name: Install
+      shell: bash
+      run: pnpm install --frozen-lockfile

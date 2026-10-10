@@ -1,9 +1,9 @@
-# Contributing to OpenKnowledge
+# Contributing to BrainOnDesk
 
-Thanks for contributing! Bug reports, feature requests, and pull requests are all welcome.
+BrainOnDesk is a community fork of [OpenKnowledge](https://github.com/inkeep/open-knowledge). Thanks for contributing! Bug reports, feature requests, and pull requests are all welcome.
 
-- **Found a bug or have an idea?** [Open an issue](https://github.com/inkeep/open-knowledge/issues/new/choose).
-- **Question or setup help?** Ask in [Discord](https://discord.gg/VRKk2EaGHN).
+- **Found a bug or have an idea?** [Open an issue](https://github.com/TudeOrangBiasa/brainondesk/issues/new/choose).
+- **Bug that also happens upstream?** Report it to [inkeep/open-knowledge](https://github.com/inkeep/open-knowledge/issues) as well.
 - **Ready to code?** Open a pull request against this repository.
 - **Read a language other than English?** Most of our interface translations are machine-translated and have never been read by a native speaker, and we ship them anyway rather than hide them from the people who could fix them. Correcting one is the most useful thing you can do for it — see [Translate the interface](https://openknowledge.ai/docs/contribute/translations).
 
@@ -75,19 +75,20 @@ If lint stops you, the diagnostic names the class of comment, the fix, and links
 
 ## Opening a pull request
 
-First-time contributors are asked to sign our [Contributor License Agreement](./CLA.md) — a bot comments a one-click signing link on your PR (Inkeep employees are exempt automatically). Please follow the checklist in our [Pull Request Template](./.github/PULL_REQUEST_TEMPLATE.md):
+There is no CLA in this fork. Every PR must pass the `verify` check (see [docs/office/CI.md](./docs/office/CI.md)); run `pnpm verify` locally first and follow the checklist in the [Pull Request Template](./.github/pull_request_template.md):
 
+- Use a Conventional Commit PR title (`feat(office): ...`, `fix(core): ...`) and link the issue with `Closes #N`.
 - Keep PRs focused and small enough to review.
 - Add tests — or a clear manual-verification note — for behavior changes.
 - Write no code comments outside the allowlist above — `pnpm run lint` fails on the rest.
 - Add a changeset by running `pnpm run changeset` if your pull request changes user-facing or programmatic behavior. Open Knowledge is pre-1.0, so a breaking change rides as `minor` and a `major` changeset is rejected — reaching 1.0.0 is a team decision, not one a single changeset makes.
-- Run `pnpm run check` and `pnpm run check:drift:guards` and confirm both pass.
+- Run `pnpm verify` and confirm it passes. `pnpm run check` runs the wider suite (including the slow server and CLI tests).
 - Commit `pnpm-lock.yaml` when dependencies change, and run `pnpm run notices` to refresh `THIRD_PARTY_NOTICES.md` if third-party packages changed.
 - Never include secrets, credentials, customer data, or local machine paths.
 - Enable **Allow edits from maintainers** so reviewers can push fixes to your branch.
 
-A maintainer will review your PR; if you don't hear back within a few business days, a friendly nudge on the thread is welcome. Accepted changes land on `main` with your authorship preserved (your PR may show as closed rather than merged).
+The maintainer reviews and merges; accepted PRs are merged normally on `main`.
 
 ## License
 
-By contributing, you agree that your work is licensed under the [GNU General Public License v3.0 or later](./LICENSE) (`GPL-3.0-or-later`), the same license as OpenKnowledge.
+By contributing, you agree that your work is licensed under the [GNU General Public License v3.0 or later](./LICENSE) (`GPL-3.0-or-later`), the same license as OpenKnowledge and BrainOnDesk.
