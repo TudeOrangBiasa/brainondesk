@@ -53,6 +53,7 @@ const entry = {
   'constants-product': 'src/constants/product.ts',
   'constants-skills': 'src/constants/skills.ts',
   'constants-uninstall-feedback': 'src/constants/uninstall-feedback.ts',
+  'constants-upload': 'src/constants/upload.ts',
   'office-doc-types': 'src/office/doc-types.ts',
   'extensions-code-block-fidelity': 'src/extensions/code-block-fidelity.ts',
   'extensions-footnote-reference': 'src/extensions/footnote-reference.ts',
