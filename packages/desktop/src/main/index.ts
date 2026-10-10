@@ -67,6 +67,7 @@ import {
   type UninstallScreenSpec,
   USER_SKILL_HOSTS,
 } from '@inkeep/open-knowledge-core';
+import { UPSTREAM_CLOUD_SERVICES_ENABLED } from '@inkeep/open-knowledge-core/constants/feature-flags';
 import type {
   OkTerminalDockStateWriteResult,
   OkTerminalRestartSnapshot,
@@ -1180,6 +1181,9 @@ const reducedTransparencyDeps: ReducedTransparencyDeps = {
     console.warn(line);
   },
 };
+const startAutoUpdater: typeof bootAutoUpdater = UPSTREAM_CLOUD_SERVICES_ENABLED
+  ? bootAutoUpdater
+  : async () => null;
 let autoUpdaterHandle: StartAutoUpdaterHandle | null = null;
 const updateNoticeSource = (): StartAutoUpdaterHandle | null =>
   app.isPackaged || process.env.OK_UPDATER_FORCE_DEV === '1' ? autoUpdaterHandle : null;
@@ -6727,7 +6731,7 @@ function bootPrimaryInstance(): void {
 
       maybeRunDesktopUninstallUiPreview();
 
-      autoUpdaterHandle = await bootAutoUpdater(() => import('electron-updater'), {
+      autoUpdaterHandle = await startAutoUpdater(() => import('electron-updater'), {
         logger: {
           info: (msg: string, ctx?: object) =>
             getLogger('updater').info((ctx ?? {}) as Record<string, unknown>, msg),

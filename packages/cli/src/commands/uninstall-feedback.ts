@@ -8,6 +8,7 @@ import {
   type UninstallFeedbackResult,
   type UninstallFeedbackSubmission,
 } from '@inkeep/open-knowledge-core';
+import { UPSTREAM_CLOUD_SERVICES_ENABLED } from '@inkeep/open-knowledge-core/constants/feature-flags';
 import select from '@inquirer/select';
 import { accent, dim } from '../ui/colors.ts';
 
@@ -85,6 +86,7 @@ export type UninstallFeedbackOutcome =
 export async function promptUninstallFeedback(
   deps: UninstallFeedbackPromptDeps,
 ): Promise<UninstallFeedbackOutcome> {
+  if (deps.submit === undefined && !UPSTREAM_CLOUD_SERVICES_ENABLED) return 'not-prompted';
   if (!shouldPromptUninstallFeedback(deps)) return 'not-prompted';
   let answers: UninstallFeedbackAnswers;
   try {

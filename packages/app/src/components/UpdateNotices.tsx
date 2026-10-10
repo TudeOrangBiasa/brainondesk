@@ -1,3 +1,4 @@
+import { UPSTREAM_CLOUD_SERVICES_ENABLED } from '@inkeep/open-knowledge-core/constants/feature-flags';
 // oxlint-disable ok/no-raw-html-interactive-element -- pre-rule backlog — file uses raw <button>/<input>/<textarea> awaiting shadcn migration; tracked at https://github.com/inkeep/open-knowledge/blob/main/lint-plugins/ok-rules/README.md#no-raw-html-interactive-element
 
 // oxlint-disable ok/no-physical-direction-utility -- pre-rule backlog — physical margin/padding/inset utilities predate the rule; drain by swapping ml/mr → ms/me, pl/pr → ps/pe, left/right → start/end, then deleting this line. See https://github.com/inkeep/open-knowledge/blob/main/lint-plugins/ok-rules/README.md#no-physical-direction-utility
@@ -135,7 +136,7 @@ export function UpdateNotices(): ReactNode {
   const notices = useSyncExternalStore(subscribeToNotices, getNoticesSnapshot, getNoticesSnapshot);
   const active = pickActiveNotice(notices);
   if (!active) return null;
-  if (active.combinedSubscribe && active.whatsNew) {
+  if (UPSTREAM_CLOUD_SERVICES_ENABLED && active.combinedSubscribe && active.whatsNew) {
     return (
       <div data-testid="update-notices-list">
         <SubscribeCard

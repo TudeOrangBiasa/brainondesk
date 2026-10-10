@@ -451,7 +451,7 @@ export {
   type EmbeddedHost,
   UA_PATTERNS,
 } from './constants/embedded-host.ts';
-export { SHOW_INSTALL_SKILL } from './constants/feature-flags.ts';
+export { SHOW_INSTALL_SKILL, UPSTREAM_CLOUD_SERVICES_ENABLED } from './constants/feature-flags.ts';
 export type { OkFolderState } from './constants/folder-state.ts';
 export {
   classifyGitHubShareHost,

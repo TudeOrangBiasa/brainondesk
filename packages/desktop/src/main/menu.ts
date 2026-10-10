@@ -14,6 +14,7 @@ import {
   OPEN_KNOWLEDGE_GITHUB_URL,
   SHOW_INSTALL_SKILL,
   type TerminalPlacement,
+  UPSTREAM_CLOUD_SERVICES_ENABLED,
 } from '@inkeep/open-knowledge-core';
 import type { BrowserWindow, Dialog, MenuItemConstructorOptions } from 'electron';
 import type { EntryPoint } from '../shared/entry-point.ts';
@@ -357,6 +358,7 @@ function menuCommandContext(deps: MenuDeps): CommandContext {
     canCollapseAll: deps.canCollapseAll ?? true,
     hasActiveDoc: deps.activeTarget?.kind === 'doc',
     showInstallSkill: SHOW_INSTALL_SKILL,
+    upstreamCloudServices: UPSTREAM_CLOUD_SERVICES_ENABLED,
   };
 }
 

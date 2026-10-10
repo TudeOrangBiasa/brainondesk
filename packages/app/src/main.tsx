@@ -1,3 +1,4 @@
+import { UPSTREAM_CLOUD_SERVICES_ENABLED } from '@inkeep/open-knowledge-core/constants/feature-flags';
 import { initFrontendTelemetry } from './telemetry';
 
 initFrontendTelemetry();
@@ -154,7 +155,7 @@ createRoot(root).render(
           <TooltipProvider>
             <AppErrorBoundary>{selectDesktopRootApp(desktopBridge)}</AppErrorBoundary>
             {}
-            {desktopBridge !== undefined && (
+            {desktopBridge !== undefined && UPSTREAM_CLOUD_SERVICES_ENABLED && (
               <CrashReportingBoundary>
                 <ReportBugCrashInviteTrigger bridge={desktopBridge} />
               </CrashReportingBoundary>
