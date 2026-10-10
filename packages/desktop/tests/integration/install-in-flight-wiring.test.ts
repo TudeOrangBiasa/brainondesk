@@ -32,7 +32,7 @@ describe('install-in-flight death-span wiring (bypass-pin)', () => {
 
   test('the state snapshot is taken before the updater boots', () => {
     const snapshotAt = src.indexOf('const bootStateSnapshot = loadAppState()');
-    const updaterBootAt = src.indexOf('autoUpdaterHandle = await bootAutoUpdater(');
+    const updaterBootAt = src.indexOf('autoUpdaterHandle = await startAutoUpdater(');
     expect(
       snapshotAt,
       FIX(
@@ -42,9 +42,17 @@ describe('install-in-flight death-span wiring (bypass-pin)', () => {
     expect(
       updaterBootAt,
       FIX(
-        'index.ts no longer awaits bootAutoUpdater into autoUpdaterHandle, so this pin cannot see the ordering.',
+        'index.ts no longer awaits startAutoUpdater into autoUpdaterHandle, so this pin cannot see the ordering.',
       ),
     ).toBeGreaterThan(-1);
+    expect(
+      src,
+      FIX(
+        'index.ts no longer gates bootAutoUpdater behind UPSTREAM_CLOUD_SERVICES_ENABLED as startAutoUpdater.',
+      ),
+    ).toMatch(
+      /const startAutoUpdater: typeof bootAutoUpdater = UPSTREAM_CLOUD_SERVICES_ENABLED\s*\?\s*bootAutoUpdater\s*:\s*async \(\) => null;/,
+    );
     expect(
       snapshotAt,
       FIX(
