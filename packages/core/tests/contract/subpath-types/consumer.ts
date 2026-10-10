@@ -246,15 +246,6 @@ export type {
   VIDEO_EXTENSIONS,
   WIKI_EMBED_EXTENSIONS,
 } from '@inkeep/open-knowledge-core/constants/upload';
-export {
-  OFFICE_DOC_TYPES,
-  isOfficeDocFile,
-  officeDocTypeOf,
-} from '@inkeep/open-knowledge-core/office/doc-types';
-export type {
-  OfficeDocType,
-  OfficeDocTypeId,
-} from '@inkeep/open-knowledge-core/office/doc-types';
 export type { CodeBlockFidelity } from '@inkeep/open-knowledge-core/extensions/code-block-fidelity';
 export type {
   collectFootnoteIdentifiers,
@@ -505,6 +496,15 @@ export type {
   incrementJsxStuckDeleteFailed,
   JsxNodeAction,
 } from '@inkeep/open-knowledge-core/metrics/parse-health';
+export type {
+  OfficeDocType,
+  OfficeDocTypeId,
+} from '@inkeep/open-knowledge-core/office/doc-types';
+export {
+  isOfficeDocFile,
+  OFFICE_DOC_TYPES,
+  officeDocTypeOf,
+} from '@inkeep/open-knowledge-core/office/doc-types';
 export type { createRegistry } from '@inkeep/open-knowledge-core/registry';
 export type {
   JsxComponentMeta,
