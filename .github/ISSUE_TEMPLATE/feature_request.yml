@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for the suggestion! If this is an open-ended idea worth discussing, [Discord](https://discord.gg/VRKk2EaGHN) is often a better starting place.
+        Thanks for the suggestion! Check `docs/office/PLAN.md` and the open issues first; it may already be planned.
   - type: textarea
     id: problem
     attributes:
