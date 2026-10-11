@@ -18,7 +18,7 @@ BrainOnDesk adalah fork GPL dari [OpenKnowledge](https://github.com/inkeep/open-
 10. **Tanpa komentar kode** di luar allowlist (lihat [Code comments](#code-comments)), tanpa secret/data pribadi/path lokal, `pnpm-lock.yaml` ikut di-commit kalau dependency berubah, dan `pnpm run notices` kalau paket pihak ketiga berubah.
 11. **Kode port dari GenOffice** (Apache-2.0) bawa atribusi sesuai [docs/office/LICENSING.md](./docs/office/LICENSING.md).
 
-Changeset (`pnpm run changeset`) **tidak wajib**: fork ini belum punya pipeline rilis npm/desktop otomatis.
+Gak ada changeset: fork ini belum punya pipeline rilis npm/desktop, dan tooling changeset upstream sudah dihapus. Perubahan yang kelihatan user cukup ditulis di body PR.
 
 ## Development setup
 
@@ -74,7 +74,7 @@ pnpm run test         # tests
 pnpm run build        # build all packages
 pnpm verify           # the PR gate (see docs/TESTING.md)
 pnpm test:slow        # server, CLI and native-config tests (nightly in CI)
-pnpm run check:drift:guards  # unused deps/exports, generated-artifact freshness, toolchain pins (not part of `check`)
+pnpm run check:drift:guards  # generated-artifact freshness, i18n, toolchain pins (not part of `check`)
 ```
 
 Run a single package's scripts from its directory, e.g. `cd packages/app && pnpm run test`.

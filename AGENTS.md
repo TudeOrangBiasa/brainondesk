@@ -100,7 +100,7 @@ Shell scripts are declared in scope by `no-comments.config.jsonc`, but the sweep
 
 ## Changesets
 
-Not required in this fork: there is no npm or desktop release pipeline yet. The `.changeset/` folder and `pnpm run changeset` are upstream leftovers; do not add new files there unless a task asks for it.
+None. This fork has no npm or desktop release pipeline, and the upstream changeset tooling was removed. Describe user-visible changes in the PR body instead.
 
 ## Before Finishing
 

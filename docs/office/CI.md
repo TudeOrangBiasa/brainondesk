@@ -39,4 +39,7 @@ Server (~15 menit), CLI (~5 menit), native-config (cargo). Jalan tiap malam 19:0
 - Integrasi Inkeep: `linear-*`, `monorepo-pr-bridge`, `write-back`, `bug-lane*`, `share-contract-*` + composite action-nya, `stale`, `CLA.md`.
 - `.github/scripts/` (88 file helper untuk workflow di atas) dan tes path report DMG macOS yang mengimpornya.
 
-Masih ada, belum dipakai CI: tooling changeset (`.changeset/`, `pnpm changeset`), skrip rilis di `scripts/` (`compute-*-version`, `aggregate-stable-changelog`, `build-slack-release-payload`, `render-release-downloads`, `linux-repo/`, `verify-*-in-packaged-dmg`), `check:drift`, `tier1–3`, `knip`. Kandidat dihapus di PR terpisah.
+- Tooling rilis/changeset: `.changeset/`, `@changesets/cli`, skrip `changeset`/`version`/`release`, `compute-next-beta`, `compute-stable-version`, `aggregate-stable-changelog`, `build-slack-release-payload`, `render-release-downloads`, `linux-repo/`, `verify-keyring-in-packaged-dmg`, guard `check-no-major-changeset`.
+- `husky` + `lint-staged` (gak ada hook yang di-commit), `tier1–3`, `check:full:parallel`, `remoteCache.signature` di `turbo.json`.
+
+Sengaja disimpan: `knip` (directive `@lintignore` di allowlist no-comments nyebut knip sebagai pembacanya, dan dipakai 4 file di `packages/server/src/link-preview/`; tes `directive-consumers` merah kalau knip hilang), `check:drift` (guard i18n, notices, schema snapshot, override floors, resolusi TypeScript; jalan manual), `scripts/verify-native-config-in-packaged-dmg.mjs` (juga bisa cek `packages/cli/dist` di Linux, dipakai runbook `packages/desktop/tests/smoke/native-config-e2e.md`), `known-reds`.
