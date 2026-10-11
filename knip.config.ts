@@ -18,8 +18,6 @@ export default {
   ignore: ['plugins/*/skills/*/scripts/**'],
   ignoreDependencies: [
     ...differentialOnlyRootDeps,
-    'lint-staged', // not sure if it's false positive
-    'husky',
     '@lingui/babel-plugin-lingui-macro',
     '@lingui/format-po',
     'micromark',
@@ -73,8 +71,6 @@ export default {
     'lint-plugins/no-comments/__fixtures__/**': ['files'],
     'lint-plugins/ok-rules/__fixtures__/**': ['files'],
     '**/*.reads.{ts,mjs}': ['files', 'exports'],
-    'scripts/compute-next-beta.mjs': ['files'],
-    'scripts/build-slack-release-payload.mjs': ['files'],
     'scripts/assert-smoke-not-vacuous.mjs': ['files'],
     'scripts/assert-app-built.mjs': ['files'],
     'scripts/acp-mcp-rig/*.mjs': ['files'],
@@ -105,10 +101,7 @@ export default {
   },
   workspaces: {
     '.': {
-      entry: [
-        'test-support/fixtures/no-net-connect/no-net-connect.fixture.ts',
-        'scripts/check-no-major-changeset.mjs',
-      ],
+      entry: ['test-support/fixtures/no-net-connect/no-net-connect.fixture.ts'],
       vitest: { entry: ['**/*.uncached.test.{ts,tsx,mjs}'] },
     },
     'packages/app': {

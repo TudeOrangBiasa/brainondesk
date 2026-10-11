@@ -30,7 +30,7 @@
     "check:doc-links": "pnpm --dir docs run validate-link",
     "check:server-test-inputs": "node scripts/check-server-test-inputs.mjs",
     "check:drift": "pnpm run check:drift:guards && vitest run --config vitest.scripts.config.ts",
-    "check:drift:guards": "bash scripts/check-husky-prepare-guard.sh && bash scripts/check-knip-clean.sh && bash scripts/check-notices-clean.sh && bash scripts/check-schema-snapshot-clean.sh && bash scripts/check-i18n-drift.sh && node scripts/check-i18n-new-string-translations.mjs && node scripts/check-i18n-picker-completeness.mjs && bash scripts/check-no-major-changeset.sh && node scripts/check-override-floors.mjs && node scripts/check-typescript-resolution.mjs",
+    "check:drift:guards": "bash scripts/check-knip-clean.sh && bash scripts/check-notices-clean.sh && bash scripts/check-schema-snapshot-clean.sh && bash scripts/check-i18n-drift.sh && node scripts/check-i18n-new-string-translations.mjs && node scripts/check-i18n-picker-completeness.mjs && node scripts/check-override-floors.mjs && node scripts/check-typescript-resolution.mjs",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test test:uncached",
     "test:uncached": "vitest run --config vitest.uncached.config.ts",
@@ -42,49 +42,18 @@
     "lint:oxlint": "oxlint --max-warnings 0 .",
     "format": "pnpm run lint:biome --write --unsafe",
     "check": "pnpm run lint && pnpm exec turbo run build typecheck test test:uncached",
-    "check:full:parallel": "pnpm run check:drift:guards && pnpm run check:server-test-inputs && pnpm run lint && pnpm run check:doc-links && vitest run --config vitest.scripts.config.ts && turbo run build typecheck check:dts test test:uncached test:dom test:integration:shard1 test:integration:shard2 test:integration:shard3 test:conversion test:perf:regression:unit test:health:unit test:health test:e2e test:perf test:a11y --concurrency=100% --output-logs=errors-only",
-    "tier1": "pnpm run check",
-    "tier2": "pnpm run tier1 && turbo run test:perf:regression:unit test:health:unit test:health test:e2e",
-    "tier3": "STRESS_FIDELITY=1 pnpm run tier2",
     "measure:fuzz": "cd packages/app && pnpm run measure:fuzz",
     "measure:stress": "cd packages/app && pnpm run measure:stress",
     "measure:sweep": "cd packages/app && pnpm run measure:sweep",
     "measure:generated-index-sweep": "pnpm --dir packages/server run measure:generated-index-sweep",
     "measure:observer-a-drain": "pnpm --dir packages/server run measure:observer-a-drain",
-
-    "prepare": "bash scripts/husky-prepare.sh",
-    "changeset": "changeset",
-    "version": "changeset version",
-    "release": "changeset publish",
     "typecheck:no-net-connect": "tsc --noEmit -p test-support/tsconfig.no-net-connect.json"
-  },
-  "lint-staged": {
-    "packages/**/*.{ts,tsx,js,jsx,json,md}": [
-      "biome check --write --no-errors-on-unmatched --files-ignore-unknown=true --error-on-warnings",
-      "oxlint --max-warnings 0 --no-error-on-unmatched-pattern"
-    ],
-    "docs/**/*.{ts,tsx,js,jsx,json,md}": [
-      "biome check --write --no-errors-on-unmatched --files-ignore-unknown=true --error-on-warnings",
-      "oxlint --max-warnings 0 --no-error-on-unmatched-pattern"
-    ],
-    "{package.json,turbo.json,tsconfig.json,biome.jsonc}": [
-      "biome check --write --no-errors-on-unmatched --files-ignore-unknown=true --error-on-warnings"
-    ],
-    "scripts/**/*.mjs": [
-      "oxlint --max-warnings 0 --no-error-on-unmatched-pattern"
-    ],
-    "./*.ts": [
-      "oxlint --max-warnings 0 --no-error-on-unmatched-pattern"
-    ]
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.11",
-    "@changesets/cli": "^2.29.7",
     "@types/node": "^24.7.0",
     "@typescript/native": "npm:typescript@~7.0.2",
-    "husky": "^9.1.7",
     "knip": "^6.26.0",
-    "lint-staged": "^16.4.0",
     "oxlint": "1.80.0",
     "oxlint-plugin-eslint": "^1.80.0",
     "oxlint-tsgolint": "^7.0.2001",
