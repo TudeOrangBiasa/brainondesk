@@ -22,4 +22,4 @@ Closes #
 - [ ] Kode port dari AugmentOffice (Apache-2.0) membawa atribusi sesuai `docs/office/PLAN.md`
 - [ ] Dokumen diperbarui kalau perilaku yang terlihat user berubah
 
-<!-- PR dari agent: tetap draft sampai `verify` hijau; jangan merge sendiri. -->
+<!-- PR dari agent: tetap draft sampai `verify` hijau. `risk:high` jangan merge sendiri, tunggu review manusia; `risk:low` boleh merge kalau `verify` hijau. -->
