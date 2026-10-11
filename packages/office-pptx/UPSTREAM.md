@@ -1,7 +1,8 @@
 # Upstream: @inkeep/open-knowledge-office-pptx
 
 Ported from [`packages/pptx-engine`](https://github.com/TudeOrangBiasa/augmentoffice/tree/main/packages/pptx-engine)
-in [TudeOrangBiasa/augmentoffice](https://github.com/TudeOrangBiasa/augmentoffice) (Apache-2.0).
+in [TudeOrangBiasa/augmentoffice](https://github.com/TudeOrangBiasa/augmentoffice) (Apache-2.0),
+itself a fork of [GenOffice](https://github.com/genspark-ai/genoffice) (Apache-2.0, Copyright 2026 Mainfunc, Inc.).
 
 - Source commit: `39a328637fda6db0f8c5dd3acd8fa26a9cdd1d8c` (2026-08-12, `main`)
 - Source paths: `packages/pptx-engine/src`, `packages/pptx-engine/tests`
