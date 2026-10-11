@@ -8,12 +8,11 @@ LICENSE. "OpenKnowledge" and "Inkeep" are names of their respective owners and
 are used here only to credit the upstream project.
 
 ------------------------------------------------------------------------------
-Components ported from AugmentOffice / GenOffice (Apache-2.0)
+Components ported from GenOffice (Apache-2.0)
 ------------------------------------------------------------------------------
 
 Office editor code (docs, sheets, slides, pdf and their engines) is ported
-from AugmentOffice (https://github.com/TudeOrangBiasa/augmentoffice), a fork of
-GenOffice (https://github.com/genspark-ai/genoffice). Those files remain under
+from GenOffice (https://github.com/genspark-ai/genoffice). Those files remain under
 the Apache License, Version 2.0 (LICENSES/Apache-2.0.txt), carry an
 "SPDX-License-Identifier: Apache-2.0" header, and are listed with their source
 commit and modifications in the UPSTREAM.md file of the package that contains
