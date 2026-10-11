@@ -1,8 +1,7 @@
 # Upstream: @inkeep/open-knowledge-office-fonts
 
-Ported from [`packages/font-metrics`](https://github.com/TudeOrangBiasa/augmentoffice/tree/main/packages/font-metrics)
-in [TudeOrangBiasa/augmentoffice](https://github.com/TudeOrangBiasa/augmentoffice) (Apache-2.0),
-itself a fork of [GenOffice](https://github.com/genspark-ai/genoffice) (Apache-2.0, Copyright 2026 Mainfunc, Inc.).
+Ported from [`packages/font-metrics`](https://github.com/genspark-ai/genoffice/tree/main/packages/font-metrics)
+in [GenOffice](https://github.com/genspark-ai/genoffice) (Apache-2.0, Copyright 2026 Mainfunc, Inc.).
 
 - Source commit: `39a328637fda6db0f8c5dd3acd8fa26a9cdd1d8c` (2026-08-12, `main`)
 - Source paths: `packages/font-metrics/src`, `packages/font-metrics/tests`
