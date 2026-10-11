@@ -20,7 +20,7 @@ if [ "${VERIFY_SKIP_INSTALL:-0}" != "1" ]; then
   pnpm install --frozen-lockfile
 fi
 
-step "PR policy (title, linked issue, protected paths)"
+step "PR policy (title, linked issue, risk label, protected paths)"
 git fetch --quiet origin main || true
 BASE_SHA="$(git merge-base "$BASE_REF" HEAD)"
 if command -v gh >/dev/null 2>&1 && PR_JSON="$(gh pr view --json title,body,labels 2>/dev/null)"; then
@@ -30,14 +30,8 @@ if command -v gh >/dev/null 2>&1 && PR_JSON="$(gh pr view --json title,body,labe
   PR_BASE_SHA="$BASE_SHA" PR_HEAD_SHA=HEAD \
     node scripts/check-pr-policy.mjs
 else
-  skip "no open PR for this branch yet; protected files touched vs $BASE_REF:"
-  git diff --name-only "$BASE_SHA"...HEAD | node -e '
-    import("./scripts/check-pr-policy.mjs").then(({ protectedFiles }) => {
-      const files = require("node:fs").readFileSync(0, "utf8").split("\n").filter(Boolean);
-      const hits = protectedFiles(files);
-      console.log(hits.length ? hits.map((f) => "      " + f).join("\n") + "\n    (needs the protected-paths-ok label from a human)" : "      none");
-    });
-  '
+  skip "no open PR for this branch yet; risk suggestion for the diff vs $BASE_REF:"
+  PR_BASE_SHA="$BASE_SHA" PR_HEAD_SHA=HEAD node scripts/check-pr-policy.mjs --suggest
 fi
 
 step "secret scan (gitleaks, commits since $BASE_REF)"
@@ -53,11 +47,12 @@ pnpm run lint
 step "typecheck"
 pnpm run typecheck
 
-step "unit tests (core, app, desktop)"
+step "unit tests (core, app, desktop, office)"
 pnpm exec turbo run test \
   --filter=@inkeep/open-knowledge-core \
   --filter=@inkeep/open-knowledge-app \
   --filter=@inkeep/open-knowledge-desktop \
+  --filter='./packages/office-*' \
   --output-logs=errors-only
 pnpm exec vitest run --config vitest.scripts.config.ts scripts/check-pr-policy.test.mjs
 
@@ -65,3 +60,4 @@ step "build desktop bundle"
 pnpm exec turbo run build:desktop --filter=@inkeep/open-knowledge-desktop --output-logs=errors-only
 
 printf '\nverify: all gates passed\n'
+printf 'slow tests (server, cli, native-config) are not part of verify: pnpm test:slow, see docs/TESTING.md\n'
