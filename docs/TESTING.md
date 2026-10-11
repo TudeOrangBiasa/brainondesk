@@ -14,7 +14,7 @@ Aturan singkat: tes perilaku, bukan implementasi. Tiap PR yang ngubah perilaku b
 | Unit: office | `packages/office-*` (docx, pptx, parse, fonts, render) | `verify` | `pnpm exec turbo run test --filter='./packages/office-*'` |
 | Build | bundle desktop electron-vite (tanpa packaging) | `verify` | `pnpm exec turbo run build:desktop --filter=@inkeep/open-knowledge-desktop` |
 | Slow: server | server kolaborasi lokal, ~15 menit | `slow-tests` | `pnpm exec turbo run test --filter=@inkeep/open-knowledge-server` |
-| Slow: CLI | perintah CLI, ~3 menit | `slow-tests` | `pnpm exec turbo run test --filter=@inkeep/open-knowledge` |
+| Slow: CLI | perintah CLI, ~5 menit | `slow-tests` | `pnpm exec turbo run test --filter=@inkeep/open-knowledge` |
 | Slow: native-config | crate Rust `toml_edit` (cargo test) | `slow-tests` | `pnpm exec turbo run test --filter=@inkeep/open-knowledge-native-config` |
 | Lokal saja | `test:dom`, `test:integration`, `test:e2e`/`test:visual`/`test:a11y` (Playwright), `test:perf`, `test:health`, `test:uncached`, `test:network` | tidak di CI | lihat `scripts` di `package.json` paket terkait |
 
@@ -44,4 +44,4 @@ Aturan singkat: tes perilaku, bukan implementasi. Tiap PR yang ngubah perilaku b
 
 ## Kegagalan yang sudah ada di `main`
 
-Bukan regresi dan bukan bagian gate: `scripts/check-override-floors.test.mjs`, `scripts/check-typescript-resolution.test.mjs`, `test-support/setup-files-contract.test.ts`, `packages/desktop/tests/smoke/_helpers/dock-state-ready.test.ts`, dan dua tes CLI `the npx fallback runs with this chain's channel`. Kalau kamu betulin salah satunya, hapus dari daftar ini.
+Bukan regresi dan bukan bagian gate: `scripts/check-override-floors.test.mjs`, `scripts/check-typescript-resolution.test.mjs`, `test-support/setup-files-contract.test.ts`, `packages/desktop/tests/smoke/_helpers/dock-state-ready.test.ts`. Tes PowerShell di `packages/core/src/handoff/terminal-launch.test.ts` wajib `pwsh` kalau `CI=true` (runner GitHub punya). Dua tes CLI `the npx fallback runs with this chain's channel` cuma gagal di mesin yang `npx`-nya beda lokasi; di CI lulus. Kalau kamu betulin salah satunya, hapus dari daftar ini.

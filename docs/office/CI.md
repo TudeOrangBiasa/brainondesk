@@ -21,7 +21,7 @@ Setup bersama ada di `.github/actions/setup` (Node dari `.node-version`, pnpm le
 
 ## `slow-tests` (tidak required)
 
-Server (~15 menit), CLI (~3–6 menit), native-config (cargo). Jalan tiap malam 19:00 UTC (03:00 WITA) di `main`, manual lewat *Run workflow*, dan di PR yang nyentuh `packages/server/`, `packages/cli/`, `packages/native-config/`. Kegagalan nightly dikirim GitHub ke email Tude.
+Server (~15 menit), CLI (~5 menit), native-config (cargo). Jalan tiap malam 19:00 UTC (03:00 WITA) di `main`, manual lewat *Run workflow*, dan di PR yang nyentuh `packages/server/`, `packages/cli/`, `packages/native-config/`. Kegagalan nightly dikirim GitHub ke email Tude.
 
 ## Risk label
 
