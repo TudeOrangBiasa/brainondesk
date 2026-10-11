@@ -4,17 +4,18 @@ This is BrainOnDesk, a GPL-3.0 fork of OpenKnowledge focused on a local-first de
 
 ## Verification gate (required)
 
-Every PR must pass the `verify` GitHub Actions check before it can merge. Agents must:
+`verify` is the only required check. PR rules live in [CONTRIBUTING.md](./CONTRIBUTING.md) (Indonesian), test layers in [docs/TESTING.md](./docs/TESTING.md). Agents must:
 
-1. Run `pnpm verify` locally and get `verify: all gates passed` before pushing. It mirrors CI: frozen install, PR policy, gitleaks (if installed), lint, typecheck, unit tests for core/app/desktop, and the desktop bundle build. Set `VERIFY_SKIP_INSTALL=1` to skip the install step on reruns.
-2. Title the PR as a Conventional Commit (`feat(office): ...`, `fix(core): ...`, `ci: ...`).
-3. Put `Closes #N` in the PR body. Use the `no-issue` label only when Tude asks for a PR without an issue.
-4. Fill in the checklist in `.github/pull_request_template.md`, including the verify evidence.
-5. Not edit protected paths (`.github/workflows/`, `.github/actions/`, `.github/CODEOWNERS`, `LICENSE*`, `LICENSES/`, `NOTICE*`, `*.upstream` license files, `THIRD_PARTY_NOTICES.md`, `scripts/verify.sh`, `scripts/check-pr-policy.mjs`) unless the task says so. Those PRs need the `protected-paths-ok` label, which Tude approves; agents may attach it once Tude says so on that PR, and must quote that approval in the PR body.
-6. Label every PR with exactly one risk label: `risk:low` (agents may merge once `verify` is green) or `risk:high` (human review required, agents must never merge). `risk:high` is required when the PR touches protected paths, is a breaking change (`!`), or when in doubt; CI rejects `risk:low` on such PRs and rejects PRs with no risk label at all.
-7. Open PRs as drafts, never merge a `risk:high` PR, and never weaken a gate to get green: fix the cause, or report the failure with its log.
+1. Run `pnpm verify` and get `verify: all gates passed` before pushing. It mirrors CI: frozen install, PR policy, gitleaks (if installed), lint, typecheck, unit tests for core/app/desktop/office, and the desktop bundle build. `VERIFY_SKIP_INSTALL=1` skips the install on reruns.
+2. When the PR touches `packages/server/`, `packages/cli/` or `packages/native-config/`, also run `pnpm test:slow` (or the one package) and report the result; CI runs it in the non-required `slow-tests` workflow.
+3. Ship a behavior change with a test that fails without it. Test behavior through the public surface, not implementation details. Put every command you ran and its outcome under **Bukti verifikasi** in the PR body.
+4. Title the PR `type(scope): subject` (Conventional Commits) and put `Closes #N` in the body; use the `no-issue` label only when the task has no issue.
+5. Add exactly one risk label. Run `pnpm pr:risk` after committing and use its suggestion; CI rejects `risk:low` on CI/gate/lint config, licensing, breaking (`!`) or large diffs, and warns on auth, data shape, packaging, public contract and dependency paths. Explain the label in `## Risk`.
+6. Leave protected paths (`.github/workflows/`, `.github/actions/`, `.github/CODEOWNERS`, `LICENSE*`, `LICENSES/`, `NOTICE*`, `*.upstream`, `THIRD_PARTY_NOTICES.md`, `scripts/verify.sh`, `scripts/check-pr-policy.mjs`) alone unless the task says so. Never add `protected-paths-ok`; Tude adds it after review.
+7. Open every PR as a draft. Never mark ready, merge, or enable auto-merge, whatever the risk label. End the body with `## Kenapa begini`.
+8. Never weaken a gate to get green: fix the cause, or report the failure with its log.
 
-Details and the reasoning behind each gate: [docs/office/CI.md](./docs/office/CI.md).
+How CI is wired: [docs/office/CI.md](./docs/office/CI.md).
 
 ## Start Here
 
@@ -27,7 +28,7 @@ Details and the reasoning behind each gate: [docs/office/CI.md](./docs/office/CI
 
 ```bash
 pnpm install
-pnpm run check
+pnpm verify
 pnpm run build
 ```
 
@@ -99,17 +100,7 @@ Shell scripts are declared in scope by `no-comments.config.jsonc`, but the sweep
 
 ## Changesets
 
-Every behavior-changing PR ships a `.changeset/<kebab-name>.md` file. The body becomes the user-facing entry on the next beta's GitHub Release and on the aggregated stable Release notes — that's how npm consumers and desktop auto-update users learn what changed. Write release-note copy, not a commit-message reprise.
-
-- Create one with `pnpm run changeset`, or hand-write a file named `.changeset/<descriptive-kebab-slug>.md`.
-- Front-matter: at minimum `'@inkeep/open-knowledge': patch`. OpenKnowledge follows semver with a **pre-1.0 shift-down**: while we're below `1.0.0`, what semver would call a major (breaking API change) is encoded as `minor`, and what semver would call a minor (new feature) is encoded as `patch`. Most changesets are `patch`. `minor` is rare — reserve it for large API contract changes or large feature additions. **Never declare `major` pre-1.0** (see the `"//"` line in `.changeset/config.json`).
-
-**Changelog authoring and review.** Use one short sentence for the user-visible outcome; a second only for a necessary qualification or upgrade action. Maximum 50 words per changeset body, across all paragraphs and bullets. Omit implementation details, internal identifiers and exhaustive edge cases; link migration instructions. Reviewers check accuracy, required actions and brevity; request technical detail in docs. Never split one explanation across changesets to evade the budget.
-
-- Don't write inline references to sibling-package versions (e.g. `@inkeep/open-knowledge-core@0.5.0-beta.6`) — the fixed-group lock-step bumps are computed at release time and any number you'd write would be wrong.
-- Skip changesets for docs-only edits, test-only edits, or CI-only edits that don't change runtime behavior.
-
-This fork has no automated release pipeline; changesets are kept so release notes can be assembled when packaging starts.
+Not required in this fork: there is no npm or desktop release pipeline yet. The `.changeset/` folder and `pnpm run changeset` are upstream leftovers; do not add new files there unless a task asks for it.
 
 ## Before Finishing
 
@@ -119,6 +110,6 @@ While iterating, run the tests for what you changed with `pnpm --dir packages/<p
 pnpm verify
 ```
 
-`pnpm run check` is the wider upstream suite (includes the slow server and CLI tests); run it when you change server or CLI code.
+Run `pnpm test:slow` when you change server, CLI or native-config code. `pnpm run check` is the wider upstream suite and is not maintained as a gate here.
 
 For UI or editor changes, also run the affected package tests from `packages/app`.

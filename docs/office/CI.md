@@ -1,53 +1,42 @@
-# CI dan gerbang verifikasi BrainOnDesk
+# CI BrainOnDesk
 
-Workflow upstream OpenKnowledge butuh secret, GitHub App, Linear, Vercel, dan signing milik Inkeep. Di fork ini semuanya sudah dihapus. Yang tersisa satu workflow, `verify`, yang jalan di runner GitHub-hosted, tanpa secret, dengan token read-only.
+Dua workflow, semuanya runner GitHub-hosted, token read-only, tanpa secret, action dipin ke SHA. Aturan PR ada di [CONTRIBUTING.md](../../CONTRIBUTING.md), lapisan tes di [docs/TESTING.md](../TESTING.md).
 
-## Workflow `verify` (`.github/workflows/verify.yml`)
+## `verify` (required)
 
-Jalan di setiap PR (termasuk saat judul/body/label diubah), push ke `main`, dan manual. Push baru ke PR yang sama membatalkan run lama (`cancel-in-progress`).
+Jalan di tiap PR (termasuk saat judul/body/label diubah), push ke `main`, dan manual. Push baru membatalkan run lama di PR yang sama.
 
 | Job | Isi | Kapan |
 | --- | --- | --- |
-| `policy` | judul Conventional Commit, `Closes #N` di body, path terlindungi, gitleaks atas commit PR | hanya PR |
-| `lint, typecheck, build` | `pnpm run lint` (biome + oxlint + aturan no-comments), `pnpm run typecheck`, `turbo run build:desktop` untuk desktop, test script policy | selalu |
-| `test (core/app/desktop)` | unit test per paket via turbo, paralel | selalu |
-| `verify` | agregator: hijau hanya kalau semua job di atas sukses (`policy` boleh skip di push) | selalu |
+| `policy` | `scripts/check-pr-policy.mjs`: judul, `Closes #N`/`no-issue`, label risk + saran dari path, protected paths; gitleaks atas commit PR | PR saja |
+| `lint, typecheck, build` | biome + oxlint (+ no-comments), typecheck, `build:desktop` (electron-vite), tes policy | selalu |
+| `test (core/app/desktop/office)` | unit test per grup via turbo, paralel | selalu |
+| `verify` | agregator: hijau cuma kalau semua job di atas sukses (`policy` boleh skip di push) | selalu |
 
-Branch protection cukup mewajibkan satu check: **`verify`**. Nama job ini jangan diubah.
+Branch protection cukup wajibkan **`verify`**. Jangan ganti nama job ini.
 
-Cache: store pnpm (kunci `pnpm-lock.yaml`) dan `.turbo/cache` per job (kunci commit, restore dari run sebelumnya). Paket yang tidak berubah jadi cache hit, jadi run berikutnya jauh lebih cepat dari run pertama.
+Setup bersama ada di `.github/actions/setup` (Node dari `.node-version`, pnpm lewat corepack, cache pnpm store + `.turbo/cache`, toolchain Rust dari `rust-toolchain.toml`, install frozen). Ini buatan kita, bukan sisa upstream.
 
-### Kenapa build-nya `build:desktop`, bukan `build:dir`
+`build:desktop` dipilih ketimbang `build:dir`: sudah ngompilasi main/preload/renderer dan, lewat dependensi turbo, core/server/app/CLI/native-config. `build:dir` cuma nambah download Electron + packaging, beberapa menit tanpa sinyal tambahan.
 
-`build:desktop` (electron-vite) sudah mengompilasi main, preload, dan renderer, dan lewat dependensi turbo ikut membangun core, server, app, CLI, dan addon Rust native-config. Itu menangkap hampir semua error build. `build:dir` menambah download binary Electron, rebuild modul native, dan packaging electron-builder: beberapa menit ekstra tanpa banyak sinyal tambahan untuk PR. Packaging dicek saat rilis (tiket fase 6).
+## `slow-tests` (tidak required)
 
-### Kenapa test-nya hanya core, app, desktop
+Server (~15 menit), CLI (~3–6 menit), native-config (cargo). Jalan tiap malam 19:00 UTC (03:00 WITA) di `main`, manual lewat *Run workflow*, dan di PR yang nyentuh `packages/server/`, `packages/cli/`, `packages/native-config/`. Kegagalan nightly dikirim GitHub ke email Tude.
 
-Test `server` (>15 menit) dan `cli` (~6 menit, dua test bergantung pada lokasi `npx` di mesin) membuat gerbang lewat dari 15 menit. Jalankan `pnpm run check` di lokal kalau mengubah server atau CLI. Test DOM, integrasi, e2e, dan perf juga tidak masuk gerbang.
+## Risk label
 
-## Aturan PR (`scripts/check-pr-policy.mjs`)
+`policy` nyaranin label dari diff dan nulis alasannya di job summary. Aturan dipetain dari `whips/RISK.md` (skills-for-agents) ke path repo ini, isinya di `RISK_RULES` di `scripts/check-pr-policy.mjs`. Aturan keras (CI/gate, lisensi, breaking, diff besar) nolak `risk:low`; aturan lunak cuma warning. Label `risk:*` cuma nunjukin di mana Tude perlu fokus review. Merge tetap Tude.
 
-- Judul: `<type>(<scope>)!: <ringkasan>`, type salah satu `feat fix docs style refactor perf test build ci chore revert`, scope huruf kecil.
-- Body: `Closes #N` / `Fixes #N` / `Resolves #N`. Label `no-issue` untuk PR tanpa issue.
-- Label risiko wajib tepat satu: `risk:low` (agents boleh merge kalau `verify` hijau) atau `risk:high` (wajib review manusia, agents dilarang merge). `risk:high` wajib kalau sentuh path terlindungi, breaking change (`!`), atau ragu; tanpa label atau `risk:low` di PR seperti itu ditolak policy.
-- Path terlindungi butuh label `protected-paths-ok`: `.github/workflows/`, `.github/actions/`, `.github/CODEOWNERS`, `LICENSE*`, `LICENSES/`, `NOTICE*`, `LICENSE.upstream`/`NOTICE.upstream`, `THIRD_PARTY_NOTICES.md`, `scripts/verify.sh`, `scripts/check-pr-policy.mjs`. Tude menyetujui label ini setelah review; agents boleh memasangnya setelah ada persetujuan Tude di PR itu dan wajib mengutip persetujuan tersebut di body PR. Label hanya polisi tidur; perlindungan sebenarnya adalah CODEOWNERS + wajib review untuk `risk:high`.
-- Secret: gitleaks `8.30.1` (checksum diverifikasi) memindai commit `base..head` PR.
+## Lokal
 
-## Lokal: `pnpm verify`
-
-`scripts/verify.sh` menjalankan urutan yang sama dengan CI: install frozen, policy (pakai `gh pr view` kalau PR sudah ada, kalau belum hanya menampilkan path terlindungi yang tersentuh), gitleaks (kalau terpasang, `sudo dnf install gitleaks`), lint, typecheck, unit test core/app/desktop, build desktop. `VERIFY_SKIP_INSTALL=1` melewati install, `VERIFY_BASE` mengganti base (default `origin/main`).
+- `pnpm verify`: urutan yang sama dengan `verify`. Kalau PR belum ada, policy cuma nampilin saran risk. `VERIFY_SKIP_INSTALL=1` lewatin install, `VERIFY_BASE` ganti base (default `origin/main`).
+- `pnpm pr:risk`: saran label risk buat commit di branch ini.
+- `pnpm test:slow`: tiga paket slow.
 
 ## Yang dihapus dari upstream
 
-- Workflow rilis: `release`, `point-release`, `promote-stable`, `select-beta-to-promote`
-- Desktop: `desktop-*`, `publish-linux-repo`, `native-config-prebuild` (matriks macOS/Windows untuk publish CLI ke npm)
-- Integrasi Inkeep: `linear-*`, `monorepo-pr-bridge`, `write-back`, `bug-lane*`, `share-contract-*` beserta composite action-nya, `stale`
-- `CLA.md` (CLA ke Inkeep tidak berlaku di fork)
-- Link Discord/openknowledge.ai/advisory Inkeep di issue template, `SECURITY.md`, `CONTRIBUTING.md` diarahkan ke repo ini
+- Workflow rilis/desktop/npm: `release`, `point-release`, `promote-stable`, `select-beta-to-promote`, `desktop-*`, `publish-linux-repo`, `native-config-prebuild`.
+- Integrasi Inkeep: `linear-*`, `monorepo-pr-bridge`, `write-back`, `bug-lane*`, `share-contract-*` + composite action-nya, `stale`, `CLA.md`.
+- `.github/scripts/` (88 file helper untuk workflow di atas) dan tes path report DMG macOS yang mengimpornya.
 
-Script pendukung di `.github/scripts/` masih disimpan karena `packages/desktop/tests/unit/packaged-report-path.uncached.test.mjs` mengimpor salah satunya. Test bentuknya dikeluarkan dari `vitest.scripts.config.ts` karena membaca workflow yang sudah dihapus.
-
-## Catatan
-
-- Kegagalan yang sudah ada di `main` (bukan regresi, tidak masuk gerbang): `scripts/check-override-floors.test.mjs`, `scripts/check-typescript-resolution.test.mjs`, `test-support/setup-files-contract.test.ts`, `packages/desktop/tests/smoke/_helpers/dock-state-ready.test.ts`.
-- Pengecualian lint untuk paket port `packages/office-*` (biome/oxlint/no-comments/knip) dibawa oleh PR engine office (#34) bersama kodenya, supaya tidak konflik.
+Masih ada, belum dipakai CI: tooling changeset (`.changeset/`, `pnpm changeset`), skrip rilis di `scripts/` (`compute-*-version`, `aggregate-stable-changelog`, `build-slack-release-payload`, `render-release-downloads`, `linux-repo/`, `verify-*-in-packaged-dmg`), `check:drift`, `tier1–3`, `knip`. Kandidat dihapus di PR terpisah.

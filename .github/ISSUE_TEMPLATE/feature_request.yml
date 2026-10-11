@@ -35,6 +35,16 @@ body:
     validations:
       required: false
   - type: textarea
+    id: done-when
+    attributes:
+      label: Done when
+      description: Observable outcomes that prove this is finished. Each one should be checkable by a test or a manual step.
+      placeholder: |
+        - [ ] Opening a .docx shows ...
+        - [ ] Saving keeps ...
+    validations:
+      required: true
+  - type: textarea
     id: alternatives
     attributes:
       label: Alternatives considered

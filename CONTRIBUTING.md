@@ -1,11 +1,24 @@
 # Contributing to BrainOnDesk
 
-BrainOnDesk is a community fork of [OpenKnowledge](https://github.com/inkeep/open-knowledge). Thanks for contributing! Bug reports, feature requests, and pull requests are all welcome.
+BrainOnDesk adalah fork GPL dari [OpenKnowledge](https://github.com/inkeep/open-knowledge). Issue dan PR dibuka di repo ini. Tude yang review dan merge semua PR.
 
-- **Found a bug or have an idea?** [Open an issue](https://github.com/TudeOrangBiasa/brainondesk/issues/new/choose).
-- **Bug that also happens upstream?** Report it to [inkeep/open-knowledge](https://github.com/inkeep/open-knowledge/issues) as well.
-- **Ready to code?** Open a pull request against this repository.
-- **Read a language other than English?** Most of our interface translations are machine-translated and have never been read by a native speaker, and we ship them anyway rather than hide them from the people who could fix them. Correcting one is the most useful thing you can do for it — see [Translate the interface](https://openknowledge.ai/docs/contribute/translations).
+## Aturan PR
+
+1. **Satu PR, satu hal.** Kecil dan bisa direview sekali duduk. Kerjaan besar dipecah jadi PR bertumpuk (anak menargetkan branch induknya).
+2. **Draft dulu.** Agent selalu `gh pr create --draft`. Agent tidak pernah mark ready, merge, atau nyalain auto-merge. Tude yang merge, termasuk `risk:low`.
+3. **Judul Conventional Commits**: `type(scope): subjek`, contoh `fix(office): simpan ulang etag setelah save`. Type: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`. Tambah `!` kalau breaking.
+4. **Link issue**: `Closes #N` di body. Tanpa issue? Pakai label `no-issue` dan tulis alasannya.
+5. **Satu label risk**, `risk:low` atau `risk:high`. Cek saran otomatis pakai `pnpm pr:risk` (setelah commit). Aturannya ngikutin `whips/RISK.md`:
+   - `risk:low` **ditolak CI** kalau PR nyentuh CI/gate/lint config, lisensi/atribusi, judul breaking, atau diff > 400 baris / > 15 file (lockfile, locale, snapshot, fixture gak dihitung).
+   - **Warning** (boleh tetap low kalau `## Risk` jelasin kenapa): auth/credential/keyring, schema config atau bridge CRDT, packaging/env, CLI commands, MCP tools, plugin, dependency.
+6. **Protected paths** (`.github/workflows/`, `.github/actions/`, `CODEOWNERS`, `LICENSE*`, `NOTICE*`, `*.upstream`, `THIRD_PARTY_NOTICES.md`, `scripts/verify.sh`, `scripts/check-pr-policy.mjs`) butuh label `protected-paths-ok`. Cuma Tude yang pasang, setelah review.
+7. **`verify` harus hijau.** Jalanin `pnpm verify` dulu di lokal. Jangan lemahin gate biar hijau.
+8. **Tes + bukti.** Perubahan perilaku wajib bawa tes, dan body PR wajib ada bukti verifikasi (perintah + hasil). Detail di [docs/TESTING.md](./docs/TESTING.md).
+9. **Body PR** pakai [template](./.github/pull_request_template.md): Ringkasan, Bukti verifikasi, `## Risk` (maks 3 kalimat), `## Kenapa begini` (2–4 kalimat santai: keputusan utama, alternatifnya, kenapa kalah).
+10. **Tanpa komentar kode** di luar allowlist (lihat [Code comments](#code-comments)), tanpa secret/data pribadi/path lokal, `pnpm-lock.yaml` ikut di-commit kalau dependency berubah, dan `pnpm run notices` kalau paket pihak ketiga berubah.
+11. **Kode port dari GenOffice** (Apache-2.0) bawa atribusi sesuai [docs/office/LICENSING.md](./docs/office/LICENSING.md).
+
+Changeset (`pnpm run changeset`) **tidak wajib**: fork ini belum punya pipeline rilis npm/desktop otomatis.
 
 ## Development setup
 
@@ -14,7 +27,7 @@ A fresh clone builds and tests with no environment variables:
 ```bash
 corepack enable pnpm  # make the pnpm commands below use the packageManager pin
 pnpm install
-pnpm run check        # lint, typecheck, and tests
+pnpm verify           # the same gate CI runs on every PR
 ```
 
 Run the editor app (http://localhost:5173):
@@ -59,7 +72,8 @@ pnpm run lint         # lint (Biome)
 pnpm run typecheck    # TypeScript
 pnpm run test         # tests
 pnpm run build        # build all packages
-pnpm run check        # lint + typecheck + test
+pnpm verify           # the PR gate (see docs/TESTING.md)
+pnpm test:slow        # server, CLI and native-config tests (nightly in CI)
 pnpm run check:drift:guards  # unused deps/exports, generated-artifact freshness, toolchain pins (not part of `check`)
 ```
 
@@ -72,22 +86,6 @@ This repo does not use code comments, and `pnpm run lint` enforces that. It inve
 A short allowlist survives: directives a tool parses (`biome-ignore lint/style/noVar: reason`, `@ts-expect-error the fixture is deliberately malformed`, `@vitest-environment jsdom`, `/// <reference types="vite/client" />`, `SPDX-License-Identifier: GPL-3.0-or-later`), JSDoc carrying `@deprecated` (the audit-tag class is empty in this repo and admits nothing), and comments that BEGIN with a contract marker — `STOP: a cross-file contract a reader must not break`, `WARN: a sibling that silently drifts if this changes`, or `UPSTREAM(electron/electron#19920): a code shape forced on us from outside this repo`.
 
 If lint stops you, the diagnostic names the class of comment, the fix, and links to [`lint-plugins/no-comments/README.md`](./lint-plugins/no-comments/README.md) — the full policy, including how to convert a comment worth keeping into one of the allowed forms. Deleting it is usually the right answer.
-
-## Opening a pull request
-
-There is no CLA in this fork. Every PR must pass the `verify` check (see [docs/office/CI.md](./docs/office/CI.md)); run `pnpm verify` locally first and follow the checklist in the [Pull Request Template](./.github/pull_request_template.md):
-
-- Use a Conventional Commit PR title (`feat(office): ...`, `fix(core): ...`) and link the issue with `Closes #N`.
-- Keep PRs focused and small enough to review.
-- Add tests — or a clear manual-verification note — for behavior changes.
-- Write no code comments outside the allowlist above — `pnpm run lint` fails on the rest.
-- Add a changeset by running `pnpm run changeset` if your pull request changes user-facing or programmatic behavior. Open Knowledge is pre-1.0, so a breaking change rides as `minor` and a `major` changeset is rejected — reaching 1.0.0 is a team decision, not one a single changeset makes.
-- Run `pnpm verify` and confirm it passes. `pnpm run check` runs the wider suite (including the slow server and CLI tests).
-- Commit `pnpm-lock.yaml` when dependencies change, and run `pnpm run notices` to refresh `THIRD_PARTY_NOTICES.md` if third-party packages changed.
-- Never include secrets, credentials, customer data, or local machine paths.
-- Enable **Allow edits from maintainers** so reviewers can push fixes to your branch.
-
-The maintainer reviews and merges; accepted PRs are merged normally on `main`.
 
 ## License
 

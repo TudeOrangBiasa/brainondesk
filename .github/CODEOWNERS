@@ -1,14 +1,5 @@
-# BrainOnDesk: paths that change CI, the verification gate, licensing, or
-# desktop packaging need review from the maintainer. Pair with branch
-# protection "Require review from Code Owners" on main.
+# BrainOnDesk has one maintainer. Every path is owned by Tude; the policy
+# job in .github/workflows/verify.yml decides which PRs need the
+# protected-paths-ok label and which risk label is allowed.
 
-/.github/workflows/            @TudeOrangBiasa
-/.github/actions/              @TudeOrangBiasa
-/.github/CODEOWNERS            @TudeOrangBiasa
-/scripts/verify.sh             @TudeOrangBiasa
-/scripts/check-pr-policy.mjs   @TudeOrangBiasa
-/LICENSE                       @TudeOrangBiasa
-/NOTICE                        @TudeOrangBiasa
-/THIRD_PARTY_NOTICES.md        @TudeOrangBiasa
-/packages/desktop/scripts/     @TudeOrangBiasa
-/packages/desktop/build/       @TudeOrangBiasa
+*   @TudeOrangBiasa
