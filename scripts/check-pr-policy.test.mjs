@@ -57,6 +57,11 @@ describe('checkProtectedPaths', () => {
     expect(problem).not.toContain('packages/app');
   });
 
+  it('flags protected files given as numstat entries', () => {
+    const [problem] = checkProtectedPaths([{ path: '.github/workflows/verify.yml', lines: 3 }], []);
+    expect(problem).toContain('.github/workflows/verify.yml');
+  });
+
   it('passes with the label', () => {
     expect(checkProtectedPaths(files, ['protected-paths-ok'])).toEqual([]);
   });
@@ -208,6 +213,19 @@ describe('risk label vs suggestion', () => {
   it('never tells agents they may merge', () => {
     const [problem] = checkRiskLabel('fix: x', [], ['packages/app/src/a.ts']);
     expect(problem).not.toMatch(/agents? may merge/i);
+  });
+});
+
+describe('evaluatePolicy with numstat entries', () => {
+  it('still requires protected-paths-ok', () => {
+    const problems = evaluatePolicy({
+      title: 'ci: x',
+      body: 'Closes #1',
+      labels: ['risk:high'],
+      files: parseNumstat('3\t1\t.github/workflows/verify.yml\n'),
+    });
+    expect(problems).toHaveLength(1);
+    expect(problems[0]).toContain('protected-paths-ok');
   });
 });
 

@@ -162,8 +162,14 @@ export function checkLinkedIssue(body, labels) {
   ];
 }
 
+function pathsOf(files) {
+  return files.map((file) => (typeof file === 'string' ? file : file.path));
+}
+
 export function protectedFiles(files) {
-  return files.filter((file) => PROTECTED_PATH_PATTERNS.some((pattern) => pattern.test(file)));
+  return pathsOf(files).filter((path) =>
+    PROTECTED_PATH_PATTERNS.some((pattern) => pattern.test(path)),
+  );
 }
 
 export function checkProtectedPaths(files, labels) {
