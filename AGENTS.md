@@ -10,8 +10,9 @@ Every PR must pass the `verify` GitHub Actions check before it can merge. Agents
 2. Title the PR as a Conventional Commit (`feat(office): ...`, `fix(core): ...`, `ci: ...`).
 3. Put `Closes #N` in the PR body. Use the `no-issue` label only when Tude asks for a PR without an issue.
 4. Fill in the checklist in `.github/pull_request_template.md`, including the verify evidence.
-5. Not edit protected paths (`.github/workflows/`, `.github/actions/`, `.github/CODEOWNERS`, `LICENSE*`, `LICENSES/`, `NOTICE*`, `*.upstream` license files, `THIRD_PARTY_NOTICES.md`, `scripts/verify.sh`, `scripts/check-pr-policy.mjs`) unless the task says so. Those PRs need the `protected-paths-ok` label, which only Tude adds after review. Never add that label yourself.
-6. Open PRs as drafts, never merge, and never weaken a gate to get green: fix the cause, or report the failure with its log.
+5. Not edit protected paths (`.github/workflows/`, `.github/actions/`, `.github/CODEOWNERS`, `LICENSE*`, `LICENSES/`, `NOTICE*`, `*.upstream` license files, `THIRD_PARTY_NOTICES.md`, `scripts/verify.sh`, `scripts/check-pr-policy.mjs`) unless the task says so. Those PRs need the `protected-paths-ok` label, which Tude approves; agents may attach it once Tude says so on that PR, and must quote that approval in the PR body.
+6. Label every PR with exactly one risk label: `risk:low` (agents may merge once `verify` is green) or `risk:high` (human review required, agents must never merge). `risk:high` is required when the PR touches protected paths, is a breaking change (`!`), or when in doubt; CI rejects `risk:low` on such PRs and rejects PRs with no risk label at all.
+7. Open PRs as drafts, never merge a `risk:high` PR, and never weaken a gate to get green: fix the cause, or report the failure with its log.
 
 Details and the reasoning behind each gate: [docs/office/CI.md](./docs/office/CI.md).
 

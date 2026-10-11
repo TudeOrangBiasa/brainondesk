@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   checkLinkedIssue,
   checkProtectedPaths,
+  checkRiskLabel,
   checkTitle,
   evaluatePolicy,
   parseLabels,
@@ -82,7 +83,33 @@ describe('parseLabels', () => {
 describe('evaluatePolicy', () => {
   it('reports every violation', () => {
     expect(evaluatePolicy({ title: 'x', body: '', labels: [], files: ['LICENSE'] })).toHaveLength(
-      3,
+      4,
     );
+  });
+});
+
+describe('checkRiskLabel', () => {
+  it('accepts low for ordinary files', () => {
+    expect(checkRiskLabel('feat: x', ['risk:low'], ['packages/app/src/a.ts'])).toEqual([]);
+  });
+
+  it('accepts high for anything', () => {
+    expect(checkRiskLabel('feat!: x', ['risk:high'], ['NOTICE'])).toEqual([]);
+  });
+
+  it('rejects a missing label', () => {
+    expect(checkRiskLabel('feat: x', [], ['packages/app/src/a.ts'])).toHaveLength(1);
+  });
+
+  it('rejects both labels', () => {
+    expect(checkRiskLabel('feat: x', ['risk:low', 'risk:high'], [])).toHaveLength(1);
+  });
+
+  it('rejects low on protected paths', () => {
+    expect(checkRiskLabel('chore: x', ['risk:low'], ['NOTICE'])).toHaveLength(1);
+  });
+
+  it('rejects low on breaking changes', () => {
+    expect(checkRiskLabel('feat!: x', ['risk:low'], ['packages/app/src/a.ts'])).toHaveLength(1);
   });
 });

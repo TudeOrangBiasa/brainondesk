@@ -15,6 +15,8 @@ export const CONVENTIONAL_TYPES = [
   'revert',
 ];
 
+export const RISK_LOW_LABEL = 'risk:low';
+export const RISK_HIGH_LABEL = 'risk:high';
 export const NO_ISSUE_LABEL = 'no-issue';
 export const PROTECTED_PATHS_LABEL = 'protected-paths-ok';
 
@@ -37,14 +39,12 @@ const TITLE_PATTERN = new RegExp(
 );
 
 const LINKED_ISSUE_PATTERN = /\b(close[sd]?|fix(e[sd])?|resolve[sd]?)\s*:?\s+#\d+\b/i;
-
 export function checkTitle(title) {
   if (TITLE_PATTERN.test(title.trim())) return [];
   return [
     `PR title "${title}" is not a Conventional Commit title. Use "<type>(<scope>): <summary>" with type one of ${CONVENTIONAL_TYPES.join(', ')}.`,
   ];
 }
-
 export function checkLinkedIssue(body, labels) {
   if (labels.includes(NO_ISSUE_LABEL)) return [];
   if (LINKED_ISSUE_PATTERN.test(body)) return [];
@@ -56,7 +56,6 @@ export function checkLinkedIssue(body, labels) {
 export function protectedFiles(files) {
   return files.filter((file) => PROTECTED_PATH_PATTERNS.some((pattern) => pattern.test(file)));
 }
-
 export function checkProtectedPaths(files, labels) {
   const touched = protectedFiles(files);
   if (touched.length === 0 || labels.includes(PROTECTED_PATHS_LABEL)) return [];
@@ -66,6 +65,27 @@ export function checkProtectedPaths(files, labels) {
     `PR changes protected paths without the "${PROTECTED_PATHS_LABEL}" label (a human adds it after review): ${shown}${more}`,
   ];
 }
+
+export function checkRiskLabel(title, labels, files) {
+  const hasLow = labels.includes(RISK_LOW_LABEL);
+  const hasHigh = labels.includes(RISK_HIGH_LABEL);
+  if (hasLow && hasHigh) {
+    return [`PR must carry exactly one risk label ("${RISK_LOW_LABEL}" or "${RISK_HIGH_LABEL}"), not both.`];
+  }
+  if (!hasLow && !hasHigh) {
+    return [`PR must carry a risk label ("${RISK_LOW_LABEL}" or "${RISK_HIGH_LABEL}"). Low-risk PRs may be merged by agents once verify is green; high-risk PRs need human review.`];
+  }
+  if (hasLow) {
+    const breaking = title.includes('!');
+    const touched = protectedFiles(files);
+    if (breaking || touched.length > 0) {
+      const why = [breaking ? 'breaking change (!)' : null, touched.length > 0 ? 'protected paths' : null].filter(Boolean).join(' and ');
+      return [`PR labeled "${RISK_LOW_LABEL}" touches ${why}; relabel as "${RISK_HIGH_LABEL}" for human review.`];
+    }
+  }
+  return [];
+}
+
 
 export function parseLabels(raw) {
   if (!raw) return [];
@@ -84,6 +104,7 @@ export function evaluatePolicy({ title, body, labels, files }) {
     ...checkTitle(title),
     ...checkLinkedIssue(body, labels),
     ...checkProtectedPaths(files, labels),
+    ...checkRiskLabel(title, labels, files),
   ];
 }
 
