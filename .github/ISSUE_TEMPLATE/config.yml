@@ -1,5 +1,5 @@
 blank_issues_enabled: true
 contact_links:
-  - name: Laporkan celah keamanan
+  - name: Report a security vulnerability
     url: https://github.com/TudeOrangBiasa/brainondesk/security/advisories/new
-    about: Lewat security advisory privat, jangan lewat issue publik.
+    about: Use a private security advisory, never a public issue.

@@ -4,15 +4,15 @@ This is BrainOnDesk, a GPL-3.0 fork of OpenKnowledge focused on a local-first de
 
 ## Verification gate (required)
 
-`verify` is the only required check. PR rules live in [CONTRIBUTING.md](./CONTRIBUTING.md) (Indonesian), test layers in [docs/TESTING.md](./docs/TESTING.md). Agents must:
+`verify` is the only required check. PR rules live in [CONTRIBUTING.md](./CONTRIBUTING.md), test layers in [docs/TESTING.md](./docs/TESTING.md). Agents must:
 
 1. Run `pnpm verify` and get `verify: all gates passed` before pushing. It mirrors CI: frozen install, PR policy, gitleaks (if installed), lint, typecheck, unit tests for core/app/desktop/office, and the desktop bundle build. `VERIFY_SKIP_INSTALL=1` skips the install on reruns.
 2. When the PR touches `packages/server/`, `packages/cli/` or `packages/native-config/`, also run `pnpm test:slow` (or the one package) and report the result; CI runs it in the non-required `slow-tests` workflow.
-3. Ship a behavior change with a test that fails without it. Test behavior through the public surface, not implementation details. Put every command you ran and its outcome under **Bukti verifikasi** in the PR body.
+3. Ship a behavior change with a test that fails without it. Test behavior through the public surface, not implementation details. Put every command you ran and its outcome under **Verification evidence** in the PR body.
 4. Title the PR `type(scope): subject` (Conventional Commits) and put `Closes #N` in the body; use the `no-issue` label only when the task has no issue.
 5. Add exactly one risk label. Run `pnpm pr:risk` after committing and use its suggestion; CI rejects `risk:low` on CI/gate/lint config, licensing, breaking (`!`) or large diffs, and warns on auth, data shape, packaging, public contract and dependency paths. Explain the label in `## Risk`.
 6. Leave protected paths (`.github/workflows/`, `.github/actions/`, `.github/CODEOWNERS`, `LICENSE*`, `LICENSES/`, `NOTICE*`, `*.upstream`, `THIRD_PARTY_NOTICES.md`, `scripts/verify.sh`, `scripts/check-pr-policy.mjs`) alone unless the task says so. Never add `protected-paths-ok`; Tude adds it after review.
-7. Open every PR as a draft. Never mark ready, merge, or enable auto-merge, whatever the risk label. End the body with `## Kenapa begini`.
+7. Open every PR as a draft. Never mark ready, merge, or enable auto-merge, whatever the risk label. End the body with `## Why this approach`.
 8. Never weaken a gate to get green: fix the cause, or report the failure with its log.
 
 How CI is wired: [docs/office/CI.md](./docs/office/CI.md).

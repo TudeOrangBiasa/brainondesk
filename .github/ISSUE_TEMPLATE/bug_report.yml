@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Isi supaya bug-nya bisa direproduksi. Agent yang ngambil issue ini bakal mulai dari tes yang gagal sesuai langkah di bawah.
+        Fill this in so the bug can be reproduced. The agent that picks up this issue will start from a failing test that follows the steps below.
   - type: checkboxes
     id: preflight
     attributes:
