@@ -1,31 +1,31 @@
-<!-- Judul: Conventional Commits, `type(scope): subjek` (feat, fix, docs, refactor, test, chore, perf, ci, build, style, revert). Aturan lengkap: CONTRIBUTING.md -->
+<!-- Title: Conventional Commits, `type(scope): subject` (feat, fix, docs, refactor, test, chore, perf, ci, build, style, revert). Full rules: CONTRIBUTING.md -->
 
 Closes #
 
-## Ringkasan
+## Summary
 
-<!-- Apa yang berubah dan kenapa, 1–3 kalimat. Tambah **Scope:** kalau ada yang sengaja ditinggal. -->
+<!-- What changed and why, in 1–3 sentences. Add **Scope:** if something was deliberately left out. -->
 
-## Bukti verifikasi
+## Verification evidence
 
-<!-- Tiap perintah yang beneran dijalanin + hasilnya. Minimal `pnpm verify`. UI: screenshot atau langkah manual. Tanpa tes? Tulis alasannya. Lihat docs/TESTING.md. -->
+<!-- Every command you actually ran and its result. At minimum `pnpm verify`. UI: a screenshot or manual steps. No tests? Explain why. See docs/TESTING.md. -->
 
 - `pnpm verify`:
 
 ## Risk
 
-<!-- Label `risk:low` atau `risk:high`, cek `pnpm pr:risk`. Maks 3 kalimat. High: aturan yang kena, file-nya, dan satu hal yang harus dicek reviewer. Low: apa yang disentuh dan kenapa gak ada aturan yang kena. -->
+<!-- Label `risk:low` or `risk:high`; check with `pnpm pr:risk`. Max 3 sentences. High: which rule fired, which files, and the one thing the reviewer must check. Low: what was touched and why no rule applies. -->
 
-## Kenapa begini
+## Why this approach
 
-<!-- 2–4 kalimat santai: keputusan utama, alternatifnya, kenapa alternatif itu kalah. -->
+<!-- 2–4 casual sentences: the main decision, the alternative, and why the alternative lost. -->
 
 ## Checklist
 
-- [ ] Tes untuk perubahan perilaku (atau alasan kenapa gak perlu)
-- [ ] `pnpm verify` lulus di lokal
-- [ ] Tanpa komentar kode di luar allowlist, tanpa secret atau path lokal
-- [ ] Docs diupdate kalau perilaku yang kelihatan user berubah
-- [ ] Kode port GenOffice bawa atribusi (`docs/office/LICENSING.md`)
+- [ ] Tests for behavior changes (or a reason why none are needed)
+- [ ] `pnpm verify` passes locally
+- [ ] No code comments outside the allowlist, no secrets or local paths
+- [ ] Docs updated if user-visible behavior changed
+- [ ] Code ported from GenOffice carries attribution (`docs/office/LICENSING.md`)
 
-<!-- Agent: buka sebagai draft, jangan mark ready, jangan merge. Tude yang merge semua PR. Label `protected-paths-ok` cuma dipasang Tude. -->
+<!-- Agents: open as a draft, never mark ready, never merge. Tude merges every PR. Only Tude adds the `protected-paths-ok` label. -->

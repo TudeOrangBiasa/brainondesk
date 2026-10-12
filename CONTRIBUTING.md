@@ -1,24 +1,24 @@
 # Contributing to BrainOnDesk
 
-BrainOnDesk adalah fork GPL dari [OpenKnowledge](https://github.com/inkeep/open-knowledge). Issue dan PR dibuka di repo ini. Tude yang review dan merge semua PR.
+BrainOnDesk is a GPL fork of [OpenKnowledge](https://github.com/inkeep/open-knowledge). Open issues and PRs in this repo. Tude reviews and merges every PR.
 
-## Aturan PR
+## PR rules
 
-1. **Satu PR, satu hal.** Kecil dan bisa direview sekali duduk. Kerjaan besar dipecah jadi PR bertumpuk (anak menargetkan branch induknya).
-2. **Draft dulu.** Agent selalu `gh pr create --draft`. Agent tidak pernah mark ready, merge, atau nyalain auto-merge. Tude yang merge, termasuk `risk:low`.
-3. **Judul Conventional Commits**: `type(scope): subjek`, contoh `fix(office): simpan ulang etag setelah save`. Type: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`. Tambah `!` kalau breaking.
-4. **Link issue**: `Closes #N` di body. Tanpa issue? Pakai label `no-issue` dan tulis alasannya.
-5. **Satu label risk**, `risk:low` atau `risk:high`. Cek saran otomatis pakai `pnpm pr:risk` (setelah commit). Aturannya ngikutin `whips/RISK.md`:
-   - `risk:low` **ditolak CI** kalau PR nyentuh CI/gate/lint config, lisensi/atribusi, judul breaking, atau diff > 400 baris / > 15 file (lockfile, locale, snapshot, fixture gak dihitung).
-   - **Warning** (boleh tetap low kalau `## Risk` jelasin kenapa): auth/credential/keyring, schema config atau bridge CRDT, packaging/env, CLI commands, MCP tools, plugin, dependency.
-6. **Protected paths** (`.github/workflows/`, `.github/actions/`, `CODEOWNERS`, `LICENSE*`, `NOTICE*`, `*.upstream`, `THIRD_PARTY_NOTICES.md`, `scripts/verify.sh`, `scripts/check-pr-policy.mjs`) butuh label `protected-paths-ok`. Cuma Tude yang pasang, setelah review.
-7. **`verify` harus hijau.** Jalanin `pnpm verify` dulu di lokal. Jangan lemahin gate biar hijau.
-8. **Tes + bukti.** Perubahan perilaku wajib bawa tes, dan body PR wajib ada bukti verifikasi (perintah + hasil). Detail di [docs/TESTING.md](./docs/TESTING.md).
-9. **Body PR** pakai [template](./.github/pull_request_template.md): Ringkasan, Bukti verifikasi, `## Risk` (maks 3 kalimat), `## Kenapa begini` (2–4 kalimat santai: keputusan utama, alternatifnya, kenapa kalah).
-10. **Tanpa komentar kode** di luar allowlist (lihat [Code comments](#code-comments)), tanpa secret/data pribadi/path lokal, `pnpm-lock.yaml` ikut di-commit kalau dependency berubah, dan `pnpm run notices` kalau paket pihak ketiga berubah.
-11. **Kode port dari GenOffice** (Apache-2.0) bawa atribusi sesuai [docs/office/LICENSING.md](./docs/office/LICENSING.md).
+1. **One PR, one thing.** Small enough to review in one sitting. Split big work into stacked PRs (each child targets its parent's branch).
+2. **Draft first.** Agents always use `gh pr create --draft`. Agents never mark ready, merge, or enable auto-merge. Tude merges, including `risk:low`.
+3. **Conventional Commits title**: `type(scope): subject`, for example `fix(office): re-store etag after save`. Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`. Add `!` for breaking changes.
+4. **Link the issue**: `Closes #N` in the body. No issue? Use the `no-issue` label and explain why.
+5. **One risk label**, `risk:low` or `risk:high`. Check the automatic suggestion with `pnpm pr:risk` (after committing). The rules follow `whips/RISK.md`:
+   - `risk:low` is **rejected by CI** if the PR touches CI/gate/lint config, licensing/attribution, has a breaking title, or the diff is > 400 lines / > 15 files (lockfiles, locales, snapshots, fixtures don't count).
+   - **Warning** (may stay low if `## Risk` explains why): auth/credentials/keyring, config schema or CRDT bridge, packaging/env, CLI commands, MCP tools, plugin, dependencies.
+6. **Protected paths** (`.github/workflows/`, `.github/actions/`, `CODEOWNERS`, `LICENSE*`, `NOTICE*`, `*.upstream`, `THIRD_PARTY_NOTICES.md`, `scripts/verify.sh`, `scripts/check-pr-policy.mjs`) need the `protected-paths-ok` label. Only Tude adds it, after review.
+7. **`verify` must be green.** Run `pnpm verify` locally first. Never weaken a gate to get green.
+8. **Tests + evidence.** Behavior changes must ship with tests, and the PR body must include verification evidence (commands + results). Details in [docs/TESTING.md](./docs/TESTING.md).
+9. **PR body** follows the [template](./.github/pull_request_template.md): Summary, Verification evidence, `## Risk` (max 3 sentences), `## Why this approach` (2–4 casual sentences: the main decision, the alternative, why it lost).
+10. **No code comments** outside the allowlist (see [Code comments](#code-comments)), no secrets/personal data/local paths, commit `pnpm-lock.yaml` when dependencies change, and run `pnpm run notices` when third-party packages change.
+11. **Code ported from GenOffice** (Apache-2.0) carries attribution per [docs/office/LICENSING.md](./docs/office/LICENSING.md).
 
-Gak ada changeset: fork ini belum punya pipeline rilis npm/desktop, dan tooling changeset upstream sudah dihapus. Perubahan yang kelihatan user cukup ditulis di body PR.
+No changesets: this fork has no npm/desktop release pipeline yet, and the upstream changeset tooling has been removed. Describe user-visible changes in the PR body.
 
 ## Development setup
 
