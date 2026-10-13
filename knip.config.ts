@@ -175,6 +175,10 @@ export default {
       entry: ['tests/**/*.ts'],
       project: 'src/**',
     },
+    'packages/mobile': {
+      entry: ['App.tsx', 'app.config.ts', 'scripts/*.mjs'],
+      project: ['**/*.{ts,tsx,js,mjs,cjs}'],
+    },
     'packages/desktop': {
       entry: [
         'src/main/entry.ts',

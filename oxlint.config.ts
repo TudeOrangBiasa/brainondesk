@@ -40,6 +40,10 @@ export default defineConfig({
     '/reports/**',
     '/specs/**',
     'lint-plugins/ok-rules/__fixtures__/**',
+    'packages/mobile/android/**',
+    'packages/mobile/ios/**',
+    'packages/mobile/.expo/**',
+    'packages/mobile/dist/**',
   ],
   options: {
     typeAware: true,
