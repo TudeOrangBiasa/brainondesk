@@ -1,53 +1,42 @@
-# CI dan gerbang verifikasi BrainOnDesk
+# BrainOnDesk CI
 
-Workflow upstream OpenKnowledge butuh secret, GitHub App, Linear, Vercel, dan signing milik Inkeep. Di fork ini semuanya sudah dihapus. Yang tersisa satu workflow, `verify`, yang jalan di runner GitHub-hosted, tanpa secret, dengan token read-only.
+Two workflows, both on GitHub-hosted runners, with a read-only token, no secrets, and actions pinned to SHAs. PR rules live in [CONTRIBUTING.md](../../CONTRIBUTING.md), test layers in [docs/TESTING.md](../TESTING.md).
 
-## Workflow `verify` (`.github/workflows/verify.yml`)
+## `verify` (required)
 
-Jalan di setiap PR (termasuk saat judul/body/label diubah), push ke `main`, dan manual. Push baru ke PR yang sama membatalkan run lama (`cancel-in-progress`).
+Runs on every PR (including when the title/body/labels change), on pushes to `main`, and manually. A new push cancels the previous run on the same PR.
 
-| Job | Isi | Kapan |
+| Job | Covers | When |
 | --- | --- | --- |
-| `policy` | judul Conventional Commit, `Closes #N` di body, path terlindungi, gitleaks atas commit PR | hanya PR |
-| `lint, typecheck, build` | `pnpm run lint` (biome + oxlint + aturan no-comments), `pnpm run typecheck`, `turbo run build:desktop` untuk desktop, test script policy | selalu |
-| `test (core/app/desktop)` | unit test per paket via turbo, paralel | selalu |
-| `verify` | agregator: hijau hanya kalau semua job di atas sukses (`policy` boleh skip di push) | selalu |
+| `policy` | `scripts/check-pr-policy.mjs`: title, `Closes #N`/`no-issue`, risk label + path-based suggestion, protected paths; gitleaks over the PR's commits | PRs only |
+| `lint, typecheck, build` | biome + oxlint (+ no-comments), typecheck, `build:desktop` (electron-vite), policy tests | always |
+| `test (core/app/desktop/office)` | unit tests per group via turbo, in parallel | always |
+| `verify` | aggregator: green only when every job above succeeds (`policy` may be skipped on push) | always |
 
-Branch protection cukup mewajibkan satu check: **`verify`**. Nama job ini jangan diubah.
+Branch protection only needs to require **`verify`**. Do not rename this job.
 
-Cache: store pnpm (kunci `pnpm-lock.yaml`) dan `.turbo/cache` per job (kunci commit, restore dari run sebelumnya). Paket yang tidak berubah jadi cache hit, jadi run berikutnya jauh lebih cepat dari run pertama.
+Shared setup lives in `.github/actions/setup` (Node from `.node-version`, pnpm via corepack, pnpm store + `.turbo/cache` caching, Rust toolchain from `rust-toolchain.toml`, frozen install). It is ours, not an upstream leftover.
 
-### Kenapa build-nya `build:desktop`, bukan `build:dir`
+`build:desktop` is used instead of `build:dir`: it already compiles main/preload/renderer and, through turbo dependencies, core/server/app/CLI/native-config. `build:dir` only adds the Electron download + packaging, several minutes with no extra signal.
 
-`build:desktop` (electron-vite) sudah mengompilasi main, preload, dan renderer, dan lewat dependensi turbo ikut membangun core, server, app, CLI, dan addon Rust native-config. Itu menangkap hampir semua error build. `build:dir` menambah download binary Electron, rebuild modul native, dan packaging electron-builder: beberapa menit ekstra tanpa banyak sinyal tambahan untuk PR. Packaging dicek saat rilis (tiket fase 6).
+## `slow-tests` (not required)
 
-### Kenapa test-nya hanya core, app, desktop
+Server (~15 minutes), CLI (~5 minutes), native-config (cargo). Runs nightly at 19:00 UTC (03:00 WITA) on `main`, manually via *Run workflow*, and on PRs that touch `packages/server/`, `packages/cli/`, `packages/native-config/`. GitHub emails nightly failures to Tude.
 
-Test `server` (>15 menit) dan `cli` (~6 menit, dua test bergantung pada lokasi `npx` di mesin) membuat gerbang lewat dari 15 menit. Jalankan `pnpm run check` di lokal kalau mengubah server atau CLI. Test DOM, integrasi, e2e, dan perf juga tidak masuk gerbang.
+## Risk label
 
-## Aturan PR (`scripts/check-pr-policy.mjs`)
+`policy` suggests a label from the diff and writes its reasoning to the job summary. The rules are mapped from `whips/RISK.md` (skills-for-agents) onto this repo's paths and live in `RISK_RULES` in `scripts/check-pr-policy.mjs`. Hard rules (CI/gate, licensing, breaking, large diffs) reject `risk:low`; soft rules only warn. A `risk:*` label only shows where Tude should focus the review. Tude still does every merge.
 
-- Judul: `<type>(<scope>)!: <ringkasan>`, type salah satu `feat fix docs style refactor perf test build ci chore revert`, scope huruf kecil.
-- Body: `Closes #N` / `Fixes #N` / `Resolves #N`. Label `no-issue` untuk PR tanpa issue.
-- Label risiko wajib tepat satu: `risk:low` (agents boleh merge kalau `verify` hijau) atau `risk:high` (wajib review manusia, agents dilarang merge). `risk:high` wajib kalau sentuh path terlindungi, breaking change (`!`), atau ragu; tanpa label atau `risk:low` di PR seperti itu ditolak policy.
-- Path terlindungi butuh label `protected-paths-ok`: `.github/workflows/`, `.github/actions/`, `.github/CODEOWNERS`, `LICENSE*`, `LICENSES/`, `NOTICE*`, `LICENSE.upstream`/`NOTICE.upstream`, `THIRD_PARTY_NOTICES.md`, `scripts/verify.sh`, `scripts/check-pr-policy.mjs`. Tude menyetujui label ini setelah review; agents boleh memasangnya setelah ada persetujuan Tude di PR itu dan wajib mengutip persetujuan tersebut di body PR. Label hanya polisi tidur; perlindungan sebenarnya adalah CODEOWNERS + wajib review untuk `risk:high`.
-- Secret: gitleaks `8.30.1` (checksum diverifikasi) memindai commit `base..head` PR.
+## Local
 
-## Lokal: `pnpm verify`
+- `pnpm verify`: the same sequence as `verify`. If no PR exists yet, policy only prints the risk suggestion. `VERIFY_SKIP_INSTALL=1` skips the install, `VERIFY_BASE` changes the base (default `origin/main`).
+- `pnpm pr:risk`: risk label suggestion for the commits on this branch.
+- `pnpm test:slow`: the three slow packages.
 
-`scripts/verify.sh` menjalankan urutan yang sama dengan CI: install frozen, policy (pakai `gh pr view` kalau PR sudah ada, kalau belum hanya menampilkan path terlindungi yang tersentuh), gitleaks (kalau terpasang, `sudo dnf install gitleaks`), lint, typecheck, unit test core/app/desktop, build desktop. `VERIFY_SKIP_INSTALL=1` melewati install, `VERIFY_BASE` mengganti base (default `origin/main`).
+## Removed from upstream
 
-## Yang dihapus dari upstream
+- Release/desktop/npm workflows: `release`, `point-release`, `promote-stable`, `select-beta-to-promote`, `desktop-*`, `publish-linux-repo`, `native-config-prebuild`.
+- Inkeep integrations: `linear-*`, `monorepo-pr-bridge`, `write-back`, `bug-lane*`, `share-contract-*` + their composite actions, `stale`, `CLA.md`.
+- `.github/scripts/` (88 helper files for the workflows above) and the macOS DMG report-path test that imported them.
 
-- Workflow rilis: `release`, `point-release`, `promote-stable`, `select-beta-to-promote`
-- Desktop: `desktop-*`, `publish-linux-repo`, `native-config-prebuild` (matriks macOS/Windows untuk publish CLI ke npm)
-- Integrasi Inkeep: `linear-*`, `monorepo-pr-bridge`, `write-back`, `bug-lane*`, `share-contract-*` beserta composite action-nya, `stale`
-- `CLA.md` (CLA ke Inkeep tidak berlaku di fork)
-- Link Discord/openknowledge.ai/advisory Inkeep di issue template, `SECURITY.md`, `CONTRIBUTING.md` diarahkan ke repo ini
-
-Script pendukung di `.github/scripts/` masih disimpan karena `packages/desktop/tests/unit/packaged-report-path.uncached.test.mjs` mengimpor salah satunya. Test bentuknya dikeluarkan dari `vitest.scripts.config.ts` karena membaca workflow yang sudah dihapus.
-
-## Catatan
-
-- Kegagalan yang sudah ada di `main` (bukan regresi, tidak masuk gerbang): `scripts/check-override-floors.test.mjs`, `scripts/check-typescript-resolution.test.mjs`, `test-support/setup-files-contract.test.ts`, `packages/desktop/tests/smoke/_helpers/dock-state-ready.test.ts`.
-- Pengecualian lint untuk paket port `packages/office-*` (biome/oxlint/no-comments/knip) dibawa oleh PR engine office (#34) bersama kodenya, supaya tidak konflik.
+Still present, not used by CI: changeset tooling (`.changeset/`, `pnpm changeset`), release scripts in `scripts/` (`compute-*-version`, `aggregate-stable-changelog`, `build-slack-release-payload`, `render-release-downloads`, `linux-repo/`, `verify-*-in-packaged-dmg`), `check:drift`, `tier1–3`, `knip`. Candidates for removal in a separate PR.

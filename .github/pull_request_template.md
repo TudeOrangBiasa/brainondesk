@@ -1,25 +1,31 @@
-<!-- Judul PR: Conventional Commit, mis. `feat(office): ...`, `fix(core): ...`, `ci: ...` -->
+<!-- Title: Conventional Commits, `type(scope): subject` (feat, fix, docs, refactor, test, chore, perf, ci, build, style, revert). Full rules: CONTRIBUTING.md -->
 
 Closes #
 
-## Ringkasan
+## Summary
 
-<!-- Apa yang berubah dan kenapa, 1–3 kalimat. -->
+<!-- What changed and why, in 1–3 sentences. Add **Scope:** if something was deliberately left out. -->
 
-## Bukti verifikasi
+## Verification evidence
 
-<!-- Tempel ringkasan output `pnpm verify` (atau perintah yang dijalankan) dan langkah uji manual. Screenshot untuk perubahan UI. -->
+<!-- Every command you actually ran and its result. At minimum `pnpm verify`. UI: a screenshot or manual steps. No tests? Explain why. See docs/TESTING.md. -->
+
+- `pnpm verify`:
+
+## Risk
+
+<!-- Label `risk:low` or `risk:high`; check with `pnpm pr:risk`. Max 3 sentences. High: which rule fired, which files, and the one thing the reviewer must check. Low: what was touched and why no rule applies. -->
+
+## Why this approach
+
+<!-- 2–4 casual sentences: the main decision, the alternative, and why the alternative lost. -->
 
 ## Checklist
 
-- [ ] Judul PR mengikuti Conventional Commits
-- [ ] Body berisi `Closes #N` (atau label `no-issue` kalau memang tanpa issue)
-- [ ] Label risiko: `risk:low` (agents boleh merge kalau `verify` hijau) atau `risk:high` (wajib review manusia, agents dilarang merge)
-- [ ] `risk:high` wajib kalau sentuh path terlindungi, breaking change (`!`), atau ragu — label `risk:low` di PR seperti itu ditolak policy
-- [ ] `pnpm verify` lulus di lokal
-- [ ] Tidak ada komentar kode baru di luar yang diizinkan (lihat AGENTS.md › Comment policy)
-- [ ] Tidak mengubah path terlindungi (`.github/workflows/`, `.github/actions/`, `CODEOWNERS`, `LICENSE*`, `NOTICE*`, `THIRD_PARTY_NOTICES.md`, `scripts/verify.sh`, `scripts/check-pr-policy.mjs`) — kalau perlu, minta label `protected-paths-ok`
-- [ ] Kode port dari GenOffice (Apache-2.0) membawa atribusi sesuai `docs/office/LICENSING.md`
-- [ ] Dokumen diperbarui kalau perilaku yang terlihat user berubah
+- [ ] Tests for behavior changes (or a reason why none are needed)
+- [ ] `pnpm verify` passes locally
+- [ ] No code comments outside the allowlist, no secrets or local paths
+- [ ] Docs updated if user-visible behavior changed
+- [ ] Code ported from GenOffice carries attribution (`docs/office/LICENSING.md`)
 
-<!-- PR dari agent: tetap draft sampai `verify` hijau. `risk:high` jangan merge sendiri, tunggu review manusia; `risk:low` boleh merge kalau `verify` hijau. -->
+<!-- Agents: open as a draft, never mark ready, never merge. Tude merges every PR. Only Tude adds the `protected-paths-ok` label. -->

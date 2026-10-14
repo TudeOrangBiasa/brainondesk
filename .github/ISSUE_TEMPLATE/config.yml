@@ -2,7 +2,4 @@ blank_issues_enabled: true
 contact_links:
   - name: Report a security vulnerability
     url: https://github.com/TudeOrangBiasa/brainondesk/security/advisories/new
-    about: Report security issues privately via GitHub security advisories, never as a public issue.
-  - name: Upstream OpenKnowledge
-    url: https://github.com/inkeep/open-knowledge
-    about: Bugs that also reproduce in upstream OpenKnowledge belong there.
+    about: Use a private security advisory, never a public issue.

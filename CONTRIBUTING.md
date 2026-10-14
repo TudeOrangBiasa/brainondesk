@@ -1,11 +1,24 @@
 # Contributing to BrainOnDesk
 
-BrainOnDesk is a community fork of [OpenKnowledge](https://github.com/inkeep/open-knowledge). Thanks for contributing! Bug reports, feature requests, and pull requests are all welcome.
+BrainOnDesk is a GPL fork of [OpenKnowledge](https://github.com/inkeep/open-knowledge). Open issues and PRs in this repo. Tude reviews and merges every PR.
 
-- **Found a bug or have an idea?** [Open an issue](https://github.com/TudeOrangBiasa/brainondesk/issues/new/choose).
-- **Bug that also happens upstream?** Report it to [inkeep/open-knowledge](https://github.com/inkeep/open-knowledge/issues) as well.
-- **Ready to code?** Open a pull request against this repository.
-- **Read a language other than English?** Most of our interface translations are machine-translated and have never been read by a native speaker, and we ship them anyway rather than hide them from the people who could fix them. Correcting one is the most useful thing you can do for it — see [Translate the interface](https://openknowledge.ai/docs/contribute/translations).
+## PR rules
+
+1. **One PR, one thing.** Small enough to review in one sitting. Split big work into stacked PRs (each child targets its parent's branch).
+2. **Draft first.** Agents always use `gh pr create --draft`. Agents never mark ready, merge, or enable auto-merge. Tude merges, including `risk:low`.
+3. **Conventional Commits title**: `type(scope): subject`, for example `fix(office): re-store etag after save`. Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`. Add `!` for breaking changes.
+4. **Link the issue**: `Closes #N` in the body. No issue? Use the `no-issue` label and explain why.
+5. **One risk label**, `risk:low` or `risk:high`. Check the automatic suggestion with `pnpm pr:risk` (after committing). The rules follow `whips/RISK.md`:
+   - `risk:low` is **rejected by CI** if the PR touches CI/gate/lint config, licensing/attribution, has a breaking title, or the diff is > 400 lines / > 15 files (lockfiles, locales, snapshots, fixtures don't count).
+   - **Warning** (may stay low if `## Risk` explains why): auth/credentials/keyring, config schema or CRDT bridge, packaging/env, CLI commands, MCP tools, plugin, dependencies.
+6. **Protected paths** (`.github/workflows/`, `.github/actions/`, `CODEOWNERS`, `LICENSE*`, `NOTICE*`, `*.upstream`, `THIRD_PARTY_NOTICES.md`, `scripts/verify.sh`, `scripts/check-pr-policy.mjs`) need the `protected-paths-ok` label. Only Tude adds it, after review.
+7. **`verify` must be green.** Run `pnpm verify` locally first. Never weaken a gate to get green.
+8. **Tests + evidence.** Behavior changes must ship with tests, and the PR body must include verification evidence (commands + results). Details in [docs/TESTING.md](./docs/TESTING.md).
+9. **PR body** follows the [template](./.github/pull_request_template.md): Summary, Verification evidence, `## Risk` (max 3 sentences), `## Why this approach` (2–4 casual sentences: the main decision, the alternative, why it lost).
+10. **No code comments** outside the allowlist (see [Code comments](#code-comments)), no secrets/personal data/local paths, commit `pnpm-lock.yaml` when dependencies change, and run `pnpm run notices` when third-party packages change.
+11. **Code ported from GenOffice** (Apache-2.0) carries attribution per [docs/office/LICENSING.md](./docs/office/LICENSING.md).
+
+Changesets (`pnpm run changeset`) are **not required**: this fork has no automated npm/desktop release pipeline yet.
 
 ## Development setup
 
@@ -14,7 +27,7 @@ A fresh clone builds and tests with no environment variables:
 ```bash
 corepack enable pnpm  # make the pnpm commands below use the packageManager pin
 pnpm install
-pnpm run check        # lint, typecheck, and tests
+pnpm verify           # the same gate CI runs on every PR
 ```
 
 Run the editor app (http://localhost:5173):
@@ -59,7 +72,8 @@ pnpm run lint         # lint (Biome)
 pnpm run typecheck    # TypeScript
 pnpm run test         # tests
 pnpm run build        # build all packages
-pnpm run check        # lint + typecheck + test
+pnpm verify           # the PR gate (see docs/TESTING.md)
+pnpm test:slow        # server, CLI and native-config tests (nightly in CI)
 pnpm run check:drift:guards  # unused deps/exports, generated-artifact freshness, toolchain pins (not part of `check`)
 ```
 
@@ -72,22 +86,6 @@ This repo does not use code comments, and `pnpm run lint` enforces that. It inve
 A short allowlist survives: directives a tool parses (`biome-ignore lint/style/noVar: reason`, `@ts-expect-error the fixture is deliberately malformed`, `@vitest-environment jsdom`, `/// <reference types="vite/client" />`, `SPDX-License-Identifier: GPL-3.0-or-later`), JSDoc carrying `@deprecated` (the audit-tag class is empty in this repo and admits nothing), and comments that BEGIN with a contract marker — `STOP: a cross-file contract a reader must not break`, `WARN: a sibling that silently drifts if this changes`, or `UPSTREAM(electron/electron#19920): a code shape forced on us from outside this repo`.
 
 If lint stops you, the diagnostic names the class of comment, the fix, and links to [`lint-plugins/no-comments/README.md`](./lint-plugins/no-comments/README.md) — the full policy, including how to convert a comment worth keeping into one of the allowed forms. Deleting it is usually the right answer.
-
-## Opening a pull request
-
-There is no CLA in this fork. Every PR must pass the `verify` check (see [docs/office/CI.md](./docs/office/CI.md)); run `pnpm verify` locally first and follow the checklist in the [Pull Request Template](./.github/pull_request_template.md):
-
-- Use a Conventional Commit PR title (`feat(office): ...`, `fix(core): ...`) and link the issue with `Closes #N`.
-- Keep PRs focused and small enough to review.
-- Add tests — or a clear manual-verification note — for behavior changes.
-- Write no code comments outside the allowlist above — `pnpm run lint` fails on the rest.
-- Add a changeset by running `pnpm run changeset` if your pull request changes user-facing or programmatic behavior. Open Knowledge is pre-1.0, so a breaking change rides as `minor` and a `major` changeset is rejected — reaching 1.0.0 is a team decision, not one a single changeset makes.
-- Run `pnpm verify` and confirm it passes. `pnpm run check` runs the wider suite (including the slow server and CLI tests).
-- Commit `pnpm-lock.yaml` when dependencies change, and run `pnpm run notices` to refresh `THIRD_PARTY_NOTICES.md` if third-party packages changed.
-- Never include secrets, credentials, customer data, or local machine paths.
-- Enable **Allow edits from maintainers** so reviewers can push fixes to your branch.
-
-The maintainer reviews and merges; accepted PRs are merged normally on `main`.
 
 ## License
 
