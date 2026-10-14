@@ -39,4 +39,7 @@ Server (~15 minutes), CLI (~5 minutes), native-config (cargo). Runs nightly at 1
 - Inkeep integrations: `linear-*`, `monorepo-pr-bridge`, `write-back`, `bug-lane*`, `share-contract-*` + their composite actions, `stale`, `CLA.md`.
 - `.github/scripts/` (88 helper files for the workflows above) and the macOS DMG report-path test that imported them.
 
-Still present, not used by CI: changeset tooling (`.changeset/`, `pnpm changeset`), release scripts in `scripts/` (`compute-*-version`, `aggregate-stable-changelog`, `build-slack-release-payload`, `render-release-downloads`, `linux-repo/`, `verify-*-in-packaged-dmg`), `check:drift`, `tier1–3`, `knip`. Candidates for removal in a separate PR.
+- Release/changeset tooling: `.changeset/`, `@changesets/cli`, the `changeset`/`version`/`release` scripts, `compute-next-beta`, `compute-stable-version`, `aggregate-stable-changelog`, `build-slack-release-payload`, `render-release-downloads`, `linux-repo/`, `verify-keyring-in-packaged-dmg`, the `check-no-major-changeset` guard.
+- `husky` + `lint-staged` (no hooks were committed), `tier1–3`, `check:full:parallel`, `remoteCache.signature` in `turbo.json`.
+
+Deliberately kept: `knip` (the `@lintignore` directive in the no-comments allowlist names knip as its reader, and 4 files in `packages/server/src/link-preview/` use it; the `directive-consumers` test goes red if knip is removed), `check:drift` (i18n, notices, schema snapshot, override floors and TypeScript resolution guards; run manually), `scripts/verify-native-config-in-packaged-dmg.mjs` (can also check `packages/cli/dist` on Linux, used by the runbook `packages/desktop/tests/smoke/native-config-e2e.md`), `known-reds`.
