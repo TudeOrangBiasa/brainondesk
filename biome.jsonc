@@ -169,6 +169,10 @@
       "!packages/desktop/out",
       "!packages/desktop/dist-desktop",
       "!packages/desktop/electron.vite.config.*.mjs",
+      "!packages/mobile/android",
+      "!packages/mobile/ios",
+      "!packages/mobile/.expo",
+      "!packages/mobile/dist",
       // Self-contained internal unit with its own tsconfig, conventions, and
       // test entry points; never OK-biome-formatted, so it stays out of the
       // format scan.
