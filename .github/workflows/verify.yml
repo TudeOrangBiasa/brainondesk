@@ -1,10 +1,9 @@
 name: verify
 
-# Required status check for main: the `verify` job below. It only goes green
-# when every other job succeeded (policy is skipped on push). Keep the job id
-# and name stable; branch protection matches on the name.
-# GitHub-hosted runners only, no repository secrets, read-only token.
-# Local mirror: `pnpm verify` (scripts/verify.sh).
+# BrainOnDesk PR gate. Branch protection requires only the `verify` job;
+# it is green when every job below passed. PR rules: CONTRIBUTING.md,
+# test layers: docs/TESTING.md, local mirror: `pnpm verify`.
+# GitHub-hosted runners, read-only token, no repository secrets.
 
 on:
   pull_request:
@@ -46,7 +45,7 @@ jobs:
         with:
           node-version-file: .node-version
 
-      - name: PR title, linked issue, protected paths
+      - name: Title, linked issue, risk label, protected paths
         env:
           PR_TITLE: ${{ github.event.pull_request.title }}
           PR_BODY: ${{ github.event.pull_request.body }}
@@ -55,7 +54,7 @@ jobs:
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: node scripts/check-pr-policy.mjs
 
-      - name: Install gitleaks
+      - name: Install gitleaks (pinned, checksum verified)
         run: |
           curl -fsSL -o gitleaks.tgz "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
           echo "${GITLEAKS_SHA256}  gitleaks.tgz" | sha256sum -c -
@@ -82,7 +81,7 @@ jobs:
         with:
           turbo-cache-key: checks
 
-      - name: Lint (biome + oxlint, no-comments)
+      - name: Lint (biome, oxlint, no-comments)
         run: pnpm run lint
 
       - name: Typecheck
@@ -91,17 +90,25 @@ jobs:
       - name: Build desktop bundle (electron-vite, no packaging)
         run: pnpm exec turbo run build:desktop --filter=@inkeep/open-knowledge-desktop --output-logs=errors-only
 
-      - name: PR policy script tests
+      - name: PR policy tests
         run: pnpm exec vitest run --config vitest.scripts.config.ts scripts/check-pr-policy.test.mjs
 
   test:
-    name: test (${{ matrix.package }})
+    name: test (${{ matrix.name }})
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
-        package: [core, app, desktop]
+        include:
+          - name: core
+            filter: "@inkeep/open-knowledge-core"
+          - name: app
+            filter: "@inkeep/open-knowledge-app"
+          - name: desktop
+            filter: "@inkeep/open-knowledge-desktop"
+          - name: office
+            filter: "./packages/office-*"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -109,10 +116,10 @@ jobs:
 
       - uses: ./.github/actions/setup
         with:
-          turbo-cache-key: test-${{ matrix.package }}
+          turbo-cache-key: test-${{ matrix.name }}
 
       - name: Unit tests
-        run: pnpm exec turbo run test --filter=@inkeep/open-knowledge-${{ matrix.package }} --output-logs=errors-only
+        run: pnpm exec turbo run test --filter='${{ matrix.filter }}' --output-logs=errors-only
 
   verify:
     name: verify
@@ -128,7 +135,8 @@ jobs:
           echo "$RESULTS"
           node -e '
             const needs = JSON.parse(process.env.RESULTS);
+            const pushOrManual = process.env.GITHUB_EVENT_NAME !== "pull_request";
             const bad = Object.entries(needs).filter(([job, r]) =>
-              !(r.result === "success" || (job === "policy" && r.result === "skipped" && process.env.GITHUB_EVENT_NAME !== "pull_request")));
+              !(r.result === "success" || (job === "policy" && r.result === "skipped" && pushOrManual)));
             if (bad.length) { console.error("Failed gates:", bad.map(([j, r]) => `${j}=${r.result}`).join(", ")); process.exit(1); }
           '
