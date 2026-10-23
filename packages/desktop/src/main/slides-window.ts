@@ -72,8 +72,9 @@ function containToDeckOrigin(window: SlidesDeckWindow, port: number): void {
 
 export interface CreateSlidesWindowDeps {
   createWindow(opts: { partition: string; title: string }): SlidesDeckWindow;
-  registry: Pick<SlidesDeckRegistry, 'register' | 'unregister'>;
+  registry: Pick<SlidesDeckRegistry, 'register' | 'unregister' | 'takeReapReason'>;
   deck: Omit<RunningSlidesDeck, 'window'>;
+  noteUsed?(docPath: string): void;
   waitForRenderer?(window: SlidesDeckWindow): Promise<SlidevRendererOutcome>;
   navigationTimeoutMs?: number;
   rendererTimeoutMs?: number;
@@ -166,9 +167,15 @@ export async function createSlidesWindow(
   let closed = false;
   let termination: Promise<void> | undefined;
 
+  const logReaped = (reason: 'window-closed' | 'replaced' | 'idle' | 'open-failed'): void => {
+    console.warn(JSON.stringify({ event: 'slides-reaped', reason, port: deck.port }));
+  };
+
   const gracefullyTerminateDeck = (): Promise<void> => {
     if (termination !== undefined) return termination;
+    const reason = deps.registry.takeReapReason(deck.docPath) ?? 'window-closed';
     deps.registry.unregister(deck.docPath);
+    logReaped(reason);
     const pending = gracefulTerminate({
       sendSignal: (sig) => deck.process.signal(sig),
       isAlive: () => deck.process.isAlive(),
@@ -192,9 +199,11 @@ export async function createSlidesWindow(
   };
 
   const rejectWindow = (): void => {
+    const reason = deps.registry.takeReapReason(deck.docPath) ?? 'open-failed';
     deps.registry.unregister(deck.docPath);
     if (termination === undefined) {
       if (deck.process.isAlive()) void deck.process.signal('SIGKILL');
+      logReaped(reason);
       termination = Promise.resolve();
     }
     if (closed) return;
@@ -206,6 +215,7 @@ export async function createSlidesWindow(
     closed = true;
     void gracefullyTerminateDeck();
   });
+  deps.noteUsed?.(deck.docPath);
 
   let navigation: TimeoutOutcome<void>;
   try {

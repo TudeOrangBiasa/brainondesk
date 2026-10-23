@@ -10,10 +10,11 @@ function fakeWindow(id: number): SlidesDeckWindow {
   return { id } as unknown as SlidesDeckWindow;
 }
 
-function fakeDeck(docPath: string, port: number) {
+function fakeDeck(docPath: string, port: number, ownerId = 7) {
   const signals: Array<'SIGTERM' | 'SIGKILL'> = [];
   const deck: RunningSlidesDeck = {
     docPath,
+    ownerId,
     port,
     process: {
       onExit: () => {},
@@ -170,9 +171,10 @@ describe('reapAll reaches children that are spawned but not yet registered', () 
     registry.trackSpawned('/proj/deck.md', proc);
     registry.register({
       docPath: '/proj/deck.md',
+      ownerId: 7,
       port: 4300,
       process: proc,
-      window: { on: () => {}, focus: () => {}, isDestroyed: () => false } as never,
+      window: { on: () => {}, focus: () => {}, isDestroyed: () => false, close: () => {} } as never,
     });
     registry.unregister('/proj/deck.md');
     registry.reapAll();
@@ -188,9 +190,10 @@ describe('reapAll reaches children that are spawned but not yet registered', () 
     registry.trackSpawned('/proj/deck.md', opened.proc);
     registry.register({
       docPath: '/proj/deck.md',
+      ownerId: 7,
       port: 4300,
       process: opened.proc,
-      window: { on: () => {}, focus: () => {}, isDestroyed: () => false } as never,
+      window: { on: () => {}, focus: () => {}, isDestroyed: () => false, close: () => {} } as never,
     });
     registry.reapAll();
 
@@ -214,9 +217,10 @@ describe('reapAll reaches children that are spawned but not yet registered', () 
     const opened = fakeProc();
     registry.register({
       docPath: '/proj/deck.md',
+      ownerId: 7,
       port: 4300,
       process: opened.proc,
-      window: { on: () => {}, focus: () => {}, isDestroyed: () => false } as never,
+      window: { on: () => {}, focus: () => {}, isDestroyed: () => false, close: () => {} } as never,
     });
 
     opened.emitExit(1);
