@@ -3,7 +3,14 @@ import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { hookReportPath } from './hooks.mjs';
-import { isolatedHomeEnv, measureIdleWindow, okEnv, runtimeCommand, runtimeStartArgs } from './server-lifecycle.mjs';
+import {
+  isolatedHomeEnv,
+  measureIdleWindow,
+  okEnv,
+  runtimeCommand,
+  runtimeStartArgs,
+  waitForHookReport,
+} from './server-lifecycle.mjs';
 
 
 describe('isolatedHomeEnv', () => {
@@ -59,33 +66,50 @@ describe('hook wiring', () => {
 
   test('a stale report with no live reporter reads as missing after the reset', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'ok-perf-idle-'));
-    const idle = await measureIdleWindow({ pid: 1, port: 1, tmpDir: dir, seconds: 0 });
+    const idle = await measureIdleWindow({ pid: 1, port: 1, tmpDir: dir, seconds: 0, hookTimeoutMs: 300 });
     expect(idle.timerCallsIdle).toBeNull();
     expect(idle.fsStatCallsIdle).toBeNull();
+    expect(idle.hookReporterReady).toBe(false);
     const written = mkdtempSync(join(tmpdir(), 'ok-perf-idle-'));
     writeFileSync(hookReportPath(written), JSON.stringify({ fsStat: 8000, fsReaddir: 900, timers: 5000 }), 'utf-8');
-    const stale = await measureIdleWindow({ pid: 1, port: 1, tmpDir: written, seconds: 0 });
+    const stale = await measureIdleWindow({ pid: 1, port: 1, tmpDir: written, seconds: 0, hookTimeoutMs: 300 });
     expect(stale.timerCallsIdle).toBeNull();
     expect(stale.fsStatCallsIdle).toBeNull();
+    expect(stale.hookReporterReady).toBe(false);
   });
 
-  test('sequential runs ignore the previous run report and measure the live reporter', async () => {
-    const dir = mkdtempSync(join(tmpdir(), 'ok-perf-rerun-'));
-    writeFileSync(hookReportPath(dir), JSON.stringify({ fsStat: 8000, fsReaddir: 900, timers: 5000 }), 'utf-8');
-    const counters = { fsStat: 0, fsReaddir: 0, timers: 0 };
-    const reporter = setInterval(() => {
-      counters.fsStat += 1;
-      counters.fsReaddir += 1;
-      counters.timers += 1;
+  test('a reporter slower than one tick still seeds the before sample via polling', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ok-perf-slow-'));
+    const counters = { fsStat: 10, fsReaddir: 4, timers: 6 };
+    const slow = setTimeout(() => {
       writeFileSync(hookReportPath(dir), JSON.stringify({ ...counters }), 'utf-8');
-    }, 100);
+      const ticking = setInterval(() => {
+        counters.fsStat += 2;
+        counters.fsReaddir += 1;
+        counters.timers += 3;
+        writeFileSync(hookReportPath(dir), JSON.stringify({ ...counters }), 'utf-8');
+      }, 100);
+      ticking.unref?.();
+      setTimeout(() => clearInterval(ticking), 1500).unref?.();
+    }, 1500);
     try {
-      const idle = await measureIdleWindow({ pid: 1, port: 1, tmpDir: dir, seconds: 1 });
-      expect(idle.fsStatCallsIdle).toBeGreaterThan(0);
-      expect(idle.fsReaddirCallsIdle).toBeGreaterThan(0);
-      expect(idle.timerCallsIdle).toBeGreaterThan(0);
+      const idle = await measureIdleWindow({ pid: 1, port: 1, tmpDir: dir, seconds: 0, hookTimeoutMs: 5000 });
+      expect(idle.hookReporterReady).toBe(true);
+      expect(idle.fsStatCallsIdle).not.toBeNull();
+      expect(idle.timerCallsIdle).not.toBeNull();
     } finally {
-      clearInterval(reporter);
+      clearTimeout(slow);
     }
+  });
+
+  test('waitForHookReport returns null on timeout and the live report when present', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ok-perf-wait-'));
+    await expect(waitForHookReport(hookReportPath(dir), { timeoutMs: 200, pollMs: 50 })).resolves.toBeNull();
+    writeFileSync(hookReportPath(dir), JSON.stringify({ fsStat: 3, fsReaddir: 1, timers: 2 }), 'utf-8');
+    await expect(waitForHookReport(hookReportPath(dir), { timeoutMs: 500 })).resolves.toMatchObject({
+      fsStat: 3,
+      fsReaddir: 1,
+      timers: 2,
+    });
   });
 });

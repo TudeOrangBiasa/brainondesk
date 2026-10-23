@@ -197,7 +197,9 @@ async function runOnce({ runtime, projectDirs, homeDir, tmpRoot, opts }) {
     if (idle.timerCallsIdle === null) {
       skipped.push({
         scope: `server:${runtime}:timers`,
-        reason: 'no hook report delta for the idle window; --import hook did not produce counter data from the measured server process',
+        reason: idle.hookReporterReady
+          ? 'hook reporter wrote before/after snapshots but the idle-window counter delta is missing'
+          : 'hook reporter wrote no report within the wait after reset, so the before sample is missing and the idle delta is null',
       });
     }
     if (!opts.skipRenderer) {

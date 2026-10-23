@@ -137,11 +137,28 @@ export function stopViaOk({ runtime, cliBin, projectDir, env, timeoutMs = 60_000
   return runOkSync({ runtime, cliBin, args: ['stop', '--force', projectDir], cwd: projectDir, env, timeoutMs });
 }
 
-export async function measureIdleWindow({ pid, port, tmpDir, seconds }) {
-  resetHookReportFile(hookReportPath(tmpDir));
-  await sleep(1100);
+export async function waitForHookReport(path, { timeoutMs = 15_000, pollMs = 100 } = {}) {
+  const deadline = Date.now() + timeoutMs;
+  for (;;) {
+    const report = readHookReportFile(path);
+    if (report) return report;
+    if (Date.now() >= deadline) return null;
+    await sleep(Math.min(pollMs, Math.max(0, deadline - Date.now())));
+  }
+}
+
+export async function measureIdleWindow({
+  pid,
+  port,
+  tmpDir,
+  seconds,
+  hookTimeoutMs = 15_000,
+  hookPollMs = 100,
+}) {
+  const reportPath = hookReportPath(tmpDir);
+  resetHookReportFile(reportPath);
+  const beforeHook = await waitForHookReport(reportPath, { timeoutMs: hookTimeoutMs, pollMs: hookPollMs });
   const beforeTicks = readCpuTicks(pid);
-  const beforeHook = readHookReportFile(hookReportPath(tmpDir));
   await sleep(seconds * 1000);
   const afterTicks = readCpuTicks(pid);
   const smaps = readSmapsRollupKB(pid);
@@ -164,6 +181,7 @@ export async function measureIdleWindow({ pid, port, tmpDir, seconds }) {
     fsStatCallsIdle: hook?.fsStat ?? null,
     fsReaddirCallsIdle: hook?.fsReaddir ?? null,
     timerCallsIdle: hook?.timers ?? null,
+    hookReporterReady: beforeHook !== null,
   };
 }
 
