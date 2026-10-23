@@ -8,7 +8,7 @@ import {
   procStatCpuTicks,
   serverLockPath,
 } from './proc-stats.mjs';
-import { hookDelta, hookReportPath, readHookReportFile } from './hooks.mjs';
+import { hookDelta, hookReportPath, readHookReportFile, resetHookReportFile } from './hooks.mjs';
 
 export function isolatedHomeEnv(homeDir) {
   return {
@@ -138,6 +138,8 @@ export function stopViaOk({ runtime, cliBin, projectDir, env, timeoutMs = 60_000
 }
 
 export async function measureIdleWindow({ pid, port, tmpDir, seconds }) {
+  resetHookReportFile(hookReportPath(tmpDir));
+  await sleep(1100);
   const beforeTicks = readCpuTicks(pid);
   const beforeHook = readHookReportFile(hookReportPath(tmpDir));
   await sleep(seconds * 1000);

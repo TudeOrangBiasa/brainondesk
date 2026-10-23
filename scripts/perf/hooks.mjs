@@ -1,7 +1,13 @@
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, rmSync, writeFileSync } from 'node:fs';
 
 export function hookReportPath(tmpDir) {
   return `${tmpDir}/ok-perf-hook.json`;
+}
+
+export function resetHookReportFile(path) {
+  try {
+    rmSync(path, { force: true });
+  } catch {}
 }
 
 export function readHookReportFile(path) {

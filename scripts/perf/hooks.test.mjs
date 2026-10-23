@@ -2,11 +2,20 @@ import { describe, expect, test } from 'vitest';
 import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { hookDelta, hookModuleSource, hookReportPath, installPerfCounters, readHookReportFile } from './hooks.mjs';
+import { hookDelta, hookModuleSource, hookReportPath, installPerfCounters, readHookReportFile, resetHookReportFile } from './hooks.mjs';
 
 describe('hookReportPath', () => {
   test('pins the report filename inside the tmp dir', () => {
     expect(hookReportPath('/tmp/x')).toBe('/tmp/x/ok-perf-hook.json');
+  });
+
+  test('resetHookReportFile removes a stale report without failing when absent', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ok-perf-hooks-'));
+    const path = join(dir, 'r.json');
+    writeFileSync(path, JSON.stringify({ fsStat: 1 }), 'utf-8');
+    resetHookReportFile(path);
+    expect(readHookReportFile(path)).toBeNull();
+    expect(() => resetHookReportFile(path)).not.toThrow();
   });
 });
 describe('readHookReportFile', () => {

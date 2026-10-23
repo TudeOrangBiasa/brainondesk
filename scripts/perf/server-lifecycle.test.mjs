@@ -57,15 +57,35 @@ describe('hook wiring', () => {
     expect(runtimeStartArgs('node', '/cli.mjs', null)[0]).toBe('/cli.mjs');
   });
 
-  test('measureIdleWindow reports null timer counters when the hook report never lands', async () => {
+  test('a stale report with no live reporter reads as missing after the reset', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'ok-perf-idle-'));
     const idle = await measureIdleWindow({ pid: 1, port: 1, tmpDir: dir, seconds: 0 });
     expect(idle.timerCallsIdle).toBeNull();
     expect(idle.fsStatCallsIdle).toBeNull();
     const written = mkdtempSync(join(tmpdir(), 'ok-perf-idle-'));
-    writeFileSync(hookReportPath(written), JSON.stringify({ fsStat: 4, fsReaddir: 2, timers: 7 }), 'utf-8');
-    const steady = await measureIdleWindow({ pid: 1, port: 1, tmpDir: written, seconds: 0 });
-    expect(steady.timerCallsIdle).toBe(0);
-    expect(steady.fsStatCallsIdle).toBe(0);
+    writeFileSync(hookReportPath(written), JSON.stringify({ fsStat: 8000, fsReaddir: 900, timers: 5000 }), 'utf-8');
+    const stale = await measureIdleWindow({ pid: 1, port: 1, tmpDir: written, seconds: 0 });
+    expect(stale.timerCallsIdle).toBeNull();
+    expect(stale.fsStatCallsIdle).toBeNull();
+  });
+
+  test('sequential runs ignore the previous run report and measure the live reporter', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ok-perf-rerun-'));
+    writeFileSync(hookReportPath(dir), JSON.stringify({ fsStat: 8000, fsReaddir: 900, timers: 5000 }), 'utf-8');
+    const counters = { fsStat: 0, fsReaddir: 0, timers: 0 };
+    const reporter = setInterval(() => {
+      counters.fsStat += 1;
+      counters.fsReaddir += 1;
+      counters.timers += 1;
+      writeFileSync(hookReportPath(dir), JSON.stringify({ ...counters }), 'utf-8');
+    }, 100);
+    try {
+      const idle = await measureIdleWindow({ pid: 1, port: 1, tmpDir: dir, seconds: 1 });
+      expect(idle.fsStatCallsIdle).toBeGreaterThan(0);
+      expect(idle.fsReaddirCallsIdle).toBeGreaterThan(0);
+      expect(idle.timerCallsIdle).toBeGreaterThan(0);
+    } finally {
+      clearInterval(reporter);
+    }
   });
 });
