@@ -21,11 +21,13 @@ export interface SlidesRegistryClock {
 }
 
 export interface SlidesIdleSweepDeps {
-  setTimeout(cb: () => void, ms: number): unknown;
-  clearTimeout(handle: unknown): void;
+  setTimeout(cb: () => void, ms: number): SlidesIdleTimer;
+  clearTimeout(handle: SlidesIdleTimer | undefined): void;
   idleMs?: number;
   sweepMs?: number;
 }
+
+export type SlidesIdleTimer = ReturnType<typeof setTimeout> | number;
 
 export const SLIDES_IDLE_MS = 5 * 60_000;
 
@@ -86,7 +88,7 @@ export function createSlidesDeckRegistry(
       const idleMs = deps.idleMs ?? SLIDES_IDLE_MS;
       const sweepMs = deps.sweepMs ?? SLIDES_SWEEP_MS;
       let stopped = false;
-      let timer: unknown;
+      let timer: SlidesIdleTimer | undefined;
       const tick = (): void => {
         if (stopped) return;
         const now = clock.now();
