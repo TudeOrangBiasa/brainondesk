@@ -133,12 +133,12 @@ function fakeProcess(opts: { alive?: boolean; diesOnSigterm?: boolean } = {}) {
 function makeDeck(
   docPath: string,
   port: number,
-  opts: { alive?: boolean; diesOnSigterm?: boolean } = {},
+  opts: { alive?: boolean; diesOnSigterm?: boolean; ownerId?: number } = {},
 ): Omit<RunningSlidesDeck, 'window'> & {
   signals: () => Array<'SIGTERM' | 'SIGKILL'>;
 } {
   const { process, signals } = fakeProcess(opts);
-  return { docPath, port, process, signals };
+  return { docPath, ownerId: opts.ownerId ?? 7, port, process, signals };
 }
 
 function virtualTerminateClock() {
@@ -362,7 +362,9 @@ describe('createSlidesWindow', () => {
     });
     await expect(opened).resolves.toEqual({ shown: false, reason: 'load-failed' });
 
-    expect(warnSpy).toHaveBeenCalledTimes(1);
+    expect(warnSpy).toHaveBeenCalledTimes(2);
+    const reaped = JSON.parse(warnSpy.mock.calls[1]?.[0] as string);
+    expect(reaped).toMatchObject({ event: 'slides-reaped', reason: 'open-failed', port: 4300 });
     const payload = JSON.parse(warnSpy.mock.calls[0]?.[0] as string);
     expect(payload).toMatchObject({
       event: 'slides-load-failed',
@@ -398,6 +400,11 @@ describe('createSlidesWindow', () => {
     expect(JSON.parse(warnSpy.mock.calls[0]?.[0] as string)).toMatchObject({
       event: 'slides-load-timed-out',
       windowId: 80_001,
+      port: 4300,
+    });
+    expect(JSON.parse(warnSpy.mock.calls[1]?.[0] as string)).toMatchObject({
+      event: 'slides-reaped',
+      reason: 'open-failed',
       port: 4300,
     });
     warnSpy.mockRestore();
