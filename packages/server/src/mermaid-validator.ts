@@ -1,3 +1,4 @@
+/// <reference lib="es2024" />
 import { detectFmRegion, type RenderWarning } from '@inkeep/open-knowledge-core';
 import type { DiagramType, PeleError } from 'pele/lazy';
 import { getLogger } from './logger.ts';
