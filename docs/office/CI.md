@@ -50,4 +50,5 @@ Script pendukung di `.github/scripts/` masih disimpan karena `packages/desktop/t
 ## Catatan
 
 - Kegagalan yang sudah ada di `main` (bukan regresi, tidak masuk gerbang): `scripts/check-override-floors.test.mjs`, `scripts/check-typescript-resolution.test.mjs`, `test-support/setup-files-contract.test.ts`, `packages/desktop/tests/smoke/_helpers/dock-state-ready.test.ts`.
+- `packages/core` `terminal-launch.test.ts` (2 test: PowerShell parser round-trip) merah di Fedora — butuh parser PowerShell asli; gagal identik di `main` tanpa perubahan apa pun (cek 2026-10-23). Di luar gerbang sampai ada yang investigasi.
 - Pengecualian lint untuk paket port `packages/office-*` (biome/oxlint/no-comments/knip) dibawa oleh PR engine office (#34) bersama kodenya, supaya tidak konflik.
