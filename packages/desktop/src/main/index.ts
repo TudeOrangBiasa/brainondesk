@@ -433,7 +433,7 @@ import { removeGitFolder } from './remove-git-folder.ts';
 import { attachRendererConsoleCapture } from './renderer-console-capture.ts';
 import { createRendererReadySink, type RendererReadySink } from './renderer-ready-sink.ts';
 import { createRendererRecovery, type RendererRecovery } from './renderer-recovery.ts';
-import { resolveDetachedSpawnArgs } from './resolve-detached-spawn-args.ts';
+import { resolveDetachedSpawnArgs, serverHeapExecArg } from './resolve-detached-spawn-args.ts';
 import { resolveShareTarget as resolveShareTargetMain } from './resolve-share-target.ts';
 import {
   RESTORE_REVEAL_TIMEOUT_MS,
@@ -1528,6 +1528,7 @@ function ensureWindowManager() {
       return child as unknown as UtilityProcessLike;
     },
     terminalAuthAvailable: isTerminalAvailable(),
+    serverHeapExecArgv: [serverHeapExecArg(process.env)],
     utilityEntryPath,
     spawnSingleFileServer: spawnCliServer,
     ...(app.isPackaged ? { spawnDetachedServer: spawnCliServer } : {}),

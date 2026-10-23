@@ -1,8 +1,29 @@
 import type { SpawnOptions } from 'node:child_process';
+import { totalmem } from 'node:os';
 import { posix as pathPosix, win32 as pathWin32 } from 'node:path';
 import { resolveHelperBundleBinary } from '@inkeep/open-knowledge-core/helper-bundle';
 import { fallbackPaths } from '@inkeep/open-knowledge-server';
-
+export const SERVER_MAX_OLD_SPACE_ENV_VAR = 'OK_SERVER_MAX_OLD_SPACE_MB';
+export const SERVER_MAX_OLD_SPACE_CAP_MB = 4096;
+export const SERVER_MAX_OLD_SPACE_MIN_MB = 512;
+export function resolveServerMaxOldSpaceMb(
+  env: Readonly<Record<string, string | undefined>>,
+  totalMemBytes: number = totalmem(),
+): number {
+  const raw = env[SERVER_MAX_OLD_SPACE_ENV_VAR];
+  if (raw !== undefined && raw.trim() !== '') {
+    const parsed = Number(raw);
+    if (Number.isSafeInteger(parsed) && parsed >= SERVER_MAX_OLD_SPACE_MIN_MB) return parsed;
+  }
+  const quarterRamMb = Math.floor(totalMemBytes / 4 / 1024 / 1024);
+  return Math.max(SERVER_MAX_OLD_SPACE_MIN_MB, Math.min(SERVER_MAX_OLD_SPACE_CAP_MB, quarterRamMb));
+}
+export function serverHeapExecArg(
+  env: Readonly<Record<string, string | undefined>>,
+  totalMemBytes: number = totalmem(),
+): string {
+  return `--max-old-space-size=${resolveServerMaxOldSpaceMb(env, totalMemBytes)}`;
+}
 export interface ResolveDetachedSpawnArgsInput {
   readonly platform: NodeJS.Platform;
   readonly isPackaged: boolean;
@@ -15,6 +36,7 @@ export interface ResolveDetachedSpawnArgsInput {
   readonly singleFile?: string;
   readonly projectDir?: string;
   readonly terminalAuthAvailable?: boolean;
+  readonly totalMemBytes?: number;
 }
 
 export const TERMINAL_AUTH_ARG = '--terminal-auth';
@@ -89,8 +111,9 @@ export function resolveDetachedSpawnArgs(
       : parentExecPath;
 
   const projectRoot = projectDir ?? contentDir;
+  const totalMemBytes = input.totalMemBytes ?? totalmem();
   const args = [
-    '--max-old-space-size=16384',
+    serverHeapExecArg(env, totalMemBytes),
     bundleCliMjsPath,
     'start',
     '--react-shell-dist-dir',
