@@ -70,12 +70,14 @@ describe('hook wiring', () => {
     expect(idle.timerCallsIdle).toBeNull();
     expect(idle.fsStatCallsIdle).toBeNull();
     expect(idle.hookReporterReady).toBe(false);
+    expect(idle.idleCpuSec).toBeNull();
     const written = mkdtempSync(join(tmpdir(), 'ok-perf-idle-'));
     writeFileSync(hookReportPath(written), JSON.stringify({ fsStat: 8000, fsReaddir: 900, timers: 5000 }), 'utf-8');
     const stale = await measureIdleWindow({ pid: 1, port: 1, tmpDir: written, seconds: 0, hookTimeoutMs: 300 });
     expect(stale.timerCallsIdle).toBeNull();
     expect(stale.fsStatCallsIdle).toBeNull();
     expect(stale.hookReporterReady).toBe(false);
+    expect(stale.idleCpuSec).toBeNull();
   });
 
   test('a reporter slower than one tick still seeds the before sample via polling', async () => {

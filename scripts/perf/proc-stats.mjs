@@ -22,6 +22,12 @@ export function cpuSecondsBetween(before, after, ticksPerSecond) {
   return (after.utime + after.stime - before.utime - before.stime) / ticksPerSecond;
 }
 
+export function normalizeIdleCpuToSixty(rawCpuSec, seconds) {
+  if (rawCpuSec === null || !Number.isFinite(rawCpuSec)) return null;
+  if (!Number.isFinite(seconds) || seconds <= 0) return null;
+  return (rawCpuSec * 60) / seconds;
+}
+
 export function kernelTicksPerSecond() {
   return 100;
 }

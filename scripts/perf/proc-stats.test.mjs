@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest';
 import {
   cpuSecondsBetween,
   median,
+  normalizeIdleCpuToSixty,
   parseServerLock,
   parseSmapsRollup,
   procStatCpuTicks,
@@ -44,6 +45,19 @@ describe('procStatCpuTicks', () => {
 describe('cpuSecondsBetween', () => {
   test('sums user+sys deltas over the tick rate', () => {
     expect(cpuSecondsBetween({ utime: 100, stime: 20 }, { utime: 160, stime: 40 }, 100)).toBeCloseTo(0.8, 9);
+  });
+});
+
+describe('normalizeIdleCpuToSixty', () => {
+  test('scales raw window cpu by 60/seconds', () => {
+    expect(normalizeIdleCpuToSixty(0.5, 5)).toBeCloseTo(6, 9);
+    expect(normalizeIdleCpuToSixty(1.2, 60)).toBeCloseTo(1.2, 9);
+  });
+
+  test('seconds<=0 and null raw yield null', () => {
+    expect(normalizeIdleCpuToSixty(0.5, 0)).toBeNull();
+    expect(normalizeIdleCpuToSixty(0.5, -1)).toBeNull();
+    expect(normalizeIdleCpuToSixty(null, 5)).toBeNull();
   });
 });
 

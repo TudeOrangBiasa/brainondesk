@@ -3,6 +3,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import {
   cpuSecondsBetween,
   kernelTicksPerSecond,
+  normalizeIdleCpuToSixty,
   parseServerLock,
   parseSmapsRollup,
   procStatCpuTicks,
@@ -165,8 +166,9 @@ export async function measureIdleWindow({
   const memory = await fetchServerMemory(port);
   const afterHook = readHookReportFile(hookReportPath(tmpDir));
   const ticksPerSecond = kernelTicksPerSecond();
-  const idleCpuSec =
+  const rawCpuSec =
     beforeTicks && afterTicks ? cpuSecondsBetween(beforeTicks, afterTicks, ticksPerSecond) : null;
+  const idleCpuSec = normalizeIdleCpuToSixty(rawCpuSec, seconds);
   const hook = hookDelta(beforeHook, afterHook);
   const heapUsedMB =
     typeof memory?.heapUsedMb === 'number' ? memory.heapUsedMb : (afterHook?.memory?.heapUsedMB ?? null);
