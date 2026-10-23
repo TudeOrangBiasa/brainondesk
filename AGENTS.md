@@ -2,6 +2,28 @@
 
 This is BrainOnDesk, a GPL-3.0 fork of OpenKnowledge focused on a local-first desktop app with office editors. Package names still use `@inkeep/open-knowledge-*` until the rebrand ticket changes them.
 
+## Agent skills
+
+### Issue tracker
+
+Issues live as GitHub Issues in `TudeOrangBiasa/brainondesk` (via `gh`). See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Five canonical roles mapped to tracker labels (`ready-for-agent` → `agent:ready`); risk uses the repo's two tiers (`risk:low`/`risk:high`, no medium). See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Multi-context: `GLOSSARY-MAP.md` at root points to per-context glossaries; ADRs in `docs/adr/`. See `docs/agents/domain.md`.
+
+### Unattended runs
+
+Orca/harness loop on this workstation; tiered auto-land; daily `/retro` + verification upkeep, proposals only. See `docs/agents/unattended.md`.
+
+### Meta docs
+
+`DESIGN.md` (Stitch), `CODING_STANDARDS.md`, conventional commits. PR body follows the `pr` skill shape.
+
 ## Verification gate (required)
 
 Every PR must pass the `verify` GitHub Actions check before it can merge. Agents must:

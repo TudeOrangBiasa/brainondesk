@@ -1,0 +1,5 @@
+interface:
+  display_name: "Verify BrainOnDesk"
+  short_description: "Drive BrainOnDesk like a user and capture evidence"
+policy:
+  allow_implicit_invocation: false

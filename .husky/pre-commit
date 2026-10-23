@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+if git diff --cached --name-only --diff-filter=ACM | grep -qE '^(packages|docs)/.*\.(ts|tsx|js|jsx|json|md)$|^(package\.json|turbo\.json|tsconfig\.json|biome\.jsonc)$|^(\.github/)?scripts/.*\.mjs$|^[^/]*\.ts$'; then
+  pnpm exec lint-staged
+fi
+
+oversize="$(git diff --cached --name-only --diff-filter=ACM | grep -vE '(\.lock$|lock\.yaml$|lockb$|\.min\.|/dist/|/build/|CHANGELOG\.md$|package-lock\.json$)' | while read -r f; do
+  if [ -f "$f" ]; then
+    bytes=$(wc -c <"$f" | tr -d ' ')
+    if [ "$bytes" -gt 20000 ]; then echo "$f ($((bytes / 4)) tokens)"; fi
+  fi
+done)"
+[ -z "$oversize" ] || { echo "oversized staged files (split first, then commit):"; echo "$oversize"; exit 1; }
