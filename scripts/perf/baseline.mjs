@@ -13,7 +13,7 @@ import {
 import { fixturePlan, writeFixture } from './fixture.mjs';
 import { bytesToKB, modulepreloadHrefs, summarizeBundle } from './bundle-probe.mjs';
 import { buildBaselineReport, emptyRunShape, renderMarkdownSummary } from './report.mjs';
-import { writeHookModule } from './hooks.mjs';
+import { hookReportPath, writeHookModule } from './hooks.mjs';
 import {
   isProcessAlive,
   measureIdleWindow,
@@ -93,7 +93,7 @@ function initProject({ runtime, projectDir, homeDir }) {
 
 async function startMeasuredServer({ runtime, projectDir, homeDir, tmpRoot, startupTimeoutSeconds }) {
   const hookModule = writeHookModule(join(tmpRoot, `ok-perf-hook-${runtime}-${Date.now()}.mjs`));
-  const env = okEnv({ homeDir, hookReport: `${tmpRoot}/ok-perf-hook.json` });
+  const env = okEnv({ homeDir, hookReport: hookReportPath(tmpRoot) });
   const startedAt = Date.now();
   const logChunks = [];
   const child = spawnServer({ runtime, cliBin: CLI_BIN, cwd: projectDir, env, hookModule });
@@ -194,6 +194,12 @@ async function runOnce({ runtime, projectDirs, homeDir, tmpRoot, opts }) {
       fsReaddirCallsIdle: idle.fsReaddirCallsIdle,
       timerCallsIdle: idle.timerCallsIdle,
     });
+    if (idle.timerCallsIdle === null) {
+      skipped.push({
+        scope: `server:${runtime}:timers`,
+        reason: 'no hook report delta for the idle window; --import hook did not produce counter data from the measured server process',
+      });
+    }
     if (!opts.skipRenderer) {
       const { result, skip } = await probeRenderer({ port: lock.port });
       if (result) Object.assign(shape.renderer, result);

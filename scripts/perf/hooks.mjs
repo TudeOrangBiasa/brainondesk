@@ -70,10 +70,14 @@ export function installPerfCounters({ fs = null, timers = null } = {}) {
     for (const name of ['setTimeout', 'setInterval', 'setImmediate']) {
       const original = timers[name];
       if (typeof original !== 'function') continue;
-      timers[name] = function hooked(...args) {
+      const hooked = function hooked(...args) {
         counters.timers += 1;
         return original.apply(this, args);
       };
+      timers[name] = hooked;
+      try {
+        if (typeof globalThis !== 'undefined' && globalThis[name] === original) globalThis[name] = hooked;
+      } catch {}
     }
   }
   return counters;
@@ -103,14 +107,22 @@ export function hookModuleSource() {
     `}`,
     `for (const name of ['setTimeout', 'setInterval', 'setImmediate']) {`,
     `  const original = timers[name];`,
-    `  timers[name] = function (...args) { counters.timers += 1; return original.apply(this, args); };`,
+    `  if (typeof original !== 'function') continue;`,
+    `  const hooked = function (...args) { counters.timers += 1; return original.apply(this, args); };`,
+    `  timers[name] = hooked;`,
+    `  try { if (globalThis[name] === original) globalThis[name] = hooked; } catch {}`,
     `}`,
-    `setInterval(() => {`,
-    `  if (!report) return;`,
+    `const reportTimer = setInterval(() => {`,
+    `  const snapshot = { ...counters };`,
     `  let memory = null;`,
     `  try { const m = process.memoryUsage(); memory = { rssMB: m.rss / 1048576, heapTotalMB: m.heapTotal / 1048576, heapUsedMB: m.heapUsed / 1048576 }; } catch {}`,
-    `  try { writeFileSync(report, JSON.stringify({ ...counters, memory, at: Date.now() }), 'utf-8'); } catch {}`,
-    `}, 1000).unref?.();`,
+    `  try {`,
+    `    if (!report) return;`,
+    `    writeFileSync(report, JSON.stringify({ ...snapshot, memory, at: Date.now() }), 'utf-8');`,
+    `  } catch {}`,
+    `}, 1000);`,
+    `reportTimer.unref?.();`,
+    `try { counters.timers = Math.max(0, counters.timers - 1); } catch {}`,
     ``,
   ].join('\n');
 }

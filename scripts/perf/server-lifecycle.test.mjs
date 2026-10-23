@@ -1,5 +1,10 @@
 import { describe, expect, test } from 'vitest';
-import { isolatedHomeEnv, runtimeCommand, runtimeStartArgs } from './server-lifecycle.mjs';
+import { mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { hookReportPath } from './hooks.mjs';
+import { isolatedHomeEnv, measureIdleWindow, okEnv, runtimeCommand, runtimeStartArgs } from './server-lifecycle.mjs';
+
 
 describe('isolatedHomeEnv', () => {
   test('redirects HOME and XDG dirs into the temp home', () => {
@@ -37,5 +42,30 @@ describe('runtimeStartArgs', () => {
   test('start flags pin port 0, no browser, and no idle shutdown', () => {
     const args = runtimeStartArgs('node', '/cli.mjs', null);
     expect(args).toEqual(['/cli.mjs', 'start', '--port', '0', '--no-open-browser', '--idle-shutdown', 'off']);
+  });
+});
+
+describe('hook wiring', () => {
+  test('okEnv carries OK_PERF_HOOK_REPORT into the spawned server env', () => {
+    const env = okEnv({ homeDir: '/tmp/h', hookReport: '/tmp/t/ok-perf-hook.json' });
+    expect(env.OK_PERF_HOOK_REPORT).toBe('/tmp/t/ok-perf-hook.json');
+  });
+
+  test('spawnServer builds on runtimeStartArgs so the hook prefix reaches the child', () => {
+    expect(runtimeStartArgs('node', '/cli.mjs', '/hook.mjs')[0]).toBe('--import');
+    expect(runtimeStartArgs('node', '/cli.mjs', '/hook.mjs')[1]).toBe('/hook.mjs');
+    expect(runtimeStartArgs('node', '/cli.mjs', null)[0]).toBe('/cli.mjs');
+  });
+
+  test('measureIdleWindow reports null timer counters when the hook report never lands', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ok-perf-idle-'));
+    const idle = await measureIdleWindow({ pid: 1, port: 1, tmpDir: dir, seconds: 0 });
+    expect(idle.timerCallsIdle).toBeNull();
+    expect(idle.fsStatCallsIdle).toBeNull();
+    const written = mkdtempSync(join(tmpdir(), 'ok-perf-idle-'));
+    writeFileSync(hookReportPath(written), JSON.stringify({ fsStat: 4, fsReaddir: 2, timers: 7 }), 'utf-8');
+    const steady = await measureIdleWindow({ pid: 1, port: 1, tmpDir: written, seconds: 0 });
+    expect(steady.timerCallsIdle).toBe(0);
+    expect(steady.fsStatCallsIdle).toBe(0);
   });
 });

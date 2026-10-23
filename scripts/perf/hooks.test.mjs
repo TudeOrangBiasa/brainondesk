@@ -68,6 +68,26 @@ describe('installPerfCounters', () => {
     expect(counters).toEqual({ fsStat: 3, fsReaddir: 2, timers: 2 });
   });
 
+  test('mirrors hooked timers onto matching globals', () => {
+    const seen = [];
+    const fake = (...args) => {
+      seen.push(args);
+      return 7;
+    };
+    const real = globalThis.setImmediate;
+    globalThis.setImmediate = fake;
+    try {
+      const timers = { setTimeout: () => 0, setInterval: () => 0, setImmediate: fake };
+      const counters = installPerfCounters({ timers });
+      expect(timers.setImmediate).not.toBe(fake);
+      expect(globalThis.setImmediate).toBe(timers.setImmediate);
+      globalThis.setImmediate(() => {}, 1);
+      expect(counters.timers).toBe(1);
+    } finally {
+      globalThis.setImmediate = real;
+    }
+  });
+
   test('skips missing functions', () => {
     expect(installPerfCounters({ fs: {}, timers: {} })).toEqual({ fsStat: 0, fsReaddir: 0, timers: 0 });
   });
@@ -80,6 +100,7 @@ describe('hookModuleSource', () => {
     expect(source).toContain('statSync');
     expect(source).toContain('readdirSync');
     expect(source).toContain('setTimeout');
+    expect(source).toContain('globalThis');
     expect(source).toContain('unref');
   });
 });
