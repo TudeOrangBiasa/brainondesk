@@ -1,0 +1,7 @@
+pnpm exec lint-staged
+
+oversize="$(git diff --cached --name-only --diff-filter=ACM | grep -vE '(\.lock$|lock\.yaml$|lockb$|\.min\.|/dist/|/build/|CHANGELOG\.md$|package-lock\.json$)' | while read -r f; do
+  [ -f "$f" ] || continue
+  bytes=$(wc -c <"$f"); [ "$bytes" -gt 20000 ] && echo "$f ($((bytes / 4)) tokens)";
+done)"
+[ -z "$oversize" ] || { echo "oversized staged files (split first, then commit):"; echo "$oversize"; exit 1; }
