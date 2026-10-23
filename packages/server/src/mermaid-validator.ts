@@ -1,4 +1,5 @@
 import { detectFmRegion, type RenderWarning } from '@inkeep/open-knowledge-core';
+import type { DiagramType, PeleError } from 'pele/lazy';
 import { getLogger } from './logger.ts';
 
 const log = getLogger('mermaid-validator');
@@ -17,12 +18,19 @@ interface MermaidFence {
 }
 
 type MermaidParseApi = {
-  parse(text: string): Promise<unknown>;
+  parse(text: string): unknown;
+};
+
+type PeleParseApi = {
+  PeleError: typeof PeleError;
+  detectType(text: string): DiagramType | null;
+  load(type: DiagramType | null): Promise<boolean>;
+  parse(text: string): unknown;
 };
 
 type MermaidImporter = () => Promise<MermaidParseApi | null>;
 
-let initPromise: Promise<MermaidParseApi | null> | null = null;
+let initPromise: Promise<PeleParseApi | MermaidParseApi | null> | null = null;
 let importerOverride: MermaidImporter | null = null;
 
 export function setMermaidImporterForTests(importer: MermaidImporter | null): void {
@@ -69,48 +77,12 @@ export function extractMermaidFences(body: string): MermaidFence[] {
   return fences;
 }
 
-async function initMermaid(): Promise<MermaidParseApi | null> {
+async function initMermaid(): Promise<PeleParseApi | MermaidParseApi | null> {
   if (importerOverride) return importerOverride();
-  const { Window } = await import('happy-dom');
-  const win = new Window({ url: 'http://localhost/' });
-  const overrides: Record<string, unknown> = {
-    window: win,
-    document: win.document,
-    navigator: win.navigator,
-    location: win.location,
-    DOMParser: win.DOMParser,
-    Element: win.Element,
-    Node: win.Node,
-    SVGElement: win.SVGElement,
-    HTMLElement: win.HTMLElement,
-    MutationObserver: win.MutationObserver,
-  };
-  const saved = new Map<string, PropertyDescriptor | undefined>();
-  try {
-    for (const [key, value] of Object.entries(overrides)) {
-      saved.set(key, Object.getOwnPropertyDescriptor(globalThis, key));
-      Object.defineProperty(globalThis, key, { value, configurable: true, writable: true });
-    }
-    const mermaid = (await import('mermaid')).default;
-    mermaid.initialize({
-      startOnLoad: false,
-      securityLevel: 'strict',
-      suppressErrorRendering: true,
-    });
-    await mermaid.parse('graph LR\n A-->B');
-    return mermaid;
-  } finally {
-    for (const [key, desc] of saved) {
-      if (desc) {
-        Object.defineProperty(globalThis, key, desc);
-      } else {
-        delete (globalThis as Record<string, unknown>)[key];
-      }
-    }
-  }
+  return import('pele/lazy');
 }
 
-function getMermaid(docName: string): Promise<MermaidParseApi | null> {
+function getMermaid(docName: string): Promise<PeleParseApi | MermaidParseApi | null> {
   initPromise ??= initMermaid().catch((err) => {
     log.warn(
       { err, 'doc.name': docName },
@@ -121,7 +93,24 @@ function getMermaid(docName: string): Promise<MermaidParseApi | null> {
   return initPromise;
 }
 
-function extractLineNumber(message: string): number | undefined {
+function isPeleApi(api: PeleParseApi | MermaidParseApi): api is PeleParseApi {
+  return 'detectType' in api && 'load' in api;
+}
+
+async function parseFence(api: PeleParseApi | MermaidParseApi, body: string): Promise<unknown> {
+  if (!isPeleApi(api)) return api.parse(body);
+  await api.load(api.detectType(body));
+  return api.parse(body);
+}
+
+function extractLineNumber(
+  api: PeleParseApi | MermaidParseApi,
+  err: unknown,
+  message: string,
+): number | undefined {
+  if (isPeleApi(api) && err instanceof api.PeleError) {
+    return Number.isSafeInteger(err.line) && err.line > 0 ? err.line : undefined;
+  }
   const match = message.match(/Parse error on line (\d+)/);
   if (!match?.[1]) return undefined;
   const line = Number(match[1]);
@@ -165,7 +154,7 @@ export async function validateMermaidFences(
       }
       try {
         parsed++;
-        await mermaid.parse(fence.body);
+        await parseFence(mermaid, fence.body);
       } catch (err) {
         if (err instanceof TypeError) {
           log.debug(
@@ -176,7 +165,7 @@ export async function validateMermaidFences(
         }
         const rawMessage = err instanceof Error ? err.message : String(err);
         const message = rawMessage.slice(0, MAX_MESSAGE_CHARS);
-        const line = extractLineNumber(rawMessage);
+        const line = extractLineNumber(mermaid, err, rawMessage);
         warnings.push({
           kind: 'mermaid-parse-error',
           fenceIndex: i + 1,
