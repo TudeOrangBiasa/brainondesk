@@ -36,3 +36,4 @@ blob-report/
 .env.local
 .env.*.local
 .scratch/
+perf-baseline/
