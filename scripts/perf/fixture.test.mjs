@@ -57,6 +57,16 @@ describe('renderFixtureFiles', () => {
     expect(files.has(`${target}.md`)).toBe(true);
   });
 
+  test('links stay in range for a custom noteCount', () => {
+    const files = renderFixtureFiles(fixturePlan({ seed: 3, noteCount: 10 }));
+    expect(files.size).toBe(11);
+    for (const [name, body] of files) {
+      if (name === `${MERMAID_DOC_NAME}.md`) continue;
+      const target = /\[\[(perf-note-\d+)\]\]/.exec(body)[1];
+      expect(files.has(`${target}.md`)).toBe(true);
+    }
+  });
+
   test('note body is deterministic for a fixed seed', () => {
     expect(noteMarkdown(mulberry32(11), 5)).toBe(noteMarkdown(mulberry32(11), 5));
   });

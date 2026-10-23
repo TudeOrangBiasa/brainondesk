@@ -49,10 +49,10 @@ export function mermaidBlock(random, diagramIndex) {
   return lines.join('\n');
 }
 
-export function noteMarkdown(random, index) {
+export function noteMarkdown(random, index, noteCount = DEFAULT_NOTE_COUNT) {
   const paragraphWords = [];
   for (let w = 0; w < 60; w += 1) paragraphWords.push(pickWord(random));
-  const linkTarget = noteDocName(Math.floor(random() * DEFAULT_NOTE_COUNT));
+  const linkTarget = noteDocName(Math.floor(random() * noteCount));
   return [
     `# Perf note ${index}`,
     '',
@@ -83,7 +83,7 @@ export function renderFixtureFiles(plan) {
   const random = mulberry32(plan.seed);
   const files = new Map();
   for (let i = 0; i < plan.noteCount; i += 1) {
-    files.set(noteFilename(i), noteMarkdown(random, i));
+    files.set(noteFilename(i), noteMarkdown(random, i, plan.noteCount));
   }
   files.set(`${plan.mermaidDocName}.md`, mermaidDocMarkdown(random, plan.diagramCount));
   return files;
