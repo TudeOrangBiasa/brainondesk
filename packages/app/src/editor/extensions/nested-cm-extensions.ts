@@ -1,9 +1,7 @@
-import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
-import type { Compartment, Extension } from '@codemirror/state';
+import { Compartment, type Extension } from '@codemirror/state';
 import { EditorView, keymap } from '@codemirror/view';
-import { GFM } from '@lezer/markdown';
 import type * as Y from 'yjs';
-import { codeLanguages } from '../markdown-code-languages';
+import { createRetryingLoader } from '@/lib/retrying-loader.ts';
 import { createAgentFlashSourceExtension } from '../plugins/agent-flash-source';
 import { createMdLinkSourceExtension } from '../plugins/md-link-source';
 import { createWikiLinkSourceExtension } from '../plugins/wiki-link-source';
@@ -11,6 +9,8 @@ import { okCmTheme } from './cm-theme';
 
 export const darkTheme: Extension = okCmTheme({ dark: true });
 export const lightTheme: Extension = okCmTheme({ dark: false });
+
+export const nestedCMLanguageCompartment = new Compartment();
 
 interface NestedCMOptions {
   themeCompartment: Compartment;
@@ -28,7 +28,7 @@ export function createNestedCMExtensions(options: NestedCMOptions): Extension[] 
   const wordWrapExtension: Extension = (options.wordWrap ?? true) ? EditorView.lineWrapping : [];
 
   return [
-    markdown({ base: markdownLanguage, extensions: [GFM], codeLanguages }),
+    nestedCMLanguageCompartment.of([]),
     createWikiLinkSourceExtension(options.currentDocName ?? null),
     createMdLinkSourceExtension(),
     ...(ydoc ? [createAgentFlashSourceExtension(ydoc)] : []),
@@ -39,4 +39,11 @@ export function createNestedCMExtensions(options: NestedCMOptions): Extension[] 
       : wordWrapExtension,
     ...(options.extraKeymaps ? [options.extraKeymaps] : []),
   ];
+}
+
+const loadMarkdownLanguage = createRetryingLoader(() => import('./nested-cm-markdown.ts'));
+
+export async function loadNestedCMMarkdownLanguage(): Promise<Extension> {
+  const mod = await loadMarkdownLanguage();
+  return mod.createMarkdownLanguageExtension();
 }
