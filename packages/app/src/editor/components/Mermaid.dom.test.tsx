@@ -25,6 +25,13 @@ const renderMermaid = vi.fn(async (_id: string, _chart: string) => ({
   svg: '<svg viewBox="0 0 100 100"><g><text>Graph</text></g></svg>',
 }));
 const initializeMermaid = vi.fn(() => {});
+const peleRender = vi.fn(async (_chart: string) => ({
+  ok: true as const,
+  svg: '<svg viewBox="0 0 64 64"><g><text>Pele</text></g></svg>',
+  width: 64,
+  height: 64,
+  type: 'flowchart' as const,
+}));
 
 import * as actualLinguiMacro from '@lingui/react/macro';
 
@@ -33,6 +40,10 @@ vi.doMock('mermaid', () => ({
     initialize: initializeMermaid,
     render: renderMermaid,
   },
+}));
+
+vi.doMock('./pele-render.ts', () => ({
+  renderDiagramWithPele: peleRender,
 }));
 
 vi.doMock('@lingui/react/macro', () => ({
@@ -99,6 +110,7 @@ describe('MermaidView controls', () => {
   beforeEach(() => {
     renderMermaid.mockClear();
     initializeMermaid.mockClear();
+    peleRender.mockClear();
     createPanzoom.mockClear();
     panzoomInstances.length = 0;
     panzoomOptions.length = 0;
@@ -389,14 +401,39 @@ describe('MermaidView controls', () => {
   });
 
   test('error state does not render toolbar controls', async () => {
-    renderMermaid.mockImplementationOnce(async () => {
-      throw new Error('invalid mermaid');
-    });
+    peleRender.mockImplementationOnce(async () => ({
+      ok: false as const,
+      unsupported: false,
+      message: 'invalid mermaid',
+    }));
 
     renderMermaidView('graph TD; A-->');
 
     expect(await screen.findByRole('alert')).not.toBeNull();
     expect(screen.queryByRole('button', { name: 'Zoom in' })).toBeNull();
+  });
+
+  test('renders through pele without touching mermaid', async () => {
+    renderMermaidView('graph TD; A-->B;');
+
+    await waitForPanzoomInstance();
+
+    expect(peleRender.mock.calls.length).toBe(1);
+    expect(renderMermaid.mock.calls.length).toBe(0);
+  });
+
+  test('theme change does not re-render a pele diagram', async () => {
+    const { container } = renderMermaidView('graph TD; A-->B;');
+
+    await waitForPanzoomInstance();
+    expect(peleRender.mock.calls.length).toBe(1);
+
+    document.documentElement.classList.add('dark');
+    await waitFor(() => {
+      expect(peleRender.mock.calls.length).toBe(1);
+    });
+    expect(container.querySelector('.ok-mermaid-svg svg')).not.toBeNull();
+    document.documentElement.classList.remove('dark');
   });
 });
 
@@ -454,7 +491,7 @@ describe('MermaidLightbox', () => {
     );
 
     await waitFor(() => {
-      const charts = renderMermaid.mock.calls.map((call) => call[1]);
+      const charts = peleRender.mock.calls.map((call) => call[0]);
       expect(charts.some((chart) => chart.includes('C-->D'))).toBe(true);
     });
   });
