@@ -11,8 +11,8 @@ import { getSchema } from '@tiptap/core';
 import type { Node as PMNode } from '@tiptap/pm/model';
 import { NodeSelection, TextSelection } from '@tiptap/pm/state';
 import { describe, expect, test } from 'vitest';
+import { computeChange } from '../utils/text-change';
 import {
-  computeChange,
   computeCMSelectionForwarding,
   shouldEscapeNestedCM,
   tryParseUpgrade,

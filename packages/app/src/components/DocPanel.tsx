@@ -22,7 +22,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { applyLintFixes, collectFixes } from '@/editor/apply-lint-fix';
 import { useDocumentContext } from '@/editor/DocumentContext';
-import { useDocLintConfig } from '@/editor/lint-config-client';
+import { useDocLintConfig } from '@/editor/lint-config-hooks';
 import { useDocDiagnostics } from '@/editor/useDocDiagnostics';
 import { useDocLinkFindings } from '@/editor/validation-audit-client';
 import { useSingleFileMode } from '@/lib/single-file-mode';

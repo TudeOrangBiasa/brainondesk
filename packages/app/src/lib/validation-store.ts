@@ -1,9 +1,9 @@
+import type { ValidationDocCounts } from '@inkeep/open-knowledge-core/markdown/lint/light';
 import {
   countDiagnosticsBySource,
-  type ValidationDocCounts,
   type ValidationSourceCounts,
   type ValidationSourceKey,
-} from '@inkeep/open-knowledge-core/markdown/lint';
+} from '@inkeep/open-knowledge-core/markdown/lint/light';
 import { filePathToDocName } from '@/lib/doc-hash';
 
 export type DocProblemCounts = ValidationSourceCounts;

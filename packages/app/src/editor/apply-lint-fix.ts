@@ -2,7 +2,7 @@ import type {
   LintDiagnostic,
   LintPosition,
   LintTextEdit,
-} from '@inkeep/open-knowledge-core/markdown/lint';
+} from '@inkeep/open-knowledge-core/markdown/lint/light';
 import type * as Y from 'yjs';
 import { requestPreviewTabPromotion } from './preview-tab-promotion';
 

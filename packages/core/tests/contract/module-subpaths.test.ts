@@ -71,6 +71,7 @@ import * as markdownSubpath from '@inkeep/open-knowledge-core/markdown';
 import * as markdownCodeFenceSubpath from '@inkeep/open-knowledge-core/markdown/code-fence';
 import * as markdownHtmlToMdastSubpath from '@inkeep/open-knowledge-core/markdown/html-to-mdast';
 import * as markdownLintSubpath from '@inkeep/open-knowledge-core/markdown/lint';
+import * as markdownLintLightSubpath from '@inkeep/open-knowledge-core/markdown/lint/light';
 import * as markdownMdastToHtmlSubpath from '@inkeep/open-knowledge-core/markdown/mdast-to-html';
 import * as markdownPlainTextSubpath from '@inkeep/open-knowledge-core/markdown/plain-text';
 import * as markdownReferenceLabelSubpath from '@inkeep/open-knowledge-core/markdown/reference-label';
@@ -214,6 +215,7 @@ const MODULE_SUBPATHS: Record<string, object> = {
   './markdown/code-fence': markdownCodeFenceSubpath,
   './markdown/html-to-mdast': markdownHtmlToMdastSubpath,
   './markdown/lint': markdownLintSubpath,
+  './markdown/lint/light': markdownLintLightSubpath,
   './markdown/mdast-to-html': markdownMdastToHtmlSubpath,
   './markdown/plain-text': markdownPlainTextSubpath,
   './markdown/reference-label': markdownReferenceLabelSubpath,

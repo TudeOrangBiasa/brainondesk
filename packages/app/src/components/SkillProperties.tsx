@@ -2,9 +2,13 @@ import type { HocuspocusProvider } from '@hocuspocus/provider';
 import { SKILL_NAME_REGEX, type SkillScope } from '@inkeep/open-knowledge-core/schemas/api';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { Gauge, Type } from 'lucide-react';
-import { useEffect, useId, useState } from 'react';
+import { lazy, Suspense, useEffect, useId, useState } from 'react';
 import { PropertyDisplayRow } from '@/components/PropertyDisplayRow';
-import { PropertyPanel } from '@/components/PropertyPanel';
+
+const PropertyPanel = lazy(async () => ({
+  default: (await import('@/components/PropertyPanel')).PropertyPanel,
+}));
+
 import { SkillCostValue } from '@/components/SkillCostValue';
 import { Input } from '@/components/ui/input';
 import { useSkills } from '@/hooks/use-skills';
@@ -122,15 +126,17 @@ export function SkillProperties({
   ) : null;
 
   return (
-    <PropertyPanel
-      provider={provider}
-      reservedKeys={SKILL_RESERVED_KEYS}
-      identitySlot={
-        <>
-          {nameRow}
-          {tokensRow}
-        </>
-      }
-    />
+    <Suspense fallback={null}>
+      <PropertyPanel
+        provider={provider}
+        reservedKeys={SKILL_RESERVED_KEYS}
+        identitySlot={
+          <>
+            {nameRow}
+            {tokensRow}
+          </>
+        }
+      />
+    </Suspense>
   );
 }

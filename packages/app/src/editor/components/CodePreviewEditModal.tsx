@@ -28,7 +28,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Kbd } from '@/components/ui/kbd';
-import { propEditorHighlight } from './CodeMirrorPropInput';
+import { propEditorHighlight } from '../codemirror/prop-highlight';
 
 type SupportedLanguage =
   | 'html'

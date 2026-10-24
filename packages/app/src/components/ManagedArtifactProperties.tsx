@@ -7,9 +7,13 @@ import {
 } from '@inkeep/open-knowledge-core/constants/cc1';
 import type { SkillScope } from '@inkeep/open-knowledge-core/schemas/api';
 import { useLingui } from '@lingui/react/macro';
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { toast } from 'sonner';
-import { PropertyPanel } from '@/components/PropertyPanel';
+
+const PropertyPanel = lazy(async () => ({
+  default: (await import('@/components/PropertyPanel')).PropertyPanel,
+}));
+
 import { SkillProperties } from '@/components/SkillProperties';
 import { TemplateProperties } from '@/components/TemplateProperties';
 import { useDocumentContext } from '@/editor/DocumentContext';
@@ -31,7 +35,11 @@ export function ManagedArtifactProperties({
   const parsed = parseManagedArtifactName(docName);
   if (parsed?.kind === 'skill') {
     if (parsed.rel !== null) {
-      return <PropertyPanel provider={provider} />;
+      return (
+        <Suspense fallback={null}>
+          <PropertyPanel provider={provider} />
+        </Suspense>
+      );
     }
     return <SkillPropertiesPanel provider={provider} scope={parsed.scope} name={parsed.name} />;
   }
@@ -51,7 +59,11 @@ export function ManagedArtifactProperties({
     );
   }
   if (isExternalSkillDocName(docName)) {
-    return <PropertyPanel provider={provider} />;
+    return (
+      <Suspense fallback={null}>
+        <PropertyPanel provider={provider} />
+      </Suspense>
+    );
   }
   return null;
 }

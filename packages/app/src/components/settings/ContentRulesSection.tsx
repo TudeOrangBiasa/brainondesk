@@ -3,7 +3,7 @@ import {
   DEFAULT_LINKS_VALIDATION,
   DEFAULT_SUPPRESS_LOG_LINK_ADVISORIES,
   type LinksValidationSetting,
-} from '@inkeep/open-knowledge-core/markdown/lint';
+} from '@inkeep/open-knowledge-core/markdown/lint/light';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { toast } from 'sonner';
 import { Label } from '@/components/ui/label';

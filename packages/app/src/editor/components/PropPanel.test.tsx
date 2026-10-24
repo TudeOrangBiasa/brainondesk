@@ -445,14 +445,13 @@ describe('PropPanel — descriptor.props narrowing (real registry)', () => {
 });
 
 describe('PropPanel — CodeMirror branch (string props with `language`)', () => {
-  test('Math.formula renders the CodeMirror wrapper with `data-prop-language="latex"`', () => {
+  test('Math.formula renders the CodeMirror mount point with `data-prop-language="latex"`', () => {
     const d = findBuiltIn('Math');
     const html = withFakeStorage(() =>
       renderToString(<PropPanel descriptor={d} values={{}} onChange={() => {}} />),
     );
     expect(html).toContain('data-prop-codemirror=""');
     expect(html).toContain('data-prop-language="latex"');
-    expect(html).toContain('id="prop-formula"');
   });
 
   test('MermaidFence.chart is hidden — PropPanel renders no CodeMirror surface for it', () => {
