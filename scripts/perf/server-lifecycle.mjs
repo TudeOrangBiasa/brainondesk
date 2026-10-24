@@ -37,6 +37,12 @@ export function runtimeCommand(runtime) {
   return runtime === 'bun' ? 'bun' : process.execPath;
 }
 
+export function runtimeVersion(runtime) {
+  const result = spawnSync(runtimeCommand(runtime), ['--version'], { encoding: 'utf-8', timeout: 30_000 });
+  const version = (result.stdout ?? '').trim().split('\n')[0]?.trim() ?? '';
+  return version ? { version } : null;
+}
+
 export function runtimeStartArgs(runtime, cliBin, hookModule) {
   const base = ['start', '--port', '0', '--no-open-browser', '--idle-shutdown', 'off'];
   if (hookModule && runtime === 'node') return ['--import', hookModule, cliBin, ...base];
