@@ -97,12 +97,13 @@ describe('renderMarkdownSummary', () => {
       ],
       bundle: { initialJsGzipKB: 2200, initialJsRawKB: 6600, initialModuleCount: 282 },
       skipped: [],
-      cli: {},
+      cli: { node: 'v24.0.0', bun: '1.4.2' },
     });
     const md = renderMarkdownSummary(report);
     for (const field of ['rssMB', 'pssMB', 'heapUsedMB', 'idleCpuSec60', 'jsHeapUsedMB', 'domNodesMermaidDoc', 'initialJsGzipKB', 'initialModuleCount']) {
       expect(md).toContain(field);
     }
     expect(md).toContain('300 notes');
+    expect(md).toContain('runtimes: node v24.0.0, bun 1.4.2');
   });
 });
