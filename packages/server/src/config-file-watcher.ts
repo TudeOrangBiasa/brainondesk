@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { dirname } from 'node:path';
+import { startEventLeafWatcher } from './event-leaf-watcher.ts';
 import { tracedMkdirSync } from './fs-traced.ts';
 import { errnoCode } from './http/handler-utils.ts';
 import { getLogger } from './logger.ts';
@@ -56,11 +57,11 @@ export async function startConfigFileWatcher(
     log.debug({ path }, 'config file unlinked; Y.Text retained at current state');
   };
 
-  const stop = await startPolledPathWatcher({
+  const stop = await startEventLeafWatcher({
     listPaths: async () => [absPath],
     onEvent: (event, path) => (event === 'unlink' ? handleUnlink(path) : handlePath(path)),
     onError: (err, path) => {
-      log.warn({ err, path }, '[config-file-watcher] poll error');
+      log.warn({ err, path }, '[config-file-watcher] watcher error');
     },
   });
   handlePath(absPath, false);

@@ -1069,7 +1069,6 @@ describe('DerivedDocumentIndex local-target projection', () => {
 
     unlinkSync(join(rig.contentDir, 'assets/report.pdf'));
     await vi.advanceTimersByTimeAsync(5000);
-
     expect((await rig.index.getLocalTargetAssessments('source'))[0]).toMatchObject({
       status: 'missing',
       reason: 'no-such-file',

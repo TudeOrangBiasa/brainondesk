@@ -33,7 +33,8 @@ const SLOW_STARTUP_LOG_THRESHOLD_MS = 10_000;
 const DERIVED_INDEX_SAVE_DEBOUNCE_MS = 2000;
 const LOCAL_TARGET_REBUILD_RETRY_BASE_MS = 1000;
 const LOCAL_TARGET_REBUILD_RETRY_MAX_MS = 30_000;
-const LOCAL_TARGET_FILE_EXISTENCE_SWEEP_MS = 5000;
+const LOCAL_TARGET_EXISTENCE_IDLE_MS = 60_000;
+const LOCAL_TARGET_EXISTENCE_ACTIVE_MS = 5_000;
 
 export type DerivedDocumentRelationChannel = Extract<
   DerivedViewChannel,
@@ -195,7 +196,8 @@ export class DerivedDocumentIndex
   private tail: Promise<void> = Promise.resolve();
   private saveTimer: ReturnType<typeof setTimeout> | null = null;
   private localTargetRebuildRetryTimer: ReturnType<typeof setTimeout> | null = null;
-  private readonly localTargetFileExistenceTimer: ReturnType<typeof setInterval>;
+  private localTargetExistenceTimer: ReturnType<typeof setTimeout> | null = null;
+  private localTargetExistenceDelayMs = LOCAL_TARGET_EXISTENCE_ACTIVE_MS;
   private localTargetRebuildRetryAttempt = 0;
   private graphFileTargetsSource: readonly string[] | null = null;
   private graphFileTargets: TargetNamespace<'file'> | null = null;
@@ -239,21 +241,48 @@ export class DerivedDocumentIndex
       resetDocumentForTest: (documentName) => this.resetDocumentForTest(documentName),
       rescanBacklinksForTest: () => this.rescanBacklinksForTest(),
     };
-    this.localTargetFileExistenceTimer = setInterval(() => {
-      if (this.closed || !this.startupSettled || !this.localTargetIndex.isReady()) return;
-      void this.runCommand(async () => {
-        const affected = await this.localTargetIndex.reconcileDependentFileTargetsFromDisk(
-          this.onRecoveredFileTarget,
-        );
-        this.maybeSignalLocalTargets();
-        if (affected > 0) this.signalChannel('files');
-      }).catch((err) => {
+    this.scheduleLocalTargetExistenceSweep();
+  }
+
+  private runLocalTargetExistenceSweep(): void {
+    this.localTargetExistenceTimer = null;
+    if (this.closed || !this.startupSettled || !this.localTargetIndex.isReady()) {
+      this.scheduleLocalTargetExistenceSweep();
+      return;
+    }
+    void this.runCommand(async () => {
+      const affected = await this.localTargetIndex.reconcileDependentFileTargetsFromDisk(
+        this.onRecoveredFileTarget,
+      );
+      this.maybeSignalLocalTargets();
+      this.localTargetExistenceDelayMs =
+        affected > 0 ? LOCAL_TARGET_EXISTENCE_ACTIVE_MS : LOCAL_TARGET_EXISTENCE_IDLE_MS;
+      if (affected > 0) this.signalChannel('files');
+    })
+      .catch((err) => {
         if (!this.closed) {
           log.warn({ err }, '[local-target] dependent file-existence sweep failed');
         }
+        this.localTargetExistenceDelayMs = LOCAL_TARGET_EXISTENCE_IDLE_MS;
+      })
+      .finally(() => {
+        this.scheduleLocalTargetExistenceSweep();
       });
-    }, LOCAL_TARGET_FILE_EXISTENCE_SWEEP_MS);
-    this.localTargetFileExistenceTimer.unref?.();
+  }
+
+  private scheduleLocalTargetExistenceSweep(): void {
+    if (this.closed || this.localTargetExistenceTimer !== null) return;
+    this.localTargetExistenceTimer = setTimeout(() => {
+      this.runLocalTargetExistenceSweep();
+    }, this.localTargetExistenceDelayMs);
+    this.localTargetExistenceTimer.unref?.();
+  }
+
+  private cancelLocalTargetExistenceSweep(): void {
+    if (this.localTargetExistenceTimer !== null) {
+      clearTimeout(this.localTargetExistenceTimer);
+      this.localTargetExistenceTimer = null;
+    }
   }
 
   beginStartup(branch: string): {
@@ -466,6 +495,7 @@ export class DerivedDocumentIndex
       if (inventory === null || !inventory.fileTargets.includes(relativePath)) {
         this.localTargetIndex.setFileTarget(relativePath, true);
       }
+      this.localTargetExistenceDelayMs = LOCAL_TARGET_EXISTENCE_ACTIVE_MS;
       this.maybeSignalLocalTargets();
     });
   }
@@ -476,6 +506,7 @@ export class DerivedDocumentIndex
       if (inventory === null || inventory.fileTargets.includes(relativePath)) {
         this.localTargetIndex.setFileTarget(relativePath, false);
       }
+      this.localTargetExistenceDelayMs = LOCAL_TARGET_EXISTENCE_ACTIVE_MS;
       this.maybeSignalLocalTargets();
     });
   }
@@ -700,7 +731,7 @@ export class DerivedDocumentIndex
       void this.enqueueInternal(() => this.saveScheduledCache(pendingSave, 'close-flush'));
     }
     this.closed = true;
-    clearInterval(this.localTargetFileExistenceTimer);
+    this.cancelLocalTargetExistenceSweep();
     this.cancelLocalTargetRebuildRetry();
     this.localTargetIndex.close();
     this.startupAdmission.resolve();
