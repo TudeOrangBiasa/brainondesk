@@ -1,0 +1,34 @@
+{
+  "name": "@inkeep/open-knowledge-office-sheets",
+  "version": "0.1.0",
+  "license": "GPL-3.0-or-later",
+  "private": true,
+  "type": "module",
+  "description": "Sheets workbook engine: Rust xlsx sidecar (streaming reads, surgical saves) spawned lazily by the server.",
+  "exports": {
+    "./binary": {
+      "@inkeep/source": "./scripts/resolve-binary.mjs",
+      "development": "./scripts/resolve-binary.mjs",
+      "types": "./scripts/resolve-binary.d.mts",
+      "default": "./scripts/resolve-binary.mjs"
+    }
+  },
+  "files": [
+    "scripts",
+    "UPSTREAM.md",
+    "LICENSE.upstream",
+    "NOTICE.upstream",
+    "native/xlsx-engine/target/release/xlsx-sidecar*"
+  ],
+  "scripts": {
+    "native:build": "cargo build --release --manifest-path native/xlsx-engine/Cargo.toml --config native/xlsx-engine/.cargo/config.toml && node scripts/copy-binary.mjs",
+    "native:build:debug": "cargo build --manifest-path native/xlsx-engine/Cargo.toml --config native/xlsx-engine/.cargo/config.toml",
+    "native:test": "cargo test --manifest-path native/xlsx-engine/Cargo.toml --config native/xlsx-engine/.cargo/config.toml",
+    "build": "pnpm run native:build",
+    "typecheck": "echo no-ts",
+    "test": "pnpm run native:test"
+  },
+  "devDependencies": {
+    "@types/node": "^24.7.0"
+  }
+}
