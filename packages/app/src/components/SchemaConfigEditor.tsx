@@ -6,7 +6,7 @@ import { EditorModeToggle } from '@/components/EditorModeToggle';
 import { NotInSidebarIndicator } from '@/components/NotInSidebarIndicator';
 import { FrontmatterSchemaFieldEditor } from '@/components/settings/frontmatter-schema-field-editor';
 import { TextViewer } from '@/components/TextViewer';
-import { useProjectLintConfig } from '@/editor/lint-config-client';
+import { useProjectLintConfig } from '@/editor/lint-config-hooks';
 import { type LintConfigViewMode, useLintConfigViewMode } from '@/editor/useLintConfigViewMode';
 import {
   consumeSchemaFieldsView,
