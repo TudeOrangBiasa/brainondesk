@@ -19,6 +19,7 @@ import {
   measureIdleWindow,
   okEnv,
   runOkSync,
+  runtimeVersion,
   spawnServer,
   stopViaOk,
   waitForHealth,
@@ -287,7 +288,7 @@ async function main(argv) {
       runs,
       bundle,
       skipped,
-      cli: { node: process.version },
+      cli: { node: process.version, bun: runtimeVersion('bun')?.version ?? null },
     });
     const jsonPath = join(outDir, baselineJsonFilename());
     const mdPath = join(outDir, baselineMarkdownFilename());

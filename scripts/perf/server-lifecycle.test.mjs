@@ -9,9 +9,9 @@ import {
   okEnv,
   runtimeCommand,
   runtimeStartArgs,
+  runtimeVersion,
   waitForHookReport,
 } from './server-lifecycle.mjs';
-
 
 describe('isolatedHomeEnv', () => {
   test('redirects HOME and XDG dirs into the temp home', () => {
@@ -32,6 +32,13 @@ describe('runtimeCommand', () => {
   });
 });
 
+describe('runtimeVersion', () => {
+  test('node reports the current version, bun reports a version or null', () => {
+    expect(runtimeVersion('node')).toEqual({ version: process.version });
+    const bun = runtimeVersion('bun');
+    expect(bun === null || typeof bun.version === 'string').toBe(true);
+  });
+});
 describe('runtimeStartArgs', () => {
   test('node prepends --import, bun prepends --preload', () => {
     expect(runtimeStartArgs('node', '/cli.mjs', '/hook.mjs').slice(0, 3)).toEqual([
