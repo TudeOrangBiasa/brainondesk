@@ -4,10 +4,6 @@ import type { HocuspocusProvider } from '@hocuspocus/provider';
 import { parseExternalSkillDocName } from '@inkeep/open-knowledge-core/constants/cc1';
 import { detectEmbeddedHostFromBrowser } from '@inkeep/open-knowledge-core/constants/embedded-host';
 import {
-  isFrontmatterSchemaAsset,
-  isMarkdownlintJsonConfig,
-} from '@inkeep/open-knowledge-core/markdown/lint';
-import {
   PREFERRED_TERMINAL_RIGHT_WIDTH,
   type TerminalPlacement,
 } from '@inkeep/open-knowledge-core/terminal-layout';
@@ -27,7 +23,6 @@ import {
 import { createPortal } from 'react-dom';
 import { useGroupRef, usePanelRef } from 'react-resizable-panels';
 import { toast } from 'sonner';
-import { AssetPreview } from '@/components/AssetPreview';
 import { DocPanel, type PanelTab } from '@/components/DocPanel';
 import {
   consumePendingDocPanelTabRequest,
@@ -41,7 +36,6 @@ import { MountStalledAffordance } from '@/components/MountStalledAffordance';
 import { OkBlobRunnerPage } from '@/components/OkBlobRunnerPage';
 import { PropertyProvider, useProperties } from '@/components/PropertyContext';
 import { ShareReceiveMissPanel } from '@/components/ShareReceiveMissPanel';
-import { SkillFileViewer } from '@/components/SkillFileViewer';
 import { SkillPreviewTab } from '@/components/SkillPreviewTab';
 import { SettingsDialogShell } from '@/components/settings/SettingsDialogShell';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
@@ -51,7 +45,7 @@ import {
   useDocumentTransition,
 } from '@/editor/DocumentContext';
 import { FindReplaceController } from '@/editor/find-replace/FindReplaceController';
-import { useDocLintConfig } from '@/editor/lint-config-client';
+import { useDocLintConfig } from '@/editor/lint-config-hooks';
 import { mountPromiseHasResolved } from '@/editor/mount-promise';
 import { editingSurfaceFor } from '@/editor/selection-stats';
 import { syncPromiseHasResolved } from '@/editor/sync-promise';
@@ -74,6 +68,7 @@ import type { OkDesktopBridge } from '@/lib/desktop-bridge-types';
 import { docNameFromHash, hashFromDocName, isSameHash } from '@/lib/doc-hash';
 import { getInitialDocPanelWidth, writeDocPanelWidth } from '@/lib/doc-panel-width-store';
 import { matchesKeyboardShortcut } from '@/lib/keyboard-shortcuts';
+import { isFrontmatterSchemaAsset, isMarkdownlintJsonConfig } from '@/lib/lint-asset-paths';
 import { subscribeLocalMenuAction } from '@/lib/local-menu-action-bus';
 import { isNoteWindow } from '@/lib/note-window-mode';
 import { isOverlayLayerOpen } from '@/lib/overlay-layers';
@@ -297,6 +292,16 @@ const LazySchemaConfigEditor = lazy(async () => {
 const LazyOfficeEditorHost = lazy(async () => {
   const mod = await import('@/components/OfficeEditorHost');
   return { default: mod.OfficeEditorHost };
+});
+
+const LazyAssetPreview = lazy(async () => {
+  const mod = await import('@/components/AssetPreview');
+  return { default: mod.AssetPreview };
+});
+
+const LazySkillFileViewer = lazy(async () => {
+  const mod = await import('@/components/SkillFileViewer');
+  return { default: mod.SkillFileViewer };
 });
 
 function ConfigEditorFallback() {
@@ -1343,11 +1348,13 @@ function EditorAreaInner({
     );
   } else if (activeTarget?.kind === 'asset') {
     viewContent = (
-      <AssetPreview
-        key={activeTarget.assetPath}
-        assetPath={activeTarget.assetPath}
-        mediaKind={activeTarget.mediaKind}
-      />
+      <Suspense fallback={<ConfigEditorFallback />}>
+        <LazyAssetPreview
+          key={activeTarget.assetPath}
+          assetPath={activeTarget.assetPath}
+          mediaKind={activeTarget.mediaKind}
+        />
+      </Suspense>
     );
   } else if (activeTarget?.kind === 'office') {
     viewContent = (
@@ -1357,13 +1364,15 @@ function EditorAreaInner({
     );
   } else if (activeTarget?.kind === 'skill-file') {
     viewContent = (
-      <SkillFileViewer
-        key={`${activeTarget.scope}/${activeTarget.name}/${activeTarget.host ?? ''}/${activeTarget.path}`}
-        scope={activeTarget.scope}
-        name={activeTarget.name}
-        path={activeTarget.path}
-        host={activeTarget.host}
-      />
+      <Suspense fallback={<ConfigEditorFallback />}>
+        <LazySkillFileViewer
+          key={`${activeTarget.scope}/${activeTarget.name}/${activeTarget.host ?? ''}/${activeTarget.path}`}
+          scope={activeTarget.scope}
+          name={activeTarget.name}
+          path={activeTarget.path}
+          host={activeTarget.host}
+        />
+      </Suspense>
     );
   } else if (activeTarget?.kind === 'skill-preview') {
     viewContent = (
@@ -1558,11 +1567,13 @@ function EditorAreaInner({
     }
     if (target?.kind === 'asset') {
       return (
-        <AssetPreview
-          key={target.assetPath}
-          assetPath={target.assetPath}
-          mediaKind={target.mediaKind}
-        />
+        <Suspense fallback={<ConfigEditorFallback />}>
+          <LazyAssetPreview
+            key={target.assetPath}
+            assetPath={target.assetPath}
+            mediaKind={target.mediaKind}
+          />
+        </Suspense>
       );
     }
     if (target?.kind === 'office') {
@@ -1574,13 +1585,15 @@ function EditorAreaInner({
     }
     if (target?.kind === 'skill-file') {
       return (
-        <SkillFileViewer
-          key={`${target.scope}/${target.name}/${target.host ?? ''}/${target.path}`}
-          scope={target.scope}
-          name={target.name}
-          path={target.path}
-          host={target.host}
-        />
+        <Suspense fallback={<ConfigEditorFallback />}>
+          <LazySkillFileViewer
+            key={`${target.scope}/${target.name}/${target.host ?? ''}/${target.path}`}
+            scope={target.scope}
+            name={target.name}
+            path={target.path}
+            host={target.host}
+          />
+        </Suspense>
       );
     }
     if (target?.kind === 'skill-preview') {

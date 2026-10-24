@@ -157,21 +157,21 @@ describe('EditorArea — markdownlint config dispatch', () => {
     expect(screen.queryByTestId('asset-preview')).toBeNull();
   });
 
-  test('leaves a non-config JSON (package.json) on the asset preview', () => {
+  test('leaves a non-config JSON (package.json) on the asset preview', async () => {
     docCtx = assetCtx('package.json');
     renderEditorArea();
 
-    expect(screen.getByTestId('asset-preview').getAttribute('data-asset-path')).toBe(
+    expect((await screen.findByTestId('asset-preview')).getAttribute('data-asset-path')).toBe(
       'package.json',
     );
     expect(screen.queryByTestId('lint-config-editor')).toBeNull();
   });
 
-  test('leaves an ordinary .json data file on the asset preview', () => {
+  test('leaves an ordinary .json data file on the asset preview', async () => {
     docCtx = assetCtx('data/settings.json');
     renderEditorArea();
 
-    expect(screen.getByTestId('asset-preview')).toBeDefined();
+    expect(await screen.findByTestId('asset-preview')).toBeDefined();
     expect(screen.queryByTestId('lint-config-editor')).toBeNull();
   });
 
@@ -194,16 +194,16 @@ describe('EditorArea — markdownlint config dispatch', () => {
     expect(screen.queryByTestId('asset-preview')).toBeNull();
   });
 
-  test('leaves a non-JSON file under .ok/schemas and unconventional json on the preview', () => {
+  test('leaves a non-JSON file under .ok/schemas and unconventional json on the preview', async () => {
     docCtx = assetCtx('.ok/schemas/notes.md');
     renderEditorArea();
-    expect(screen.getByTestId('asset-preview')).toBeDefined();
+    expect(await screen.findByTestId('asset-preview')).toBeDefined();
     expect(screen.queryByTestId('schema-config-editor')).toBeNull();
     cleanup();
 
     docCtx = assetCtx('schemas/user-owned.json');
     renderEditorArea();
-    expect(screen.getByTestId('asset-preview')).toBeDefined();
+    expect(await screen.findByTestId('asset-preview')).toBeDefined();
     expect(screen.queryByTestId('schema-config-editor')).toBeNull();
   });
 });
