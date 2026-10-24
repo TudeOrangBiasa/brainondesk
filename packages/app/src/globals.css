@@ -6505,6 +6505,18 @@ html.electron-mode [data-slot="sidebar-inner"] {
    diagram is pixel-identical to the previous DIY renderer. Selectors ride on
    `.ok-mermaid-svg.mw-canvas` — two classes out-specify every single-class
    rule in the runtime-injected sheet regardless of load order. */
+.ok-mermaid-svg {
+  --pele-bg: var(--background);
+  --pele-fg: var(--foreground);
+  --pele-muted: var(--muted-foreground);
+  --pele-line: var(--foreground);
+  --pele-surface: var(--muted);
+  --pele-surface-alt: var(--accent);
+  --pele-border: var(--border);
+  --pele-accent: var(--ring);
+  --pele-font: var(--font-sans);
+  --pele-font-mono: var(--font-mono);
+}
 .ok-mermaid-svg.mw-canvas {
   --mw-accent: var(--ring);
   --mw-chrome-bg: var(--popover);
