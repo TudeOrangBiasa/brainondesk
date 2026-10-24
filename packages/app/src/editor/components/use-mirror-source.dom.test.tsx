@@ -10,11 +10,13 @@ class FakeProvider {
   name: string;
   private syncedListeners: SyncedListener[] = [];
 
-  constructor(opts: { url: string; name: string; document: Y.Doc }) {
+  constructor(opts: { url?: string; name: string; document: Y.Doc }) {
     this.document = opts.document;
     this.name = opts.name;
     FakeProvider.instances.push(this);
   }
+
+  attach() {}
 
   on(event: string, cb: SyncedListener) {
     if (event === 'synced') this.syncedListeners.push(cb);
@@ -25,9 +27,14 @@ class FakeProvider {
   }
 
   destroy() {}
+
+  detach() {}
 }
 
-vi.doMock('@hocuspocus/provider', () => ({ HocuspocusProvider: FakeProvider }));
+vi.doMock('@hocuspocus/provider', () => ({
+  HocuspocusProvider: FakeProvider,
+  HocuspocusProviderWebsocket: class FakeSocket {},
+}));
 vi.doMock('@/lib/use-collab-url', () => ({
   useCollabUrl: () => ({ collabUrl: 'ws://test/collab' }),
 }));
