@@ -3,7 +3,7 @@ import { EditorModeToggle } from '@/components/EditorModeToggle';
 import { NotInSidebarIndicator } from '@/components/NotInSidebarIndicator';
 import { MarkdownlintRuleBrowser } from '@/components/settings/markdownlint-rule-browser';
 import { TextViewer } from '@/components/TextViewer';
-import { useProjectLintConfig } from '@/editor/lint-config-client';
+import { useProjectLintConfig } from '@/editor/lint-config-hooks';
 import { useLintConfigViewMode } from '@/editor/useLintConfigViewMode';
 
 interface LintConfigEditorProps {

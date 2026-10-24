@@ -16,7 +16,7 @@ import {
   type OkfRuleGroupId,
   type OkfRuleId,
   summarizeAppliesTo,
-} from '@inkeep/open-knowledge-core/markdown/lint';
+} from '@inkeep/open-knowledge-core/markdown/lint/light';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import {
   ArrowUpRight,
@@ -61,13 +61,12 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Spinner } from '@/components/ui/spinner';
 import { Switch } from '@/components/ui/switch';
 import { TagPillInput } from '@/components/ui/tag-pill-input';
+import { createEmptyFrontmatterSchema, deleteFrontmatterSchema } from '@/editor/lint-config-client';
 import {
-  createEmptyFrontmatterSchema,
-  deleteFrontmatterSchema,
   emitLintConfigChanged,
   useFrontmatterSchemaFiles,
   useProjectLintConfig,
-} from '@/editor/lint-config-client';
+} from '@/editor/lint-config-hooks';
 import {
   type GeneratedIndexSettingsIssue,
   useGeneratedIndexSettings,

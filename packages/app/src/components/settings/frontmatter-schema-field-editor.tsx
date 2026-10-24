@@ -3,7 +3,7 @@
 import type {
   FrontmatterFieldConstraint,
   SchemaParentPathSegment,
-} from '@inkeep/open-knowledge-core/markdown/lint';
+} from '@inkeep/open-knowledge-core/markdown/lint/light';
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
   Braces,
@@ -30,12 +30,11 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { TagPillInput } from '@/components/ui/tag-pill-input';
 import {
-  emitLintConfigChanged,
   removeFrontmatterSchemaField,
   renameFrontmatterSchemaField,
-  useProjectLintConfig,
   writeFrontmatterSchemaField,
 } from '@/editor/lint-config-client';
+import { emitLintConfigChanged, useProjectLintConfig } from '@/editor/lint-config-hooks';
 import { cn } from '@/lib/utils';
 
 const FIELD_TYPES = ['string', 'number', 'boolean', 'array', 'object'] as const;

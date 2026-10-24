@@ -7,10 +7,10 @@ import {
   LINT_FIX_TIMEOUT_MS,
   removeFrontmatterSchemaField,
   renameFrontmatterSchemaField,
-  subscribeToLintConfigChanged,
   writeFrontmatterSchemaField,
   writeMarkdownlintRule,
 } from './lint-config-client.ts';
+import { subscribeToLintConfigChanged } from './lint-config-events.ts';
 
 type FetchFn = typeof globalThis.fetch;
 
