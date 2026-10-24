@@ -521,6 +521,12 @@
       "types": "./dist/markdown-lint.d.mts",
       "default": "./dist/markdown-lint.mjs"
     },
+    "./markdown/lint/light": {
+      "@inkeep/source": "./src/markdown/lint/light.ts",
+      "development": "./src/markdown/lint/light.ts",
+      "types": "./dist/markdown-lint-light.d.mts",
+      "default": "./dist/markdown-lint-light.mjs"
+    },
     "./markdown/mdast-to-html": {
       "@inkeep/source": "./src/markdown/mdast-to-html.ts",
       "development": "./src/markdown/mdast-to-html.ts",

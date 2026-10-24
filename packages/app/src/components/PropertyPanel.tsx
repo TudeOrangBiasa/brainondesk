@@ -48,7 +48,7 @@ import { PropertyDisclosure } from '@/components/PropertyDisclosure';
 import { coerceValue, DEFAULT_VALUE_FOR_TYPE } from '@/components/PropertyWidgets';
 import { usePropertiesCollapsed } from '@/components/properties-collapsed-store';
 import { Button } from '@/components/ui/button';
-import { useDocLintConfig } from '@/editor/lint-config-client';
+import { useDocLintConfig } from '@/editor/lint-config-hooks';
 import { withPreviewTabPromotion } from '@/editor/preview-tab-promotion';
 import {
   partitionFrontmatterProblems,

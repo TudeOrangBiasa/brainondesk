@@ -7,7 +7,6 @@ import { yaml } from '@codemirror/lang-yaml';
 import {
   bracketMatching,
   defaultHighlightStyle,
-  HighlightStyle,
   indentOnInput,
   StreamLanguage,
   syntaxHighlighting,
@@ -16,10 +15,10 @@ import { stex } from '@codemirror/legacy-modes/mode/stex';
 import { Compartment, EditorState, type Extension } from '@codemirror/state';
 import { EditorView, keymap, lineNumbers } from '@codemirror/view';
 import type { PropDefString } from '@inkeep/open-knowledge-core/registry/types';
-import { tags } from '@lezer/highlight';
 import { mermaid } from 'codemirror-lang-mermaid';
 import { useEffect, useRef } from 'react';
-import { computeChange } from '../extensions/RawMdxFallbackCMView';
+import { propEditorHighlight } from '../codemirror/prop-highlight';
+import { computeChange } from '../utils/text-change';
 
 type LanguageName = NonNullable<PropDefString['language']>;
 
@@ -41,30 +40,6 @@ function resolveLanguageExtension(language: LanguageName): Extension {
       return mermaid();
   }
 }
-
-export const propEditorHighlight = HighlightStyle.define([
-  { tag: tags.keyword, color: 'var(--syntax-keyword)', fontWeight: '600' },
-  { tag: tags.controlKeyword, color: 'var(--syntax-keyword)', fontWeight: '600' },
-  { tag: tags.modifier, color: 'var(--syntax-keyword)' },
-  { tag: tags.tagName, color: 'var(--syntax-tag)' },
-  { tag: tags.typeName, color: 'var(--syntax-tag)' },
-  { tag: tags.className, color: 'var(--syntax-tag)' },
-  { tag: tags.attributeName, color: 'var(--syntax-attr)' },
-  { tag: tags.propertyName, color: 'var(--syntax-attr)' },
-  { tag: tags.variableName, color: 'var(--syntax-attr)' },
-  { tag: tags.string, color: 'var(--syntax-string)' },
-  { tag: tags.number, color: 'var(--syntax-number)' },
-  { tag: tags.bool, color: 'var(--syntax-number)' },
-  { tag: tags.null, color: 'var(--syntax-number)' },
-  { tag: tags.atom, color: 'var(--syntax-atom)' },
-  { tag: tags.literal, color: 'var(--syntax-number)' },
-  { tag: tags.operator, color: 'var(--syntax-keyword)' },
-  { tag: tags.punctuation, color: 'var(--foreground)' },
-  { tag: tags.bracket, color: 'var(--foreground)' },
-  { tag: tags.brace, color: 'var(--foreground)' },
-  { tag: tags.meta, color: 'var(--muted-foreground)' },
-  { tag: tags.comment, color: 'var(--muted-foreground)', fontStyle: 'italic' },
-]);
 
 interface CodeMirrorPropInputProps {
   value: string;

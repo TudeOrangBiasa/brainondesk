@@ -1,15 +1,12 @@
-import {
-  type ValidationAuditCountsResponse,
-  ValidationAuditCountsResponseSchema,
-  type ValidationAuditResponse,
-  ValidationAuditResponseSchema,
-  type ValidationDocResult,
-} from '@inkeep/open-knowledge-core/markdown/lint';
+import type {
+  ValidationAuditCountsResponse,
+  ValidationAuditResponse,
+  ValidationDocResult,
+} from '@inkeep/open-knowledge-core/markdown/lint/light';
 import type { BrokenLinkSuppression } from '@inkeep/open-knowledge-core/schemas/api';
 import { useEffect, useState } from 'react';
-import type { z } from 'zod';
 import { invalidatesLocalTargetAudit, subscribeToDocumentsChanged } from '@/lib/documents-events';
-import { subscribeToLintConfigChanged } from './lint-config-client';
+import { subscribeToLintConfigChanged } from './lint-config-events';
 
 type WireDiagnostic = ValidationDocResult['diagnostics'][number];
 
@@ -24,53 +21,16 @@ export async function runValidationAudit(
   scope: AuditScope = { kind: 'project' },
   signal?: AbortSignal,
 ): Promise<ValidationAuditResponse | null | typeof AUDIT_SUPERSEDED> {
-  return fetchAudit(scope, ValidationAuditResponseSchema, false, signal);
+  const { runValidationAudit: run } = await import('./validation-audit-runners.ts');
+  return run(scope, signal);
 }
 
 export async function runValidationAuditCounts(
   scope: AuditScope = { kind: 'project' },
   signal?: AbortSignal,
 ): Promise<ValidationAuditCountsResponse | null | typeof AUDIT_SUPERSEDED> {
-  return fetchAudit(scope, ValidationAuditCountsResponseSchema, true, signal);
-}
-
-async function fetchAudit<T>(
-  scope: AuditScope,
-  schema: z.ZodType<T>,
-  counts: boolean,
-  signal?: AbortSignal,
-): Promise<T | null | typeof AUDIT_SUPERSEDED> {
-  try {
-    const params = new URLSearchParams();
-    if (scope.kind === 'path') params.set('path', scope.path);
-    else if (scope.kind === 'doc') params.set('doc', scope.docName);
-    if (counts) params.set('counts', '1');
-    const query = params.size === 0 ? '' : `?${params}`;
-    const res = await fetch(`/api/audit${query}`, signal === undefined ? undefined : { signal });
-    if (!res.ok) {
-      if (res.status === 409) return AUDIT_SUPERSEDED;
-      console.warn('[audit] request failed', res.status, res.statusText);
-      return null;
-    }
-    let body: unknown;
-    try {
-      body = await res.json();
-    } catch {
-      if (signal?.aborted === true) return null;
-      console.warn('[audit] response body is not valid JSON');
-      return null;
-    }
-    const parsed = schema.safeParse(body);
-    if (!parsed.success) {
-      console.warn('[audit] response failed schema validation', parsed.error.issues);
-      return null;
-    }
-    return parsed.data;
-  } catch (err) {
-    if (signal?.aborted === true) return null;
-    console.warn('[audit] fetch threw', err);
-    return null;
-  }
+  const { runValidationAuditCounts: run } = await import('./validation-audit-runners.ts');
+  return run(scope, signal);
 }
 
 interface DocLinkFindingsSnapshot {

@@ -50,7 +50,11 @@ import { DocumentErrorBoundary } from './DocumentErrorBoundary';
 import { EditorSkeleton } from './EditorSkeleton';
 import { PageHeader } from './PageHeader';
 import { usePageList } from './PageListContext';
-import { PropertyPanel } from './PropertyPanel';
+
+const PropertyPanel = lazy(async () => ({
+  default: (await import('./PropertyPanel')).PropertyPanel,
+}));
+
 import {
   clampTargetToContent,
   computeRestoreTarget,
@@ -915,7 +919,9 @@ function ActivityEntry({
                         ) : (
                           <>
                             <PageHeader provider={entry.provider} />
-                            <PropertyPanel provider={entry.provider} />
+                            <Suspense fallback={null}>
+                              <PropertyPanel provider={entry.provider} />
+                            </Suspense>
                           </>
                         ))}
                       {}

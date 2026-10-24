@@ -31,8 +31,7 @@ import {
   Sparkles,
   Trash2,
 } from 'lucide-react';
-import type { ReactNode } from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { lazy, type ReactNode, Suspense, useEffect, useRef, useState } from 'react';
 import { ErrorBoundary, type FallbackProps } from 'react-error-boundary';
 import { toast } from 'sonner';
 import { emitStartComment } from '@/comments/store';
@@ -46,7 +45,11 @@ import {
   PopoverTrigger,
 } from '../../components/ui/popover.tsx';
 import { OPT_OUT_ATTR } from '../clipboard/index.ts';
-import { CodePreviewEditModal } from '../components/CodePreviewEditModal';
+
+const CodePreviewEditModal = lazy(async () => ({
+  default: (await import('../components/CodePreviewEditModal')).CodePreviewEditModal,
+}));
+
 import { DescriptorPlaceholder } from '../components/DescriptorPlaceholder.tsx';
 import { boardDocNameFromSrc } from '../components/ExcalidrawEmbed.tsx';
 import { JsxComponentHostProvider } from '../components/jsx-host-context.tsx';
@@ -1023,59 +1026,61 @@ export function JsxComponentView({ node, editor, extension, getPos, selected }: 
           onOpenChange={setDiagramLightboxOpen}
         />
       ) : null}
-      {editableSource && typeof pos === 'number' ? (
-        <CodePreviewEditModal
-          open={editModalOpen}
-          onOpenChange={setEditModalOpen}
-          initialValue={
-            typeof currentProps[editableSource.propName] === 'string'
-              ? (currentProps[editableSource.propName] as string)
-              : ''
-          }
-          language={editableSource.language}
-          title={t`Edit ${descriptor.displayName ?? descriptor.name} source`}
-          renderPreview={(value, setValue) => {
-            const Component = descriptor.Component;
-            const previewProps = {
-              ...renderProps,
-              [editableSource.propName]: value,
-              ...(descriptor.name === 'MermaidFence' && {
-                className: 'border-0 bg-transparent rounded-none',
-                editBinding: { canEdit: editor.isEditable, commitChart: setValue },
-              }),
-            };
-
-            return (
-              <div className="flex h-full w-full items-center justify-center p-4">
-                <Component {...previewProps} />
-              </div>
-            );
-          }}
-          onSave={(value) => {
-            const target = resolveElementActionTarget('edit-source');
-            if (!target) return;
-            const { pos: livePos, node: curNode } = target;
-            const elementAttrs = getElementJsxAttrs(curNode.attrs);
-            if (!elementAttrs) return;
-            try {
-              const currentNodeProps = elementAttrs.props;
-              const nextProps = {
-                ...currentNodeProps,
-                [editableSource.propName]: value,
-              };
-              const nextAttrs = {
-                ...elementAttrs,
-                props: nextProps,
-                sourceDirty: true,
-              };
-              editor.view.dispatch(editor.state.tr.setNodeMarkup(livePos, null, nextAttrs));
-              markUserTyping();
-            } catch (err) {
-              if (!(err instanceof RangeError)) throw err;
-              console.warn('[JsxComponentView] edit-save failed — position race', err);
+      {editableSource && typeof pos === 'number' && editModalOpen ? (
+        <Suspense fallback={null}>
+          <CodePreviewEditModal
+            open={editModalOpen}
+            onOpenChange={setEditModalOpen}
+            initialValue={
+              typeof currentProps[editableSource.propName] === 'string'
+                ? (currentProps[editableSource.propName] as string)
+                : ''
             }
-          }}
-        />
+            language={editableSource.language}
+            title={t`Edit ${descriptor.displayName ?? descriptor.name} source`}
+            renderPreview={(value, setValue) => {
+              const Component = descriptor.Component;
+              const previewProps = {
+                ...renderProps,
+                [editableSource.propName]: value,
+                ...(descriptor.name === 'MermaidFence' && {
+                  className: 'border-0 bg-transparent rounded-none',
+                  editBinding: { canEdit: editor.isEditable, commitChart: setValue },
+                }),
+              };
+
+              return (
+                <div className="flex h-full w-full items-center justify-center p-4">
+                  <Component {...previewProps} />
+                </div>
+              );
+            }}
+            onSave={(value) => {
+              const target = resolveElementActionTarget('edit-source');
+              if (!target) return;
+              const { pos: livePos, node: curNode } = target;
+              const elementAttrs = getElementJsxAttrs(curNode.attrs);
+              if (!elementAttrs) return;
+              try {
+                const currentNodeProps = elementAttrs.props;
+                const nextProps = {
+                  ...currentNodeProps,
+                  [editableSource.propName]: value,
+                };
+                const nextAttrs = {
+                  ...elementAttrs,
+                  props: nextProps,
+                  sourceDirty: true,
+                };
+                editor.view.dispatch(editor.state.tr.setNodeMarkup(livePos, null, nextAttrs));
+                markUserTyping();
+              } catch (err) {
+                if (!(err instanceof RangeError)) throw err;
+                console.warn('[JsxComponentView] edit-save failed — position race', err);
+              }
+            }}
+          />
+        </Suspense>
       ) : null}
       {}
       {hasEditableProps && (

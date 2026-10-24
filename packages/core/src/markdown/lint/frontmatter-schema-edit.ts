@@ -1,4 +1,4 @@
-import { CANONICAL_SCHEMA_DIALECT_URIS, DEFAULT_SCHEMA_DIALECT } from './frontmatter-validate.ts';
+import { CANONICAL_SCHEMA_DIALECT_URIS, DEFAULT_SCHEMA_DIALECT } from './frontmatter-dialects.ts';
 
 export interface FrontmatterFieldConstraint {
   type?: 'string' | 'number' | 'boolean' | 'array' | 'object' | null;

@@ -5,7 +5,7 @@ import {
 import {
   type LintDiagnostic,
   MARKDOWNLINT_RULE_CATALOG,
-} from '@inkeep/open-knowledge-core/markdown/lint';
+} from '@inkeep/open-knowledge-core/markdown/lint/light';
 import { docNameToRelativePath } from '@/lib/workspace-paths';
 
 const ALIAS_BY_CODE = new Map(MARKDOWNLINT_RULE_CATALOG.map((rule) => [rule.id, rule.alias]));

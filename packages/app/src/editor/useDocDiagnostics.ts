@@ -1,11 +1,8 @@
 import type { HocuspocusProvider } from '@hocuspocus/provider';
 import { isEditableTextDocFile } from '@inkeep/open-knowledge-core/constants/code-languages';
-import {
-  type LintDiagnostic,
-  type LinterConfig,
-  lintDocument,
-} from '@inkeep/open-knowledge-core/markdown/lint';
+import type { LintDiagnostic, LinterConfig } from '@inkeep/open-knowledge-core/markdown/lint/light';
 import { useEffect, useState } from 'react';
+import { lintDocumentLazy } from './lint-runner-lazy.ts';
 
 const RELINT_DEBOUNCE_MS = 300;
 const EMPTY_DIAGNOSTICS: readonly LintDiagnostic[] = Object.freeze([]);
@@ -31,7 +28,7 @@ export function useDocDiagnostics(
     let timer: ReturnType<typeof setTimeout> | null = null;
     let cancelled = false;
     const recompute = () =>
-      void lintDocument(ytext.toString(), effectiveConfig, docName)
+      void lintDocumentLazy(ytext.toString(), effectiveConfig, docName)
         .then((diagnostics) => {
           if (!cancelled) setDiagnostics(diagnostics);
         })

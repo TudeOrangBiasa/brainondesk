@@ -1,4 +1,4 @@
-import { isLintPluginSelected, LINT_PLUGINS, type LinterConfig } from './plugins.ts';
+import { isLintPluginSelected, LINT_PLUGINS, type LinterConfig } from './plugin-meta.ts';
 import type { LinksValidationSetting, LintPluginId, ValidationSource } from './types.ts';
 
 export type ValidationRunMode =

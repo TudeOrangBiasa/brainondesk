@@ -5,7 +5,7 @@ import {
   type LintDiagnostic,
   type LinterConfig,
   selectFrontmatterOnlyConfig,
-} from '@inkeep/open-knowledge-core/markdown/lint';
+} from '@inkeep/open-knowledge-core/markdown/lint/light';
 import { useDocDiagnostics } from './useDocDiagnostics.ts';
 
 export function partitionFrontmatterProblems(diagnostics: readonly LintDiagnostic[]): {

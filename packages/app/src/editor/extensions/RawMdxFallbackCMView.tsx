@@ -21,11 +21,18 @@ import { getEditorView } from '../utils/get-editor-view';
 import { getYDoc } from '../utils/get-ydoc';
 import { getSharedMarkdownManager } from '../utils/md-singleton';
 import { classifySeverity, SEVERITY_STYLES } from '../utils/severity';
+import { computeChange } from '../utils/text-change';
 import {
   autonomousFragmentEditAllowed,
   markSwapIfByteNeutral,
 } from './autonomous-fragment-edit.ts';
-import { createNestedCMExtensions, darkTheme, lightTheme } from './nested-cm-extensions';
+import {
+  createNestedCMExtensions,
+  darkTheme,
+  lightTheme,
+  loadNestedCMMarkdownLanguage,
+  nestedCMLanguageCompartment,
+} from './nested-cm-extensions';
 
 export function shouldEscapeNestedCM(
   cmView: CMEditorView,
@@ -103,30 +110,6 @@ export function tryParseUpgrade(source: string, schema: Schema): PmNode[] | null
     blocks.push(child);
   }
   return blocks;
-}
-
-export function computeChange(
-  oldVal: string,
-  newVal: string,
-): { from: number; to: number; text: string } | null {
-  if (oldVal === newVal) return null;
-  let start = 0;
-  let oldEnd = oldVal.length;
-  let newEnd = newVal.length;
-
-  while (start < oldEnd && oldVal.charCodeAt(start) === newVal.charCodeAt(start)) {
-    start++;
-  }
-  while (
-    oldEnd > start &&
-    newEnd > start &&
-    oldVal.charCodeAt(oldEnd - 1) === newVal.charCodeAt(newEnd - 1)
-  ) {
-    oldEnd--;
-    newEnd--;
-  }
-
-  return { from: start, to: oldEnd, text: newVal.slice(start, newEnd) };
 }
 
 const UNREGISTERED_REASON_PREFIX = 'Unregistered component:';
@@ -321,6 +304,12 @@ export function RawMdxFallbackView({ node, editor, getPos }: NodeViewProps) {
       extensions,
       parent: container,
     });
+    let languageAborted = false;
+    void loadNestedCMMarkdownLanguage().then((language) => {
+      if (!languageAborted) {
+        cmView.dispatch({ effects: nestedCMLanguageCompartment.reconfigure(language) });
+      }
+    });
 
     cmViewRef.current = cmView;
 
@@ -338,6 +327,7 @@ export function RawMdxFallbackView({ node, editor, getPos }: NodeViewProps) {
     };
 
     return () => {
+      languageAborted = true;
       teardownTypingListeners();
       cmView.destroy();
       cmViewRef.current = null;
