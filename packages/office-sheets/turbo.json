@@ -1,0 +1,23 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "inputs": [
+        "native/xlsx-engine/Cargo.toml",
+        "native/xlsx-engine/Cargo.lock",
+        "native/xlsx-engine/deny.toml",
+        "native/xlsx-engine/.cargo/config.toml",
+        "native/xlsx-engine/src/**/*.rs",
+        "package.json",
+        "scripts/copy-binary.mjs",
+        "$TURBO_ROOT$/rust-toolchain.toml"
+      ],
+      "outputs": ["bin/xlsx-sidecar", "bin/xlsx-sidecar.exe"]
+    },
+    "test": {
+      "dependsOn": ["build"],
+      "inputs": ["$TURBO_DEFAULT$", "!README.md", "$TURBO_ROOT$/rust-toolchain.toml"],
+      "outputs": []
+    }
+  }
+}
