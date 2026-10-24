@@ -1,10 +1,10 @@
 import { readFileSync } from 'node:fs';
 import { readdir } from 'node:fs/promises';
 import { join } from 'node:path';
+import { startEventLeafWatcher } from './event-leaf-watcher.ts';
 import { tracedMkdirSync } from './fs-traced.ts';
 import { errnoCode } from './http/handler-utils.ts';
 import { getLogger } from './logger.ts';
-import { startPolledPathWatcher } from './polled-path-watcher.ts';
 
 export type ManagedArtifactWatcherUnsubscribe = () => Promise<void>;
 
@@ -90,11 +90,11 @@ export async function startManagedArtifactWatcher(
     return leaves;
   };
 
-  return startPolledPathWatcher({
+  return startEventLeafWatcher({
     listPaths: async () => (await Promise.all(watchRoots.map(listLeaves))).flat(),
     onEvent: (event, path) => (event === 'unlink' ? handleUnlink(path) : handlePath(path)),
     onError: (err, path) => {
-      log.warn({ err, path }, '[managed-artifact-watcher] poll error');
+      log.warn({ err, path }, '[managed-artifact-watcher] watcher error');
     },
   });
 }
