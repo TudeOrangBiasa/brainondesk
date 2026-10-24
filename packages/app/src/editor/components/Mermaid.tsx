@@ -17,11 +17,14 @@ import { type ComponentProps, useEffect, useLayoutEffect, useRef, useState } fro
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { useReducedMotion } from '@/hooks/use-reduced-motion';
+import { useConfigContextOptional } from '@/lib/config-context.ts';
 import { createRetryingLoader } from '@/lib/retrying-loader.ts';
 import { cn } from '@/lib/utils.ts';
+import { resolveDiagramRenderer } from './diagram-renderer.ts';
 import { useJsxComponentHost } from './jsx-host-context.tsx';
+import { loadMermaid, loadWysiwyg, mermaidConfigFor } from './mermaid-fallback.ts';
+import { renderDiagramWithPele } from './pele-render.ts';
 import { useAppColorMode } from './use-app-color-mode.ts';
-
 export interface MermaidSourceBinding {
   canEdit: boolean;
   commitChart: (next: string) => void;
@@ -64,61 +67,6 @@ const buttonProps: ComponentProps<typeof Button> = {
   className: 'border-border',
 };
 
-const loadMermaid = createRetryingLoader(() => import('mermaid').then((mod) => mod.default));
-
-const loadWysiwyg = createRetryingLoader(() =>
-  Promise.all([import('@visimer/core'), import('@visimer/dom')]),
-);
-
-const MERMAID_DARK_THEME_VARIABLES = {
-  fontFamily:
-    'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace',
-  background: '#0b0b0d',
-  primaryColor: '#1c1c1f',
-  primaryTextColor: '#f5f5f7',
-  primaryBorderColor: '#2a2a2e',
-  secondaryColor: '#242427',
-  secondaryTextColor: '#f5f5f7',
-  secondaryBorderColor: '#2a2a2e',
-  tertiaryColor: '#2c2c30',
-  tertiaryTextColor: '#f5f5f7',
-  tertiaryBorderColor: '#2a2a2e',
-  mainBkg: '#1c1c1f',
-  lineColor: '#5a5a63',
-  textColor: '#f5f5f7',
-  actorBkg: '#1c1c1f',
-  actorBorder: '#2a2a2e',
-  actorTextColor: '#f5f5f7',
-  actorLineColor: '#4a4a52',
-  signalColor: '#8b8b93',
-  signalTextColor: '#a1a1a9',
-  labelBoxBkgColor: '#1c1c1f',
-  labelBoxBorderColor: '#4a4a52',
-  labelTextColor: '#a1a1a9',
-  loopTextColor: '#a1a1a9',
-  nodeBorder: '#1c1c1f',
-  clusterBkg: '#141416',
-  clusterBorder: '#2a2a2e',
-  defaultLinkColor: '#5a5a63',
-  edgeLabelBackground: '#0b0b0d',
-  titleColor: '#a1a1a9',
-  noteBkgColor: '#c88a1e',
-  noteTextColor: '#ffffff',
-  noteBorderColor: '#c88a1e',
-  activationBkgColor: '#2c2c30',
-  activationBorderColor: '#3a3a40',
-} as const;
-
-function mermaidConfigFor(colorMode: 'light' | 'dark'): Record<string, unknown> {
-  return {
-    startOnLoad: false,
-    securityLevel: 'strict',
-    theme: colorMode === 'dark' ? 'dark' : 'default',
-    themeVariables: colorMode === 'dark' ? MERMAID_DARK_THEME_VARIABLES : undefined,
-    suppressErrorRendering: true,
-  };
-}
-
 export const loadPanzoom = createRetryingLoader(() =>
   import('@panzoom/panzoom').then((mod) => mod.default),
 );
@@ -140,6 +88,8 @@ export function MermaidView({ chart = '', className, editBinding, onExpand }: Me
   const [state, setState] = useState<RenderState>({ status: 'rendering', error: '' });
   const [loadAttempt, setLoadAttempt] = useState(0);
   const colorMode = useAppColorMode();
+  const configContext = useConfigContextOptional();
+  const renderer = resolveDiagramRenderer(configContext?.merged?.editor);
   const host = useJsxComponentHost();
   const canEdit = editBinding ? editBinding.canEdit : (host?.editor.isEditable ?? false);
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -163,9 +113,14 @@ export function MermaidView({ chart = '', className, editBinding, onExpand }: Me
   useLayoutEffect(() => {
     colorModeRef.current = colorMode;
   }, [colorMode]);
+  const rendererRef = useRef(renderer);
+  useLayoutEffect(() => {
+    rendererRef.current = renderer;
+  }, [renderer]);
   const editorRef = useRef<MermaidWysiwygEditor | null>(null);
   const viewRef = useRef<MermaidCanvasView | null>(null);
   const panzoomRef = useRef<PanzoomObject | null>(null);
+  const attachPanzoomRef = useRef<(() => void) | null>(null);
   const [panzoomFailed, setPanzoomFailed] = useState(false);
   const maxScaleObsRef = useRef<ResizeObserver | null>(null);
   const loadFailedRef = useRef(false);
@@ -177,8 +132,10 @@ export function MermaidView({ chart = '', className, editBinding, onExpand }: Me
     if (!hasChart) return;
     let disposed = false;
     let view: MermaidCanvasView | null = null;
+    let fallbackDispose: (() => void) | null = null;
     const offs: Array<() => void> = [];
     let hasRendered = false;
+    const renderSeq = 0;
     setState({ status: 'rendering', error: '' });
     void loadPanzoom().catch(() => undefined);
 
@@ -267,6 +224,7 @@ export function MermaidView({ chart = '', className, editBinding, onExpand }: Me
           if (!disposed) setPanzoomFailed(true);
         });
     }
+    attachPanzoomRef.current = attachPanzoom;
 
     if (editBindingRef.current) {
       const scrollContainer = canvasRef.current;
@@ -289,27 +247,44 @@ export function MermaidView({ chart = '', className, editBinding, onExpand }: Me
       }
     }
 
-    Promise.all([loadMermaid(), loadWysiwyg()])
-      .then(([mermaid, [core, dom]]) => {
-        const container = canvasRef.current;
-        if (disposed || !container) return;
-        const editor = new core.MermaidWysiwygEditor({ code: chartRef.current });
-        view = new dom.MermaidCanvasView({
-          editor,
-          container,
-          mermaid,
-          mermaidConfig: mermaidConfigFor(colorModeRef.current),
-          readOnly: !canEditRef.current,
-          accentColor: 'var(--ring)',
-        });
-        editorRef.current = editor;
-        viewRef.current = view;
-        offs.push(
-          editor.on('change', ({ code, origin }) => {
+    function showPeleSvg(container: HTMLElement, svg: string): void {
+      container.replaceChildren();
+      container.classList.remove('mw-canvas');
+      const template = document.createElement('template');
+      template.innerHTML = svg;
+      const node = template.content.firstElementChild;
+      if (node?.tagName.toLowerCase() !== 'svg') {
+        setState({ status: 'error', error: 'Pele returned no SVG.' });
+        return;
+      }
+      container.append(node);
+      hasRendered = true;
+      setState({ status: 'ready', error: '' });
+      attachPanzoom();
+    }
+
+    function mountFallback(container: HTMLElement): void {
+      container.replaceChildren();
+      container.classList.add('mw-canvas');
+      Promise.all([loadMermaid(), loadWysiwyg()])
+        .then(([mermaid, [core, dom]]) => {
+          if (disposed || canvasRef.current !== container) return;
+          const editor = new core.MermaidWysiwygEditor({ code: chartRef.current });
+          view = new dom.MermaidCanvasView({
+            editor,
+            container,
+            mermaid,
+            mermaidConfig: mermaidConfigFor(colorModeRef.current),
+            readOnly: !canEditRef.current,
+            accentColor: 'var(--ring)',
+          });
+          editorRef.current = editor;
+          viewRef.current = view;
+          const offChange = editor.on('change', ({ code, origin }) => {
             if (origin === 'external') return;
             commitChartSource(code);
-          }),
-          view.on('render', ({ ok, error }) => {
+          });
+          const offRender = view.on('render', ({ ok, error }) => {
             if (disposed) return;
             if (ok) {
               hasRendered = true;
@@ -318,15 +293,54 @@ export function MermaidView({ chart = '', className, editBinding, onExpand }: Me
             } else if (!hasRendered) {
               setState({ status: 'error', error: error ?? '' });
             }
-          }),
-        );
-      })
-      .catch((err) => {
-        if (disposed) return;
-        loadFailedRef.current = true;
-        const msg = err instanceof Error ? err.message : String(err);
-        setState({ status: 'error', error: msg });
-      });
+          });
+          fallbackDispose = () => {
+            offChange();
+            offRender();
+            view?.destroy();
+            view = null;
+            editorRef.current = null;
+            viewRef.current = null;
+          };
+        })
+        .catch((err) => {
+          if (disposed) return;
+          loadFailedRef.current = true;
+          const msg = err instanceof Error ? err.message : String(err);
+          setState({ status: 'error', error: msg });
+        });
+    }
+
+    function renderWithPele(container: HTMLElement, seq: number): void {
+      renderDiagramWithPele(chartRef.current)
+        .then((outcome) => {
+          if (disposed || seq !== renderSeq || canvasRef.current !== container) return;
+          if (outcome.ok) {
+            showPeleSvg(container, outcome.svg);
+            return;
+          }
+          if (!outcome.unsupported) {
+            setState({ status: 'error', error: outcome.message });
+            return;
+          }
+          mountFallback(container);
+        })
+        .catch((err) => {
+          if (disposed || seq !== renderSeq) return;
+          loadFailedRef.current = true;
+          const msg = err instanceof Error ? err.message : String(err);
+          setState({ status: 'error', error: msg });
+        });
+    }
+
+    const container = canvasRef.current;
+    if (container) {
+      if (rendererRef.current === 'mermaid') {
+        mountFallback(container);
+      } else {
+        renderWithPele(container, renderSeq);
+      }
+    }
 
     return () => {
       disposed = true;
@@ -335,21 +349,63 @@ export function MermaidView({ chart = '', className, editBinding, onExpand }: Me
       panzoomRef.current = null;
       maxScaleObsRef.current?.disconnect();
       maxScaleObsRef.current = null;
-      view?.destroy();
-      editorRef.current = null;
-      viewRef.current = null;
+      fallbackDispose?.();
+      fallbackDispose = null;
     };
   }, [hasChart, loadAttempt]);
+
+  const peleSeqRef = useRef(0);
+  const lastPeleChartRef = useRef<string | null>(null);
 
   useEffect(() => {
     const editor = editorRef.current;
     if (editor && chart !== editor.code) {
       editor.setCode(chart, 'external');
-    } else if (!editorRef.current && loadFailedRef.current && chart.trim()) {
+      return;
+    }
+    if (editor) return;
+    if (loadFailedRef.current && chart.trim()) {
       loadFailedRef.current = false;
       setLoadAttempt((n) => n + 1);
+      return;
     }
-  }, [chart]);
+    if (renderer !== 'pele' || !chart.trim()) return;
+    if (lastPeleChartRef.current === null) {
+      lastPeleChartRef.current = chart;
+      return;
+    }
+    if (lastPeleChartRef.current === chart) return;
+    lastPeleChartRef.current = chart;
+    const container = canvasRef.current;
+    if (!container || container.classList.contains('mw-canvas')) return;
+    peleSeqRef.current += 1;
+    const seq = peleSeqRef.current;
+    setState({ status: 'rendering', error: '' });
+    renderDiagramWithPele(chart)
+      .then((outcome) => {
+        if (seq !== peleSeqRef.current || canvasRef.current !== container) return;
+        if (!outcome.ok) {
+          if (!outcome.unsupported) setState({ status: 'error', error: outcome.message });
+          return;
+        }
+        container.replaceChildren();
+        const template = document.createElement('template');
+        template.innerHTML = outcome.svg;
+        const node = template.content.firstElementChild;
+        if (node?.tagName.toLowerCase() !== 'svg') {
+          setState({ status: 'error', error: 'Pele returned no SVG.' });
+          return;
+        }
+        container.append(node);
+        setState({ status: 'ready', error: '' });
+        attachPanzoomRef.current?.();
+      })
+      .catch((err) => {
+        if (seq !== peleSeqRef.current) return;
+        const msg = err instanceof Error ? err.message : String(err);
+        setState({ status: 'error', error: msg });
+      });
+  }, [chart, renderer]);
 
   useEffect(() => {
     viewRef.current?.setReadOnly(!canEdit);
@@ -428,7 +484,11 @@ export function MermaidView({ chart = '', className, editBinding, onExpand }: Me
           showCanvas ? 'flex' : 'hidden',
         )}
       >
-        <div ref={canvasRef} className="ok-mermaid-svg flex min-h-0 flex-1" />
+        <div
+          ref={canvasRef}
+          className="ok-mermaid-svg flex min-h-0 flex-1"
+          data-diagram-renderer={renderer}
+        />
         {showCanvas && (
           <PanzoomControls
             panzoomRef={panzoomRef}
