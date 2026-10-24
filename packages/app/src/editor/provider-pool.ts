@@ -27,7 +27,6 @@ import {
   peekStoredLineageEpoch,
   UNKNOWN_BRANCH_SENTINEL,
 } from './client-persistence';
-import { appendTraceContextToCollabUrl } from './collab-otel';
 import { sharedExtensions } from './extensions/shared.ts';
 import { isSystemDoc } from './is-system-doc';
 import { getMountId } from './mount-id-registry';
@@ -38,6 +37,7 @@ import {
   readReplayOutboxEntry,
   writeReplayOutboxEntry,
 } from './replay-outbox';
+import { getSharedCollabSocket } from './shared-collab-socket';
 import { BridgeSetupError, invalidateSyncPromise, rejectSyncPromise } from './sync-promise';
 
 export const TAB_REPLAY_ORIGIN = Object.freeze({ kind: 'tab-replay' } as const);
@@ -201,7 +201,7 @@ const LAST_OBSERVED_BRANCH_KEY = 'ok-last-observed-branch';
 
 const DOC_LINEAGE_EPOCHS_KEY = 'ok-doc-lineage-epochs';
 
-export const FORCE_SYNC_INTERVAL_MS = 5_000;
+export const SYNC_RESYNC_GRACE_BASE_MS = 5_000;
 
 const MAX_BUFFER_BYTES = readNumericOverride('MAX_BUFFER_BYTES', 1 * 1024 * 1024);
 
@@ -947,11 +947,11 @@ export class ProviderPool {
         : null,
     );
     const provider = new HocuspocusProvider({
-      url: appendTraceContextToCollabUrl(this.wsUrl),
+      websocketProvider: getSharedCollabSocket(this.wsUrl),
       name: docName,
-      forceSyncInterval: FORCE_SYNC_INTERVAL_MS,
       token,
     });
+    provider.attach();
 
     const persistenceServerInstanceId = this.cachedServerInstanceId;
     if (this.clearFailures.has(docName)) {

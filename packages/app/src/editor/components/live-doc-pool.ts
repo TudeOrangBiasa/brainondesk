@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import * as Y from 'yjs';
 import { useCollabUrl } from '@/lib/use-collab-url';
 import { isConfigDoc, isSystemDoc } from '../is-system-doc';
+import { getSharedCollabSocket } from '../shared-collab-socket';
 
 interface LiveDocSubscriber {
   onUpdate: () => void;
@@ -47,10 +48,11 @@ export function acquireLiveDocProvider(collabUrl: string, docName: string): Acqu
   }
   const yDoc = new Y.Doc();
   const provider = new HocuspocusProvider({
-    url: collabUrl,
+    websocketProvider: getSharedCollabSocket(collabUrl),
     name: docName,
     document: yDoc,
   });
+  provider.attach();
   const subscribers = new Set<LiveDocSubscriber>();
   const entry: InternalPoolEntry = {
     provider,

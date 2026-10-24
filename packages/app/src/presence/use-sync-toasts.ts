@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro';
 import { useEffect, useRef } from 'react';
 import { toast } from 'sonner';
-import { FORCE_SYNC_INTERVAL_MS } from '@/editor/provider-pool';
+import { SYNC_RESYNC_GRACE_BASE_MS } from '@/editor/provider-pool';
 import type { OkDesktopBridge } from '@/lib/desktop-bridge-types';
 import { useRelaunchInFlight } from '@/lib/relaunch-store';
 import { restartCollabServer } from '@/lib/restart-collab-server';
@@ -10,7 +10,7 @@ import type { SyncStatus } from './use-sync-status';
 const TOAST_ID = 'sync-status';
 
 const DISCONNECT_PRESUMED_DEAD_MS = 10_000;
-export const SYNC_CATCHUP_GRACE_MS = FORCE_SYNC_INTERVAL_MS + 3_000;
+export const SYNC_CATCHUP_GRACE_MS = SYNC_RESYNC_GRACE_BASE_MS + 3_000;
 
 const NO_TOAST_HANDLERS = { onDismiss: undefined, onAutoClose: undefined };
 

@@ -17,7 +17,7 @@ vi.mock('sonner', () => ({
 let relaunchInFlightFlag = false;
 vi.mock('@/lib/relaunch-store', () => ({ useRelaunchInFlight: () => relaunchInFlightFlag }));
 
-import { FORCE_SYNC_INTERVAL_MS } from '@/editor/provider-pool';
+import { SYNC_RESYNC_GRACE_BASE_MS } from '@/editor/provider-pool';
 import { SYNC_CATCHUP_GRACE_MS, useSyncToasts } from './use-sync-toasts';
 
 const messages = (spy: typeof warning): string[] => spy.mock.calls.map((c) => String(c[0]));
@@ -893,7 +893,7 @@ describe('useSyncToasts — the transport-up, document-unsynced claim', () => {
   });
 
   test('the grace is derived from the pool resync interval, not a bare literal', () => {
-    expect(SYNC_CATCHUP_GRACE_MS).toBeGreaterThan(FORCE_SYNC_INTERVAL_MS);
+    expect(SYNC_CATCHUP_GRACE_MS).toBeGreaterThan(SYNC_RESYNC_GRACE_BASE_MS);
   });
 
   test('the genuine outage notices stay unbounded, and so does the claim', () => {

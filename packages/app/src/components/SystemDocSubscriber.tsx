@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import * as Y from 'yjs';
 import { useDocumentContext } from '@/editor/DocumentContext';
 import { emitLintConfigChanged } from '@/editor/lint-config-client';
+import { getSharedCollabSocket } from '@/editor/shared-collab-socket';
 import { dispatchCC1Stateless, SYSTEM_DOC_NAME } from '@/lib/cc1';
 import { emitConfigIgnoreNestedError } from '@/lib/config-ignore-nested-error-events';
 import { emitConfigValidationRejected } from '@/lib/config-validation-events';
@@ -57,7 +58,7 @@ export function SystemDocSubscriber() {
      * intermittent single-doc stall into a deterministic total one.
      */
     const provider = new HocuspocusProvider({
-      url: collabUrl,
+      websocketProvider: getSharedCollabSocket(collabUrl),
       name: SYSTEM_DOC_NAME,
       document: doc,
       onStateless: ({ payload }: { payload: string }) => {
@@ -96,6 +97,7 @@ export function SystemDocSubscriber() {
         console.warn('[CC1] __system__ disconnected - derived views may be stale');
       },
     });
+    provider.attach();
 
     const unsubscribe = subscribeToDocumentsChanged((channels) => {
       if (
