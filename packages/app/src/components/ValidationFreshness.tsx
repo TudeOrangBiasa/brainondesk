@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import { useOptionalPageList } from '@/components/PageListContext';
 import { setLinkValidationVisible } from '@/editor/link-validation-policy';
-import { subscribeToLintConfigChanged } from '@/editor/lint-config-client';
+import { subscribeToLintConfigChanged } from '@/editor/lint-config-events';
 import {
   AUDIT_SUPERSEDED,
   runValidationAudit,

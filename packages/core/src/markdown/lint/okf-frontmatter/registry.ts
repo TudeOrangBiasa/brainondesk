@@ -1,12 +1,12 @@
 import { compileAppliesTo } from '../applies-to.ts';
-import { validateFrontmatterSource } from '../frontmatter-validate.ts';
 import {
   isOkfRuleEnabled,
   OKF_RULE_IDS,
   type OkfRuleId,
   type OkfRuleToggles,
 } from '../okf-rule-meta.ts';
-import type { FrontmatterSchemaMapping, LintDiagnostic } from '../types.ts';
+import type { LoadedFrontmatterSchema } from '../schema-select.ts';
+import type { FrontmatterSchemaMapping } from '../types.ts';
 import { okfSchemaPathFor } from './paths.ts';
 import {
   OKF_ATTESTED_COMPUTATION_SCHEMA,
@@ -88,20 +88,13 @@ export function okfAdvertisedSchemaMappings(rules: OkfRuleToggles): FrontmatterS
   );
 }
 
-export function runOkfFrontmatterRules(
-  text: string,
+export function loadedOkfFrontmatterSchemas(
   rules: OkfRuleToggles,
   docName: string | undefined,
-): LintDiagnostic[] {
-  const selected = selectOkfFrontmatterSchemas(rules, docName);
-  if (selected.length === 0) return [];
-  return validateFrontmatterSource(
-    text,
-    selected.map((entry) => ({
-      file: okfSchemaPathFor(entry.id),
-      schema: entry.schema,
-      ruleId: entry.id,
-    })),
-    { source: 'okf' },
-  );
+): LoadedFrontmatterSchema[] {
+  return selectOkfFrontmatterSchemas(rules, docName).map((entry) => ({
+    file: okfSchemaPathFor(entry.id),
+    schema: entry.schema,
+    ruleId: entry.id,
+  }));
 }

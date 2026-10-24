@@ -15,7 +15,7 @@ import { useTheme } from 'next-themes';
 import { useEffect, useRef, useState } from 'react';
 import { yCollab } from 'y-codemirror.next';
 import type * as Y from 'yjs';
-import { propEditorHighlight } from '@/editor/components/CodeMirrorPropInput';
+import { propEditorHighlight } from '@/editor/codemirror/prop-highlight';
 import { type MermaidSourceBinding, MermaidView } from '@/editor/components/Mermaid';
 import { okCmTheme } from '@/editor/extensions/cm-theme';
 import { registerFullPageCmView, unregisterFullPageCmView } from '@/editor/full-page-cm-views';

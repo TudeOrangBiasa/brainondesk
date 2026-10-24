@@ -17,7 +17,7 @@ import { basicSetup } from 'codemirror';
 import { useTheme } from 'next-themes';
 import { useEffect, useRef } from 'react';
 import { yCollab } from 'y-codemirror.next';
-import { propEditorHighlight } from '@/editor/components/CodeMirrorPropInput';
+import { propEditorHighlight } from '@/editor/codemirror/prop-highlight';
 import { okCmTheme } from '@/editor/extensions/cm-theme';
 import { registerFullPageCmView, unregisterFullPageCmView } from '@/editor/full-page-cm-views';
 import { acquireDocUndoManager } from './doc-undo-manager';

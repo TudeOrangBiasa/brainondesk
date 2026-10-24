@@ -2,12 +2,14 @@
 // oxlint-disable ok/no-physical-direction-utility -- pre-rule backlog — physical margin/padding/inset utilities predate the rule; drain by swapping ml/mr → ms/me, pl/pr → ps/pe, left/right → start/end, then deleting this line. See https://github.com/inkeep/open-knowledge/blob/main/lint-plugins/ok-rules/README.md#no-physical-direction-utility
 
 import { isEditableTextDocFile } from '@inkeep/open-knowledge-core/constants/code-languages';
+import type {
+  ValidationAuditResponse,
+  ValidationDocResult,
+} from '@inkeep/open-knowledge-core/markdown/lint/light';
 import {
   type FrontmatterScope,
   isAuditEmptyScopeWarning,
-  type ValidationAuditResponse,
-  type ValidationDocResult,
-} from '@inkeep/open-knowledge-core/markdown/lint';
+} from '@inkeep/open-knowledge-core/markdown/lint/light';
 import type { BrokenLinkSuppression } from '@inkeep/open-knowledge-core/schemas/api';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import {
@@ -59,11 +61,8 @@ import {
 } from '@/components/ui/panel';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import {
-  fixLintDoc,
-  subscribeToLintConfigChanged,
-  useProjectLintConfig,
-} from '@/editor/lint-config-client';
+import { subscribeToLintConfigChanged, useProjectLintConfig } from '@/editor/lint-config-hooks';
+import { sweepFixLintDoc } from '@/editor/lint-fix-loader';
 import { localizedValidationMessage } from '@/editor/localized-validation-message';
 import { rememberPendingSourceNavigation } from '@/editor/source-editor-navigation';
 import { AUDIT_SUPERSEDED, runValidationAudit } from '@/editor/validation-audit-client';
@@ -558,7 +557,7 @@ export function ProblemsPanel({
   function fixAllProjectFiles() {
     void startProjectFixSweep({
       items: projectFixableFiles,
-      fixItem: (file) => fixLintDoc(filePathToDocName(file.file)),
+      fixItem: (file) => sweepFixLintDoc(filePathToDocName(file.file)),
     });
   }
 

@@ -7,7 +7,7 @@ import {
 } from '@inkeep/open-knowledge-core/constants/cc1';
 import { isEditableTextDocFile } from '@inkeep/open-knowledge-core/constants/code-languages';
 import { isExcalidrawDocFile } from '@inkeep/open-knowledge-core/constants/upload';
-import type { LintDiagnostic } from '@inkeep/open-knowledge-core/markdown/lint';
+import type { LintDiagnostic } from '@inkeep/open-knowledge-core/markdown/lint/light';
 import type { SkillScope } from '@inkeep/open-knowledge-core/schemas/api';
 import { useLingui } from '@lingui/react/macro';
 import { PanelRightClose, PanelRightOpen } from 'lucide-react';

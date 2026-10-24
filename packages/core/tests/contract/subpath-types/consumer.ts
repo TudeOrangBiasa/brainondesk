@@ -467,6 +467,21 @@ export type {
   ValidationSourceKey,
 } from '@inkeep/open-knowledge-core/markdown/lint';
 export type {
+  compileAppliesTo,
+  DEFAULT_LINTER_CONFIG,
+  isFrontmatterSchemaAsset,
+  isFrontmatterScoped,
+  isMarkdownlintJsonConfig,
+  LINT_PLUGINS,
+  LinterConfig,
+  LintPluginId,
+  selectAdvertisedFrontmatterMappings,
+  selectApplicableFrontmatterSchemas,
+  selectFrontmatterOnlyConfig,
+  selectGoverningFrontmatterSchemas,
+  toEffectiveBase,
+} from '@inkeep/open-knowledge-core/markdown/lint/light';
+export type {
   markdownToHtml,
   mdastToHtml,
 } from '@inkeep/open-knowledge-core/markdown/mdast-to-html';

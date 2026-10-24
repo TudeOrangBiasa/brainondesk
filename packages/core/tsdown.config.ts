@@ -87,6 +87,7 @@ const entry = {
   'markdown-code-fence': 'src/markdown/code-fence.ts',
   'markdown-html-to-mdast': 'src/markdown/html-to-mdast.ts',
   'markdown-lint': 'src/markdown/lint/index.ts',
+  'markdown-lint-light': 'src/markdown/lint/light.ts',
   'markdown-mdast-to-html': 'src/markdown/mdast-to-html.ts',
   'markdown-plain-text': 'src/markdown/plain-text.ts',
   'markdown-reference-label': 'src/markdown/reference-label.ts',

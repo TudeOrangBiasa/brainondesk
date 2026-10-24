@@ -1,86 +1,3 @@
-import type { LintPluginFailureReporter } from './plugin-failure.ts';
-import { isLintPluginSelected, LINT_PLUGINS, type LinterConfig } from './plugins.ts';
-import type { LintDiagnostic } from './types.ts';
-
-export async function lintDocument(
-  text: string,
-  config: LinterConfig,
-  docName?: string,
-  onPluginFailure?: LintPluginFailureReporter,
-): Promise<LintDiagnostic[]> {
-  if (!config.enabled) return [];
-  const diagnostics: LintDiagnostic[] = [];
-  for (const plugin of LINT_PLUGINS) {
-    if (!isLintPluginSelected(config, plugin.id)) continue;
-    const slice = config.plugins[plugin.id];
-    try {
-      diagnostics.push(...(await plugin.lint(text, slice as never, { docName })));
-    } catch (err) {
-      console.warn(`[lint] plugin "${plugin.id}" failed${docName ? ` on "${docName}"` : ''}`, err);
-      onPluginFailure?.({
-        source: plugin.id,
-        phase: 'lint',
-        ...(docName === undefined ? {} : { docName }),
-        message: errorMessage(err),
-      });
-    }
-  }
-  return diagnostics;
-}
-
-export function fixDocument(
-  text: string,
-  config: LinterConfig,
-  docName?: string,
-  onPluginFailure?: LintPluginFailureReporter,
-): string {
-  if (!config.enabled) return text;
-  let out = text;
-  for (const plugin of LINT_PLUGINS) {
-    if (!isLintPluginSelected(config, plugin.id) || !plugin.fix) continue;
-    const slice = config.plugins[plugin.id];
-    try {
-      out = plugin.fix(out, slice as never);
-    } catch (err) {
-      console.warn(
-        `[lint] plugin "${plugin.id}" fix failed${docName ? ` on "${docName}"` : ''}`,
-        err,
-      );
-      onPluginFailure?.({
-        source: plugin.id,
-        phase: 'fix',
-        ...(docName === undefined ? {} : { docName }),
-        message: errorMessage(err),
-      });
-    }
-  }
-  return out;
-}
-
-const MAX_FAILURE_MESSAGE_LENGTH = 500;
-
-function errorMessage(error: unknown): string {
-  const raw = renderErrorMessage(error);
-  return raw.length > MAX_FAILURE_MESSAGE_LENGTH
-    ? `${raw.slice(0, MAX_FAILURE_MESSAGE_LENGTH)}… (truncated)`
-    : raw;
-}
-
-function renderErrorMessage(error: unknown, depth = 0): string {
-  if (error instanceof Error) {
-    return error.cause === undefined || depth >= 3
-      ? error.message
-      : `${error.message} (cause: ${renderErrorMessage(error.cause, depth + 1)})`;
-  }
-  if (typeof error === 'object' && error !== null) {
-    try {
-      const json = JSON.stringify(error);
-      if (json !== undefined) return json;
-    } catch {}
-  }
-  return String(error);
-}
-
 export {
   type AppliesToPatternSummary,
   type AppliesToSummary,
@@ -127,6 +44,14 @@ export {
 } from './config-schemas.ts';
 export { DEFAULT_MARKDOWNLINT_CONFIG, resolveMarkdownlintConfig } from './default-config.ts';
 export {
+  CANONICAL_SCHEMA_DIALECT_URIS,
+  DEFAULT_SCHEMA_DIALECT,
+  type FrontmatterSchemaDialect,
+  isSupportedSchemaDialect,
+  resolveFrontmatterSchemaDialect,
+  SUPPORTED_SCHEMA_DIALECTS,
+} from './frontmatter-dialects.ts';
+export {
   applyFieldConstraint,
   emptyFrontmatterSchemaText,
   type FrontmatterFieldConstraint,
@@ -138,14 +63,8 @@ export {
   type SchemaParentPathSegment,
 } from './frontmatter-schema-edit.ts';
 export {
-  CANONICAL_SCHEMA_DIALECT_URIS,
-  DEFAULT_SCHEMA_DIALECT,
-  type FrontmatterSchemaDialect,
   frontmatterSchemaCompileError,
-  isSupportedSchemaDialect,
-  resolveFrontmatterSchemaDialect,
-  SUPPORTED_SCHEMA_DIALECTS,
-  selectApplicableFrontmatterSchemas,
+  type LoadedFrontmatterSchema,
 } from './frontmatter-validate.ts';
 export { fixMarkdownText, runMarkdownlint } from './markdownlint-runner.ts';
 export {
@@ -155,11 +74,12 @@ export {
   renderOkfSchemaFiles,
 } from './okf-frontmatter/materialize.ts';
 export {
+  loadedOkfFrontmatterSchemas,
   OKF_FRONTMATTER_REGISTRY,
   okfAdvertisedSchemaMappings,
-  runOkfFrontmatterRules,
   selectOkfFrontmatterSchemas,
 } from './okf-frontmatter/registry.ts';
+export { runOkfFrontmatterRules } from './okf-frontmatter/runner.ts';
 export {
   OKF_PROJECT_REGISTRY,
   type OkfProjectFinding,
@@ -185,12 +105,12 @@ export {
   type GoverningFrontmatterSchema,
   LINT_PLUGINS,
   type LinterConfig,
-  type LintPlugin,
   type LintPluginId,
   selectAdvertisedFrontmatterMappings,
   selectFrontmatterOnlyConfig,
   selectGoverningFrontmatterSchemas,
-} from './plugins.ts';
+} from './plugin-meta.ts';
+export { LINT_SLICE_SCHEMAS, type LintPlugin } from './plugins.ts';
 export { canonicalRuleId, findRuleConfigEntry } from './rule-aliases.ts';
 export { MARKDOWNLINT_RULE_CATALOG } from './rule-catalog.generated.ts';
 export {
@@ -198,6 +118,8 @@ export {
   RULE_DISPLAY_CATEGORIES,
   type RuleDisplayCategory,
 } from './rule-catalog-categories.ts';
+export { fixDocument, lintDocument } from './runner.ts';
+export { selectApplicableFrontmatterSchemas } from './schema-select.ts';
 export { applyTextEdits } from './text-edits.ts';
 export type {
   FrontmatterSchemaMapping,
