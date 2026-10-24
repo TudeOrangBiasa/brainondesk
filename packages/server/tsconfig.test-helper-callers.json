@@ -17,6 +17,7 @@
     "src/process-scan.test.ts",
     "src/serialize-doc-vs-git-show-byte-equality.test.ts",
     "src/serialize-doc-ytext.test.ts",
-    "src/wait-within-test-budget.test.ts"
+    "src/wait-within-test-budget.test.ts",
+    "src/xlsx-sidecar/spawn.uncached.test.ts"
   ]
 }
