@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { dirname } from 'node:path';
+import { startEventLeafWatcher } from './event-leaf-watcher.ts';
 import { tracedMkdirSync } from './fs-traced.ts';
 import { errnoCode } from './http/handler-utils.ts';
 import { getLogger } from './logger.ts';
@@ -7,9 +8,16 @@ import { startPolledPathWatcher } from './polled-path-watcher.ts';
 
 export type ConfigFileWatcherUnsubscribe = () => Promise<void>;
 
+export type LeafWatcherBackend = 'event' | 'polled';
+
+export interface LeafWatcherOptions {
+  readonly backend?: LeafWatcherBackend;
+}
+
 export async function startConfigFileWatcher(
   absPath: string,
   onChange: (content: string) => void,
+  opts: LeafWatcherOptions = {},
 ): Promise<ConfigFileWatcherUnsubscribe> {
   const log = getLogger('config-file-watcher');
 
@@ -56,11 +64,12 @@ export async function startConfigFileWatcher(
     log.debug({ path }, 'config file unlinked; Y.Text retained at current state');
   };
 
-  const stop = await startPolledPathWatcher({
+  const startLeaf = opts.backend === 'polled' ? startPolledPathWatcher : startEventLeafWatcher;
+  const stop = await startLeaf({
     listPaths: async () => [absPath],
     onEvent: (event, path) => (event === 'unlink' ? handleUnlink(path) : handlePath(path)),
     onError: (err, path) => {
-      log.warn({ err, path }, '[config-file-watcher] poll error');
+      log.warn({ err, path }, '[config-file-watcher] watcher error');
     },
   });
   handlePath(absPath, false);

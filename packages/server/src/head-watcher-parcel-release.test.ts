@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { type HeadWatcherHandle, startHeadWatcher } from './head-watcher.ts';
+import { __resetParcelHubForTests } from './parcel-hub.ts';
 import {
   forgetNativeSubscriptions,
   type NativeSubscriptionDouble,
@@ -30,6 +31,7 @@ let gitDir: string;
 
 beforeEach(() => {
   forgetNativeSubscriptions();
+  __resetParcelHubForTests();
   projectRoot = realpathSync(mkdtempSync(join(tmpdir(), 'ok-parcel-head-release-')));
   gitDir = join(projectRoot, '.git');
   mkdirSync(gitDir);

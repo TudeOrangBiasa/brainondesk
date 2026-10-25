@@ -5,6 +5,7 @@ import { resolve } from 'node:path';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { createContentFilter } from './content-filter.ts';
 import { type AllFileEntries, lastKnownHash, startWatcher } from './file-watcher.ts';
+import { __resetParcelHubForTests } from './parcel-hub.ts';
 import {
   forgetNativeSubscriptions,
   nativeSubscriptionOn,
@@ -29,6 +30,7 @@ describe('PRD-7117 US-001 — kind discriminator + all-files admission', () => {
     mkdirSync(contentDir, { recursive: true });
     lastKnownHash.clear();
     forgetNativeSubscriptions();
+    __resetParcelHubForTests();
   });
 
   afterEach(async () => {

@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { type DiskEvent, startWatcher, type WatcherHandle } from './file-watcher.ts';
+import { __resetParcelHubForTests } from './parcel-hub.ts';
 import {
   forgetNativeSubscriptions,
   type NativeSubscriptionDouble,
@@ -22,6 +23,7 @@ let contentDir: string;
 
 beforeEach(() => {
   forgetNativeSubscriptions();
+  __resetParcelHubForTests();
   contentDir = realpathSync(mkdtempSync(join(tmpdir(), 'ok-parcel-release-')));
 });
 

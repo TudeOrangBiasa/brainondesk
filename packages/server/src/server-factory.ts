@@ -3991,41 +3991,47 @@ export function createServer(options: ServerOptions): ServerInstance {
       [CONFIG_DOC_NAME_PROJECT_LOCAL, resolveConfigPath('project-local', projectDir)],
       [CONFIG_DOC_NAME_USER, resolveConfigPath('user', projectDir, configHomedirOverride)],
     ]);
-    for (const configDocName of configDocNamesToBind) {
-      const absPath = configPathByDoc.get(configDocName);
-      if (!absPath) continue;
+    const startConfigDocWatcher = async (
+      configDocName: string,
+      absPath: string,
+      backend: 'event' | 'polled',
+    ): Promise<void> => {
       try {
         log.info({ docName: configDocName, path: absPath }, '[config-file-watcher] starting');
-        const cleanup = await startConfigFileWatcher(absPath, (content) => {
-          const document = hocuspocus.documents.get(configDocName);
-          const alreadyApplied = isConfigEcho(
-            configDocName,
-            content,
-            persistence.configPersistenceCtx,
-          );
-          log.info(
-            {
-              docName: configDocName,
-              hasDocument: document !== undefined,
-              contentLength: content.length,
-            },
-            '[config-file-watcher] file changed',
-          );
-          const outcome = applyExternalConfigChange(
-            document ?? null,
-            configDocName,
-            content,
-            persistence.configPersistenceCtx,
-          );
-          log.info(
-            { docName: configDocName, outcome, isEcho: alreadyApplied },
-            '[config-file-watcher] applyExternalConfigChange outcome',
-          );
-          applyPersistedConfigToConsumers(configDocName);
-          if (!alreadyApplied) {
-            logConfigDiagnostics(configDocName);
-          }
-        });
+        const cleanup = await startConfigFileWatcher(
+          absPath,
+          (content) => {
+            const document = hocuspocus.documents.get(configDocName);
+            const alreadyApplied = isConfigEcho(
+              configDocName,
+              content,
+              persistence.configPersistenceCtx,
+            );
+            log.info(
+              {
+                docName: configDocName,
+                hasDocument: document !== undefined,
+                contentLength: content.length,
+              },
+              '[config-file-watcher] file changed',
+            );
+            const outcome = applyExternalConfigChange(
+              document ?? null,
+              configDocName,
+              content,
+              persistence.configPersistenceCtx,
+            );
+            log.info(
+              { docName: configDocName, outcome, isEcho: alreadyApplied },
+              '[config-file-watcher] applyExternalConfigChange outcome',
+            );
+            applyPersistedConfigToConsumers(configDocName);
+            if (!alreadyApplied) {
+              logConfigDiagnostics(configDocName);
+            }
+          },
+          { backend },
+        );
         configFileWatcherCleanups.push({ docName: configDocName, cleanup });
         log.info({ docName: configDocName, path: absPath }, '[config-file-watcher] started');
       } catch (err) {
@@ -4035,6 +4041,12 @@ export function createServer(options: ServerOptions): ServerInstance {
         );
         degraded.push(`config-file-watcher:${configDocName}`);
       }
+    };
+    for (const configDocName of configDocNamesToBind) {
+      if (configDocName !== CONFIG_DOC_NAME_USER) continue;
+      const absPath = configPathByDoc.get(configDocName);
+      if (!absPath) continue;
+      await startConfigDocWatcher(configDocName, absPath, 'polled');
     }
 
     if (!ephemeral) {
@@ -4079,6 +4091,7 @@ export function createServer(options: ServerOptions): ServerInstance {
           skillsRoots,
           reconcileManagedArtifactDisk,
           handleManagedArtifactUnlink,
+          { backend: 'polled' },
         );
         configFileWatcherCleanups.push({ docName: '__skill-files__', cleanup: skillsCleanup });
         log.info({ roots: skillsRoots }, '[managed-artifact-watcher] skills started');
@@ -4089,9 +4102,13 @@ export function createServer(options: ServerOptions): ServerInstance {
 
       try {
         const skillStatePath = skillStateYamlPath(homeFor(persistence.managedArtifactCtx));
-        const skillStateCleanup = await startConfigFileWatcher(skillStatePath, () => {
-          signalChannel('files');
-        });
+        const skillStateCleanup = await startConfigFileWatcher(
+          skillStatePath,
+          () => {
+            signalChannel('files');
+          },
+          { backend: 'polled' },
+        );
         configFileWatcherCleanups.push({ docName: '__skill-state__', cleanup: skillStateCleanup });
         log.info({ path: skillStatePath }, '[skill-state-watcher] started');
       } catch (err) {
@@ -4372,6 +4389,13 @@ export function createServer(options: ServerOptions): ServerInstance {
       recordBootPhase('indexesMs', Math.round(performance.now() - indexesStartMono));
       if (watcher) setBootField('fileCount', watcher.getFileIndex().size);
       refreshStartupEmbeds();
+    }
+
+    for (const configDocName of configDocNamesToBind) {
+      if (configDocName === CONFIG_DOC_NAME_USER) continue;
+      const absPath = configPathByDoc.get(configDocName);
+      if (!absPath) continue;
+      await startConfigDocWatcher(configDocName, absPath, 'event');
     }
 
     try {
