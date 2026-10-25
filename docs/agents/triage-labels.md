@@ -11,6 +11,6 @@ The skills speak in terms of five canonical triage roles. This file maps those r
 | `wontfix`       | `wontfix`            | Will not be actioned                     |
 | `risk-low`      | `risk:low`           | Agent PR safe to merge in a quick batch  |
 | `risk-medium`   | —                    | Not used: this repo's policy has only `risk:low` / `risk:high` |
-| `risk-high`     | `risk:high`          | Agent PR needs a real human review first |
+| `risk-high`     | `risk:high`          | Agent PR with a wide blast radius; extra automated checks before landing |
 
 When a skill mentions a role (e.g. "apply the AFK-ready triage label"), use the corresponding label string from this table.

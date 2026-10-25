@@ -178,7 +178,7 @@ export function checkProtectedPaths(files, labels) {
   const shown = touched.slice(0, 10).join(', ');
   const more = touched.length > 10 ? ` and ${touched.length - 10} more` : '';
   return [
-    `PR changes protected paths without the "${PROTECTED_PATHS_LABEL}" label (Tude adds it after review): ${shown}${more}`,
+    `PR changes protected paths without the "${PROTECTED_PATHS_LABEL}" label (agent adds it after the automated protected-path checks pass): ${shown}${more}`,
   ];
 }
 
@@ -227,7 +227,7 @@ export function checkRiskLabel(title, labels, files) {
   }
   if (!hasLow && !hasHigh) {
     return [
-      `PR must carry a risk label. Suggested from changed paths: "${suggestion.label}"${describeReasons(suggestion.reasons)}. Tude merges both; the label only tells him where to spend review time.`,
+      `PR must carry a risk label. Suggested from changed paths: "${suggestion.label}"${describeReasons(suggestion.reasons)}. The label only routes automated verification; it never decides who may merge.`,
     ];
   }
   if (hasLow) {

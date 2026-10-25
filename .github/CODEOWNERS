@@ -1,6 +1,6 @@
-# BrainOnDesk: paths that change CI, the verification gate, licensing, or
-# desktop packaging need review from the maintainer. Pair with branch
-# protection "Require review from Code Owners" on main.
+# BrainOnDesk: CODEOWNERS is notification only; it does not gate landing.
+# Branch protection keeps a single required check, `verify` — never enable
+# "Require review from Code Owners" or any required human review.
 
 /.github/workflows/            @TudeOrangBiasa
 /.github/actions/              @TudeOrangBiasa
