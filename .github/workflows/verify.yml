@@ -142,7 +142,12 @@ jobs:
         run: pnpm exec turbo run build --filter=@inkeep/open-knowledge --output-logs=errors-only
 
       - name: CLI unit tests under Bun
-        run: bun x vitest run
+        run: |
+          export HOME="$RUNNER_TEMP/ok-bun-home"
+          export XDG_CONFIG_HOME="$HOME/.config"
+          export XDG_CACHE_HOME="$HOME/.cache"
+          mkdir -p "$HOME" "$XDG_CONFIG_HOME" "$XDG_CACHE_HOME"
+          bun x vitest run
         working-directory: packages/cli
 
       - name: perf:baseline smoke (bun, 1 note, no renderer/bundle)
