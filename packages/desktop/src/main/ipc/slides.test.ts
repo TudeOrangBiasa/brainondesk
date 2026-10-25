@@ -86,7 +86,12 @@ function fakeSlidevProcess(signals?: Array<'SIGTERM' | 'SIGKILL'>): SlidevProces
 }
 
 function fakeWindow(id: number): SlidesDeckWindow {
-  return { id } as unknown as SlidesDeckWindow;
+  return {
+    id,
+    on: () => {},
+    close: () => {},
+    focus: () => {},
+  } as unknown as SlidesDeckWindow;
 }
 
 function readyStartDeps(port: number): {
@@ -136,9 +141,15 @@ describe('handleSlidesOpen', () => {
   it('starts a server and opens the ready deck in a window', async () => {
     const registry = createSlidesDeckRegistry();
     const { deps: startDeps, process } = readyStartDeps(5200);
-    const opened: Array<{ docPath: string; port: number; process: SlidevProcess }> = [];
+    const opened: Array<{
+      docPath: string;
+      ownerId: number;
+      port: number;
+      process: SlidevProcess;
+    }> = [];
     const result = await handleSlidesOpen(DECK, {
       registry,
+      ownerId: 7,
       startDeps,
       openWindow: async (deck) => {
         opened.push(deck);
@@ -150,7 +161,7 @@ describe('handleSlidesOpen', () => {
       recordOpenAttempt: () => {},
     });
     expect(result).toEqual({ kind: 'open', ok: true });
-    expect(opened).toEqual([{ docPath: DECK, port: 5200, process }]);
+    expect(opened).toEqual([{ docPath: DECK, ownerId: 7, port: 5200, process }]);
   });
 
   it('joins an in-flight open instead of spawning a rival server for the same deck', async () => {
@@ -176,6 +187,7 @@ describe('handleSlidesOpen', () => {
     const opened: Array<{ docPath: string; port: number }> = [];
     const deps = {
       registry,
+      ownerId: 7,
       startDeps,
       openWindow: async (deck: { docPath: string; port: number; process: SlidevProcess }) => {
         opened.push({ docPath: deck.docPath, port: deck.port });
@@ -205,6 +217,7 @@ describe('handleSlidesOpen', () => {
     const { deps: startDeps } = timingOutStartDeps();
     const deps = {
       registry,
+      ownerId: 7,
       startDeps,
       openWindow: () => {
         throw new Error('a timed-out start must not open a window');
@@ -229,6 +242,7 @@ describe('handleSlidesOpen', () => {
     const focused: SlidesDeckWindow[] = [];
     const result = await handleSlidesOpen(DECK, {
       registry,
+      ownerId: 7,
       startDeps: {
         findFreePort: () => Promise.resolve(5300),
         spawnSlidev: () => {
@@ -256,6 +270,7 @@ describe('handleSlidesOpen', () => {
     let openedCount = 0;
     const result = await handleSlidesOpen(DECK, {
       registry,
+      ownerId: 7,
       startDeps,
       openWindow: async () => {
         openedCount += 1;
@@ -275,6 +290,7 @@ describe('handleSlidesOpen', () => {
     const started = readyStartDeps(5200);
     const result = await handleSlidesOpen(DECK, {
       registry,
+      ownerId: 7,
       startDeps: started.deps,
       openWindow: async () => ({ shown: false, reason: 'renderer-failed' }),
       focusWindow: () => {},
@@ -292,6 +308,7 @@ describe('handleSlidesOpen', () => {
     const attempts: OkSlidesOpenResult[] = [];
     const result = await handleSlidesOpen(DECK, {
       registry,
+      ownerId: 7,
       startDeps: readyStartDeps(5200).deps,
       openWindow: async () => ({ shown: false, reason: 'load-failed' }),
       focusWindow: () => {},
@@ -307,6 +324,7 @@ describe('handleSlidesOpen', () => {
     const attempts: OkSlidesOpenResult[] = [];
     const result = await handleSlidesOpen(DECK, {
       registry,
+      ownerId: 7,
       startDeps: readyStartDeps(5200).deps,
       openWindow: async () => ({ shown: false, reason: 'cancelled' }),
       focusWindow: () => {},
@@ -337,6 +355,7 @@ describe('handleSlidesOpen', () => {
     const registry = createSlidesDeckRegistry();
     registry.register({
       docPath: DECK,
+      ownerId: 7,
       port: 5200,
       process: fakeSlidevProcess(),
       window: fakeWindow(1),
@@ -373,6 +392,7 @@ describe('handleSlidesOpen', () => {
     const attempts: OkSlidesOpenResult[] = [];
     const deps = {
       registry,
+      ownerId: 7,
       startDeps,
       openWindow: async (deck: { docPath: string; port: number; process: SlidevProcess }) => {
         registry.register({ ...deck, window: fakeWindow(1) });
@@ -393,9 +413,10 @@ describe('handleSlidesOpen', () => {
   it('opens two different decks in their own windows on their own ports', async () => {
     const registry = createSlidesDeckRegistry();
     const opened: Array<{ docPath: string; port: number }> = [];
-    const openDeck = (docPath: string, port: number) =>
+    const openDeck = (docPath: string, port: number, ownerId = 7) =>
       handleSlidesOpen(docPath, {
         registry,
+        ownerId,
         startDeps: readyStartDeps(port).deps,
         openWindow: async (deck) => {
           opened.push({ docPath: deck.docPath, port: deck.port });

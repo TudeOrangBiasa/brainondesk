@@ -17,11 +17,18 @@ export async function handleSlidesStatus(
 export interface SlidesOpenDeps {
   registry: Pick<
     SlidesDeckRegistry,
-    'get' | 'getOpenInFlight' | 'setOpenInFlight' | 'clearOpenInFlight' | 'trackSpawned'
+    | 'get'
+    | 'getOpenInFlight'
+    | 'setOpenInFlight'
+    | 'clearOpenInFlight'
+    | 'trackSpawned'
+    | 'reapOwnerExcept'
   >;
+  ownerId: number;
   startDeps: StartSlidevDeps;
   openWindow(deck: {
     docPath: string;
+    ownerId: number;
     port: number;
     process: SlidevProcess;
   }): Promise<SlidesWindowOutcome>;
@@ -42,6 +49,7 @@ export async function handleSlidesOpen(
   if (inFlight !== undefined) return inFlight;
 
   const attempt = (async (): Promise<OkSlidesOpenResult> => {
+    deps.registry.reapOwnerExcept(deps.ownerId, docPath);
     const started = await startSlidevServer({
       ...deps.startDeps,
       onSpawned: (process) => deps.registry.trackSpawned(docPath, process),
@@ -55,6 +63,7 @@ export async function handleSlidesOpen(
     try {
       opened = await deps.openWindow({
         docPath,
+        ownerId: deps.ownerId,
         port: started.port,
         process: started.process,
       });

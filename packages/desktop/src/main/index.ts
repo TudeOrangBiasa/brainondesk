@@ -1025,6 +1025,7 @@ function sweepConsoleHostsBeforeUpdate(): WindowsUpdateSurvivorSweepResult {
   });
 }
 const slidesDeckRegistry = createSlidesDeckRegistry();
+let stopSlidesIdleSweep: (() => void) | undefined;
 const dockVisibleForWindow = new Map<number, boolean>();
 const agentPanelVisibleForWindow = new Map<number, boolean>();
 type DockOrderRecord = { order: string[]; activeKey: string | null };
@@ -4710,6 +4711,7 @@ function registerIpcHandlers() {
     }
     const opened = await handleSlidesOpen(resolvedDocPath, {
       registry: slidesDeckRegistry,
+      ownerId: win?.id ?? 0,
       startDeps: {
         findFreePort,
         spawnSlidev: (port) => {
@@ -4750,7 +4752,8 @@ function registerIpcHandlers() {
             return win as unknown as SlidesDeckWindow;
           },
           registry: slidesDeckRegistry,
-          deck: { docPath: deck.docPath, port: deck.port, process: deck.process },
+          deck,
+          noteUsed: (docPath) => slidesDeckRegistry.noteUsed(docPath),
         });
       },
       focusWindow: (window) => {
@@ -6472,6 +6475,10 @@ function bootPrimaryInstance(): void {
       startupWaterfall.mark('appReady');
       startupWaterfall.otelEnabled = beginRoot();
       desktopProcessObservability?.start();
+      stopSlidesIdleSweep = slidesDeckRegistry.startIdleSweep({
+        setTimeout: (cb, ms) => setTimeout(cb, ms),
+        clearTimeout: (handle) => clearTimeout(handle),
+      });
       logBootAccessibilityPosture();
       const shellEnvLogger = {
         event: (payload: Record<string, unknown> & { event: string }) =>
@@ -7036,6 +7043,8 @@ function bootPrimaryInstance(): void {
     mcpWiringHandle = null;
     rendererReadySink?.destroy();
     rendererReadySink = null;
+    stopSlidesIdleSweep?.();
+    stopSlidesIdleSweep = undefined;
     flushDesktopLogger();
   });
 
