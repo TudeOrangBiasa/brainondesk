@@ -797,11 +797,18 @@ describe('ProviderPool admission filter (__system__, DX7)', () => {
 });
 
 describe('ProviderPool HocuspocusProvider configuration (D8)', () => {
-  test('new providers receive forceSyncInterval: 5000', () => {
+  test('all providers in one pool share a single websocket and never force-sync on a timer', () => {
     pool = new ProviderPool(3, DUMMY_WS);
-    const entry = pool.open('doc1');
-    if (!entry) throw new Error('expected entry');
-    expect(entry.provider.configuration.forceSyncInterval).toBe(5000);
+    const first = pool.open('doc1');
+    const second = pool.open('doc2');
+    if (!first || !second) throw new Error('expected entries');
+    expect(first.provider.configuration.forceSyncInterval).toBe(false);
+    expect(second.provider.configuration.forceSyncInterval).toBe(false);
+    expect(first.provider.manageSocket).toBe(false);
+    expect(second.provider.manageSocket).toBe(false);
+    expect(second.provider.configuration.websocketProvider).toBe(
+      first.provider.configuration.websocketProvider,
+    );
   });
 });
 

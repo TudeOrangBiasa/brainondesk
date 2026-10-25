@@ -19,6 +19,7 @@ import {
 import { useTheme } from 'next-themes';
 import { type ReactNode, useEffect, useState } from 'react';
 import * as Y from 'yjs';
+import { getSharedCollabSocket } from '@/editor/shared-collab-socket';
 import { useLanguageBridge } from '@/hooks/use-language-bridge';
 import { useThemeBridge } from '@/hooks/use-theme-bridge';
 import { buildAuthToken } from './auth-token';
@@ -71,13 +72,14 @@ function makeBinding(
 ): ScopedBinding {
   const ydoc = new Y.Doc();
   const provider = new HocuspocusProvider({
-    url: collabUrl,
+    websocketProvider: getSharedCollabSocket(collabUrl),
     name: docName,
     document: ydoc,
     token: buildAuthToken(null, serverInstanceId, null),
     onDisconnect: ({ event }) => logProviderEvent('config-provider', docName, 'disconnect', event),
     onClose: ({ event }) => logProviderEvent('config-provider', docName, 'close', event),
   });
+  provider.attach();
   const binding = bindConfigDoc(provider, scope);
   const cleanup = () => {
     binding.dispose();
@@ -96,7 +98,7 @@ interface OkignoreScoped {
 function makeOkignoreBinding(collabUrl: string, serverInstanceId: string | null): OkignoreScoped {
   const ydoc = new Y.Doc();
   const provider = new HocuspocusProvider({
-    url: collabUrl,
+    websocketProvider: getSharedCollabSocket(collabUrl),
     name: CONFIG_DOC_NAME_OKIGNORE,
     document: ydoc,
     token: buildAuthToken(null, serverInstanceId, null),
@@ -105,6 +107,7 @@ function makeOkignoreBinding(collabUrl: string, serverInstanceId: string | null)
     onClose: ({ event }) =>
       logProviderEvent('okignore-provider', CONFIG_DOC_NAME_OKIGNORE, 'close', event),
   });
+  provider.attach();
   const binding = bindOkignoreDoc(provider);
   const cleanup = () => {
     binding.dispose();
