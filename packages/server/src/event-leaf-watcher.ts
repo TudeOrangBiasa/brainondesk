@@ -5,8 +5,8 @@ import { dirname, resolve } from 'node:path';
 import type { AsyncSubscription, Event, SubscribeCallback, subscribe } from '@parcel/watcher';
 import { errnoCode } from './http/handler-utils.ts';
 import { getLogger } from './logger.ts';
+import { acquireParcelHub, findCoveringParcelHub } from './parcel-hub.ts';
 import { classifyParcelNotification } from './parcel-recovery.ts';
-import { subscribeParcel } from './parcel-subscription.ts';
 import { isRacyStat, sampleWallClockNs, statSignature } from './stat-signature.ts';
 
 const RECONCILE_DEBOUNCE_MS = 100;
@@ -17,58 +17,29 @@ const QUIET_ROUNDS_TO_IDLE = 2;
 
 type PathEvent = 'add' | 'change' | 'unlink';
 
-interface SharedSubscription {
-  readonly callbacks: Set<SubscribeCallback>;
-  readonly ready: Promise<AsyncSubscription | null>;
-  refs: number;
-}
-
 type ParcelSubscribe = typeof subscribe;
 
 interface ParcelBackend {
   subscribe: ParcelSubscribe;
 }
 
-const sharedSubscriptions = new Map<ParcelSubscribe, Map<string, SharedSubscription>>();
-
-async function acquireSharedSubscription(
+async function acquireLeafSubscription(
   parcel: ParcelBackend,
   dir: string,
-  callback: SubscribeCallback,
-): Promise<{ subscription: AsyncSubscription | null; release: () => void }> {
-  let byDir = sharedSubscriptions.get(parcel.subscribe);
-  if (byDir === undefined) {
-    byDir = new Map<string, SharedSubscription>();
-    sharedSubscriptions.set(parcel.subscribe, byDir);
-  }
-  const key = dir;
-  let shared = byDir.get(key);
-  if (shared === undefined) {
-    const callbacks = new Set<SubscribeCallback>();
-    const ready = subscribeParcel(parcel, dir, (err, events) => {
-      for (const cb of Array.from(callbacks)) cb(err, events);
-    }).then(
-      (subscription) => subscription,
-      () => null,
-    );
-    shared = { callbacks, ready, refs: 0 };
-    byDir.set(key, shared);
-  }
-  shared.refs += 1;
-  shared.callbacks.add(callback);
-  const subscription = await shared.ready;
+  parcelCallback: SubscribeCallback,
+  onSubscriptionError: SubscribeCallback,
+): Promise<{ subscription: AsyncSubscription | null; release: () => Promise<void> }> {
+  const hub = findCoveringParcelHub(parcel, dir) ?? acquireParcelHub(parcel, dir);
+  const removeWatcher = hub.addWatcher({ onBatch: parcelCallback, onSubscriptionError });
+  const subscription = await hub.nativeSubscription;
   let released = false;
   return {
     subscription,
-    release: () => {
+    release: async () => {
       if (released) return;
       released = true;
-      shared.callbacks.delete(callback);
-      shared.refs -= 1;
-      if (shared.refs <= 0) {
-        byDir.delete(key);
-        void shared.ready.then((sub) => sub?.unsubscribe());
-      }
+      removeWatcher();
+      await hub.release();
     },
   };
 }
@@ -152,10 +123,7 @@ export async function startEventLeafWatcher({
   const failingCodes = new Map<string, string | undefined>();
   const reference = new Map<string, Observation>();
   const pendingSizes = new Map<string, bigint>();
-  const subscriptions = new Map<
-    string,
-    { unsubscribe: () => Promise<void>; release: () => void }
-  >();
+  const subscriptions = new Map<string, { release: () => Promise<void> }>();
   let closed = false;
   let parcelEventsSinceReconcile = false;
   let quietRounds = 0;
@@ -185,16 +153,26 @@ export async function startEventLeafWatcher({
     scheduleSoon(RECONCILE_DEBOUNCE_MS);
   };
 
-  const parcelCallback: SubscribeCallback = (err, events) => {
+  const emit = (event: PathEvent, path: string): void => {
+    if (closed) return;
+    onEvent(event, path);
+  };
+
+  const parcelCallback: SubscribeCallback = (_err, events) => {
+    if (closed) return;
+    dispatchParcelBatch(events);
+  };
+
+  const parcelSubscriptionError: SubscribeCallback = (err, events) => {
     if (closed) return;
     const notification = classifyParcelNotification(err, events);
-    if (notification.kind === 'error') {
-      log.warn({ err: notification.error }, '[event-leaf-watcher] parcel subscription error');
-      parcelEventsSinceReconcile = true;
-      scheduleSoon(RECONCILE_DEBOUNCE_MS);
+    if (notification.kind !== 'error') {
+      dispatchParcelBatch(notification.events);
       return;
     }
-    dispatchParcelBatch(notification.events);
+    log.warn({ err: notification.error }, '[event-leaf-watcher] parcel subscription error');
+    parcelEventsSinceReconcile = true;
+    scheduleSoon(RECONCILE_DEBOUNCE_MS);
   };
 
   const ensureSubscriptions = async (): Promise<void> => {
@@ -206,24 +184,25 @@ export async function startEventLeafWatcher({
         if (subscriptions.has(dir)) return;
         if (parcel !== parcelModule || closed) return;
         const resolved = resolve(dir);
-        const { subscription, release } = await acquireSharedSubscription(
+        const { subscription, release } = await acquireLeafSubscription(
           parcel,
           resolved,
           parcelCallback,
+          parcelSubscriptionError,
         );
         if (parcel !== parcelModule || closed) {
-          release();
+          await release();
           return;
         }
         if (subscription === null) {
-          release();
+          await release();
           log.warn(
             { dir },
             '[event-leaf-watcher] @parcel/watcher subscribe failed; retrying on a later sweep',
           );
           return;
         }
-        subscriptions.set(dir, { unsubscribe: () => subscription.unsubscribe(), release });
+        subscriptions.set(dir, { release });
       }),
     );
   };
@@ -272,7 +251,7 @@ export async function startEventLeafWatcher({
         pendingSizes.delete(path);
         reference.set(path, retained(observation));
         emitted += 1;
-        onEvent(known ? 'change' : 'add', path);
+        emit(known ? 'change' : 'add', path);
       } else {
         pendingSizes.set(path, observation.size);
       }
@@ -281,7 +260,7 @@ export async function startEventLeafWatcher({
       if (observed.has(path)) continue;
       reference.delete(path);
       emitted += 1;
-      onEvent('unlink', path);
+      emit('unlink', path);
     }
     for (const path of pendingSizes.keys()) {
       if (!observed.has(path)) pendingSizes.delete(path);
@@ -289,8 +268,11 @@ export async function startEventLeafWatcher({
     return { failed, emitted };
   };
 
-  const reconcile = async (): Promise<void> => {
-    if (closed) return;
+  let reconcileRunning = false;
+  let reconcileQueued = false;
+  let reconcileTail: Promise<void> = Promise.resolve();
+
+  const runReconcile = async (): Promise<void> => {
     let failed = false;
     let emitted = 0;
     const hadParcelEvents = parcelEventsSinceReconcile;
@@ -314,11 +296,32 @@ export async function startEventLeafWatcher({
     await ensureSubscriptions();
   };
 
+  const requestReconcile = (): void => {
+    if (closed) return;
+    if (reconcileRunning) {
+      reconcileQueued = true;
+      return;
+    }
+    reconcileRunning = true;
+    reconcileTail = reconcileTail.then(async () => {
+      try {
+        do {
+          reconcileQueued = false;
+          await runReconcile();
+        } while (reconcileQueued && !closed);
+      } catch (err) {
+        report(err);
+      } finally {
+        reconcileRunning = false;
+      }
+    });
+  };
+
   function scheduleSoon(delayMs: number): void {
     if (closed || debounceTimer !== null) return;
     debounceTimer = setTimeout(() => {
       debounceTimer = null;
-      void reconcile();
+      requestReconcile();
     }, delayMs);
     debounceTimer.unref?.();
   }
@@ -328,7 +331,7 @@ export async function startEventLeafWatcher({
     const delay = quietRounds >= QUIET_ROUNDS_TO_IDLE ? FALLBACK_IDLE_MS : FALLBACK_ACTIVE_MS;
     fallbackTimer = setTimeout(() => {
       fallbackTimer = null;
-      void reconcile();
+      requestReconcile();
     }, delay);
     fallbackTimer.unref?.();
   }
@@ -353,7 +356,7 @@ export async function startEventLeafWatcher({
     const delay = FALLBACK_ACTIVE_MS;
     fallbackTimer = setTimeout(() => {
       fallbackTimer = null;
-      void reconcile();
+      requestReconcile();
     }, delay);
     fallbackTimer.unref?.();
   }
@@ -373,7 +376,8 @@ export async function startEventLeafWatcher({
       clearTimeout(fallbackTimer);
       fallbackTimer = null;
     }
-    for (const held of subscriptions.values()) held.release();
+    const held = Array.from(subscriptions.values());
     subscriptions.clear();
+    void Promise.all(held.map((entry) => entry.release()));
   };
 }

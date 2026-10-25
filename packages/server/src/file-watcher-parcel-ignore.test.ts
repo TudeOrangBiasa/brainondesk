@@ -5,6 +5,7 @@ import { resolve } from 'node:path';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { createContentFilter } from './content-filter.ts';
 import { startWatcher } from './file-watcher.ts';
+import { __resetParcelHubForTests } from './parcel-hub.ts';
 
 const subscribeCalls: Array<{ dir: string; ignore: string[] | undefined }> = [];
 
@@ -25,6 +26,7 @@ describe('what startWatcher hands @parcel/watcher as `ignore`', () => {
 
   beforeEach(async () => {
     subscribeCalls.length = 0;
+    __resetParcelHubForTests();
     contentDir = await mkdtemp(resolve(tmpdir(), 'ok-parcel-wiring-'));
   });
 

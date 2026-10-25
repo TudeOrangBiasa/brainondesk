@@ -29,6 +29,7 @@ import {
 } from '../file-watcher.ts';
 import { localTargetInventoryFromWatcher } from '../local-target-inventory.ts';
 import { loggerFactory } from '../logger.ts';
+import { __resetParcelHubForTests } from '../parcel-hub.ts';
 import {
   forgetNativeSubscriptions,
   nativeSubscriptionOn,
@@ -400,6 +401,7 @@ test('a public recovery creation preserves its literal folder alias and one list
   const events: DiskEvent[] = [];
   let creations = 0;
   forgetNativeSubscriptions();
+  __resetParcelHubForTests();
   const watcher = await startWatcher(
     root,
     async (event) => {

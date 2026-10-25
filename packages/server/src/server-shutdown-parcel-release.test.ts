@@ -8,6 +8,7 @@ import type { BootedServer } from './boot.ts';
 import { bootCompositionRig } from './composition-rig.test-helper.ts';
 import { getWatcherDecisionRingSnapshot } from './file-watcher.ts';
 import { getMetrics } from './metrics.ts';
+import { __resetParcelHubForTests } from './parcel-hub.ts';
 import {
   forgetNativeSubscriptions,
   nativeSubscriptionDirs,
@@ -26,6 +27,7 @@ let server: BootedServer | undefined;
 
 beforeEach(() => {
   forgetNativeSubscriptions();
+  __resetParcelHubForTests();
   root = realpathSync(mkdtempSync(join(tmpdir(), 'ok-parcel-shutdown-')));
   execFileSync('git', ['init', '--quiet', '--initial-branch=main'], {
     cwd: root,

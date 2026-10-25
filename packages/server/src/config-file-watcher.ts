@@ -8,9 +8,16 @@ import { startPolledPathWatcher } from './polled-path-watcher.ts';
 
 export type ConfigFileWatcherUnsubscribe = () => Promise<void>;
 
+export type LeafWatcherBackend = 'event' | 'polled';
+
+export interface LeafWatcherOptions {
+  readonly backend?: LeafWatcherBackend;
+}
+
 export async function startConfigFileWatcher(
   absPath: string,
   onChange: (content: string) => void,
+  opts: LeafWatcherOptions = {},
 ): Promise<ConfigFileWatcherUnsubscribe> {
   const log = getLogger('config-file-watcher');
 
@@ -57,7 +64,8 @@ export async function startConfigFileWatcher(
     log.debug({ path }, 'config file unlinked; Y.Text retained at current state');
   };
 
-  const stop = await startEventLeafWatcher({
+  const startLeaf = opts.backend === 'polled' ? startPolledPathWatcher : startEventLeafWatcher;
+  const stop = await startLeaf({
     listPaths: async () => [absPath],
     onEvent: (event, path) => (event === 'unlink' ? handleUnlink(path) : handlePath(path)),
     onError: (err, path) => {

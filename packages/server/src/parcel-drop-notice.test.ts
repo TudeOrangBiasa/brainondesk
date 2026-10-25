@@ -54,6 +54,7 @@ import {
 } from './in-place-skills.ts';
 import { localTargetInventoryFromWatcher } from './local-target-inventory.ts';
 import { getLogger } from './logger.ts';
+import { __resetParcelHubForTests } from './parcel-hub.ts';
 import {
   forgetNativeSubscriptions,
   nativeSubscriptionDirs,
@@ -367,6 +368,7 @@ beforeEach(() => {
   memberStatSchedule.resume = null;
   memberStatSchedule.seen = [];
   forgetNativeSubscriptions();
+  __resetParcelHubForTests();
   _resetDocExtensionsForTests();
   lastKnownHash.clear();
   writeTracker.clear();

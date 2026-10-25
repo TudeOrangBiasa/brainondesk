@@ -12,6 +12,7 @@ import {
 import { lstat, readdir, readFile, realpath, stat } from 'node:fs/promises';
 import { basename, dirname, extname, isAbsolute, join, relative, sep } from 'node:path';
 import { LINKABLE_ASSET_EXTENSIONS } from '@inkeep/open-knowledge-core';
+import type { SubscribeCallback } from '@parcel/watcher';
 import { isConfigDoc, isReservedForUserTree, isSystemDoc } from './cc1-broadcast.ts';
 import { type ContentFilter, WATCHER_STRUCTURAL_IGNORE_DIRS } from './content-filter.ts';
 import { isWithinContentDir } from './content-path.ts';
@@ -35,8 +36,8 @@ import {
   extractPageTitle,
   extractPageType,
 } from './page-identity.ts';
+import { acquireParcelHub } from './parcel-hub.ts';
 import { classifyParcelNotification } from './parcel-recovery.ts';
-import { subscribeParcel } from './parcel-subscription.ts';
 import { toPosix } from './path-utils.ts';
 import { containsConflictMarkers } from './reconciliation.ts';
 import { getMeter, withSpan } from './telemetry.ts';
@@ -3410,55 +3411,61 @@ async function startParcelWatcher(
       }
       return nextRecovery;
     };
-    const subscription = await subscribeParcel(
-      parcel,
-      contentDir,
-      (err, events) => {
+    const hub = acquireParcelHub(parcel, contentDir, subscribeOpts, platform);
+    const nativeSub = await hub.nativeSubscription;
+    if (nativeSub === null) {
+      await hub.release();
+      log.warn({}, '@parcel/watcher subscribe failed, falling back to chokidar');
+      return null;
+    }
+    const onDelivery: SubscribeCallback = (err, events) => {
+      if (closed) return;
+      const notification = classifyParcelNotification(err, events);
+      if (notification.kind === 'error') {
+        log.error({ err: notification.error }, 'parcel watcher callback error');
+        return;
+      }
+      if (notification.kind === 'rescan') {
+        log.warn(
+          { err: notification.error, eventCount: notification.events.length },
+          'parcel watcher recovery requested',
+        );
+      }
+      const records = runOrdered(async () => {
         if (closed) return;
-        const notification = classifyParcelNotification(err, events);
-        if (notification.kind === 'error') {
-          log.error({ err: notification.error }, 'parcel watcher callback error');
-          return;
-        }
-        if (notification.kind === 'rescan') {
-          log.warn(
-            { err: notification.error, eventCount: notification.events.length },
-            'parcel watcher recovery requested',
+        try {
+          onRawBatch?.(notification.events.map((event) => event.path));
+          await handleRawEventsInternal(
+            notification.events.map((event) => ({ type: event.type, path: event.path })),
+            contentDir,
+            contentFilter,
+            fileIndex,
+            folderIndex,
+            onDiskEvent,
+            aliasMap,
+            undefined,
+            generalFileIndex,
+            aliasPaths,
           );
+          onAfterMutation();
+        } catch (handleErr) {
+          log.error({ err: handleErr }, 'parcel batch error');
         }
-        const records = runOrdered(async () => {
-          if (closed) return;
-          try {
-            onRawBatch?.(notification.events.map((event) => event.path));
-            await handleRawEventsInternal(
-              notification.events.map((event) => ({ type: event.type, path: event.path })),
-              contentDir,
-              contentFilter,
-              fileIndex,
-              folderIndex,
-              onDiskEvent,
-              aliasMap,
-              undefined,
-              generalFileIndex,
-              aliasPaths,
-            );
-            onAfterMutation();
-          } catch (handleErr) {
-            log.error({ err: handleErr }, 'parcel batch error');
-          }
-        });
-        if (notification.kind !== 'rescan') return records;
-        return Promise.all([records, requestRecovery()]);
-      },
-      subscribeOpts,
-      platform,
-    );
+      });
+      if (notification.kind !== 'rescan') return records;
+      return Promise.all([records, requestRecovery()]);
+    };
+    const removeWatcher = hub.addWatcher({
+      onBatch: onDelivery,
+      onSubscriptionError: onDelivery,
+    });
 
     return {
       runOrdered,
       async unsubscribe() {
         closed = true;
-        await subscription.unsubscribe();
+        removeWatcher();
+        await hub.release();
         await workTail;
       },
     };
