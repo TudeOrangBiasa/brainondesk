@@ -62,6 +62,12 @@ describe('checkProtectedPaths', () => {
     expect(problem).toContain('.github/workflows/verify.yml');
   });
 
+  it('says the agent adds the label after automated checks, without a human approver', () => {
+    const [problem] = checkProtectedPaths(['.github/workflows/verify.yml'], []);
+    expect(problem).toContain('agent adds it after the automated protected-path checks pass');
+    expect(problem).not.toMatch(/tude|human|review/i);
+  });
+
   it('passes with the label', () => {
     expect(checkProtectedPaths(files, ['protected-paths-ok'])).toEqual([]);
   });
@@ -210,6 +216,12 @@ describe('risk label vs suggestion', () => {
     expect(problem).toContain('Suggested from changed paths: "risk:high"');
   });
 
+  it('routes verification in the missing-label message, without a human merger', () => {
+    const [problem] = checkRiskLabel('fix: x', [], ['.github/workflows/verify.yml']);
+    expect(problem).toContain('Suggested from changed paths: "risk:high"');
+    expect(problem).not.toMatch(/tude|merges|human|review/i);
+  });
+
   it('never tells agents they may merge', () => {
     const [problem] = checkRiskLabel('fix: x', [], ['packages/app/src/a.ts']);
     expect(problem).not.toMatch(/agents? may merge/i);
@@ -226,6 +238,16 @@ describe('evaluatePolicy with numstat entries', () => {
     });
     expect(problems).toHaveLength(1);
     expect(problems[0]).toContain('protected-paths-ok');
+  });
+
+  it('passes risk:high with protected paths and the label, without human approval', () => {
+    const problems = evaluatePolicy({
+      title: 'ci(policy): agents land every tier',
+      body: 'Closes #101',
+      labels: ['risk:high', 'protected-paths-ok'],
+      files: parseNumstat('3\t1\t.github/workflows/verify.yml\n'),
+    });
+    expect(problems).toEqual([]);
   });
 });
 
