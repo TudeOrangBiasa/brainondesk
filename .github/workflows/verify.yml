@@ -121,10 +121,42 @@ jobs:
       - name: Unit tests
         run: pnpm exec turbo run test --filter='${{ matrix.filter }}' --output-logs=errors-only
 
+  bun:
+    name: bun (CLI under pinned Bun)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup
+        with:
+          turbo-cache-key: bun
+
+      - name: Bun version (must match .bun-version)
+        run: |
+          test "$(bun --version)" = "$(cat .bun-version)" || { echo "bun $(bun --version) != $(cat .bun-version)"; exit 1; }
+
+      - name: Build CLI bundle
+        run: pnpm exec turbo run build --filter=@inkeep/open-knowledge --output-logs=errors-only
+
+      - name: CLI unit tests under Bun
+        run: |
+          export HOME="$RUNNER_TEMP/ok-bun-home"
+          export XDG_CONFIG_HOME="$HOME/.config"
+          export XDG_CACHE_HOME="$HOME/.cache"
+          mkdir -p "$HOME" "$XDG_CONFIG_HOME" "$XDG_CACHE_HOME"
+          bun x vitest run
+        working-directory: packages/cli
+
+      - name: perf:baseline smoke (bun, 1 note, no renderer/bundle)
+        run: node scripts/perf/baseline.mjs --runtime bun --notes 1 --diagrams 0 --idle-seconds 5 --skip-renderer --skip-bundle --out perf-baseline-bun-smoke
+
   verify:
     name: verify
     if: always()
-    needs: [policy, checks, test]
+    needs: [policy, checks, test, bun]
     runs-on: ubuntu-24.04
     timeout-minutes: 2
     steps:

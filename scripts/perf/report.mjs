@@ -73,14 +73,15 @@ function fmt(value, digits = 1) {
 
 export function renderMarkdownSummary(report) {
   const { server, renderer, bundle } = report.medians;
+  const runtimes = report.cli?.bun ? `node ${report.cli.node ?? 'n/a'}, bun ${report.cli.bun}` : `node ${report.cli?.node ?? 'n/a'}`;
   const lines = [
     `# perf-baseline (${report.runtime})`,
     '',
     `generated: ${report.generatedAt}`,
+    `runtimes: ${runtimes}`,
     `fixture: ${report.fixture.noteCount} notes + ${report.fixture.diagramCount} mermaid diagrams (seed ${report.fixture.seed}), idle ${report.idleSeconds}s`,
     '',
     '## server (median)',
-    '',
     `- rssMB: ${fmt(server.rssMB)}`,
     `- pssMB: ${fmt(server.pssMB)}`,
     `- heapUsedMB: ${fmt(server.heapUsedMB)}`,

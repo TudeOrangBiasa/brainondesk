@@ -2863,6 +2863,8 @@ describe('classifyExistingMcpEntry', () => {
   let testDir: string;
   const originalPlatform = process.platform;
   const originalHome = process.env.HOME;
+  const originalXdgConfigHome = process.env.XDG_CONFIG_HOME;
+  const originalXdgCacheHome = process.env.XDG_CACHE_HOME;
 
   beforeEach(() => {
     testDir = resolve(
@@ -2873,6 +2875,8 @@ describe('classifyExistingMcpEntry', () => {
     fakeHome = join(testDir, 'fakehome');
     mkdirSync(fakeHome, { recursive: true });
     process.env.HOME = fakeHome;
+    process.env.XDG_CONFIG_HOME = join(fakeHome, '.config');
+    process.env.XDG_CACHE_HOME = join(fakeHome, '.cache');
     Object.defineProperty(process, 'platform', { value: 'darwin', configurable: true });
   });
 
@@ -2886,6 +2890,10 @@ describe('classifyExistingMcpEntry', () => {
     } else {
       process.env.HOME = originalHome;
     }
+    if (originalXdgConfigHome === undefined) delete process.env.XDG_CONFIG_HOME;
+    else process.env.XDG_CONFIG_HOME = originalXdgConfigHome;
+    if (originalXdgCacheHome === undefined) delete process.env.XDG_CACHE_HOME;
+    else process.env.XDG_CACHE_HOME = originalXdgCacheHome;
     rmSync(testDir, { recursive: true, force: true });
   });
 
@@ -3451,6 +3459,8 @@ describe('consent bypass never fabricates its own detection evidence (PRD-8007)'
   let testDir: string;
   const originalPlatform = process.platform;
   const originalHome = process.env.HOME;
+  const originalXdgConfigHome = process.env.XDG_CONFIG_HOME;
+  const originalXdgCacheHome = process.env.XDG_CACHE_HOME;
 
   beforeEach(() => {
     testDir = resolve(
@@ -3461,6 +3471,8 @@ describe('consent bypass never fabricates its own detection evidence (PRD-8007)'
     fakeHome = join(testDir, 'fakehome');
     mkdirSync(fakeHome, { recursive: true });
     process.env.HOME = fakeHome;
+    process.env.XDG_CONFIG_HOME = join(fakeHome, '.config');
+    process.env.XDG_CACHE_HOME = join(fakeHome, '.cache');
     Object.defineProperty(process, 'platform', { value: 'darwin', configurable: true });
   });
 
@@ -3468,6 +3480,10 @@ describe('consent bypass never fabricates its own detection evidence (PRD-8007)'
     Object.defineProperty(process, 'platform', { value: originalPlatform, configurable: true });
     if (originalHome === undefined) delete process.env.HOME;
     else process.env.HOME = originalHome;
+    if (originalXdgConfigHome === undefined) delete process.env.XDG_CONFIG_HOME;
+    else process.env.XDG_CONFIG_HOME = originalXdgConfigHome;
+    if (originalXdgCacheHome === undefined) delete process.env.XDG_CACHE_HOME;
+    else process.env.XDG_CACHE_HOME = originalXdgCacheHome;
     rmSync(testDir, { recursive: true, force: true });
   });
 
