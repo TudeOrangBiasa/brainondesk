@@ -2,6 +2,9 @@ import { describe, expect, test } from 'vitest';
 import {
   type ResolveDetachedSpawnArgsInput,
   resolveDetachedSpawnArgs,
+  resolveServerMaxOldSpaceMb,
+  SERVER_MAX_OLD_SPACE_CAP_MB,
+  SERVER_MAX_OLD_SPACE_MIN_MB,
   TERMINAL_AUTH_ARG,
 } from './resolve-detached-spawn-args.ts';
 
@@ -176,9 +179,10 @@ describe('resolveDetachedSpawnArgs', () => {
   });
 
   test('args invoke the bundled CLI with start + the react shell dist dir', () => {
-    const { args } = resolveDetachedSpawnArgs(makeInput());
+    const totalMemBytes = 20 * 1024 ** 3;
+    const { args } = resolveDetachedSpawnArgs(makeInput({ totalMemBytes }));
     expect(args).toEqual([
-      '--max-old-space-size=16384',
+      `--max-old-space-size=${SERVER_MAX_OLD_SPACE_CAP_MB}`,
       `${PARENT_APP}/Contents/Resources/app.asar.unpacked/dist/cli.mjs`,
       'start',
       '--react-shell-dist-dir',
@@ -188,15 +192,17 @@ describe('resolveDetachedSpawnArgs', () => {
   });
 
   test('ephemeral mode appends --single-file + --project-dir and cwds at the temp project root', () => {
+    const totalMemBytes = 20 * 1024 ** 3;
     const { args, opts } = resolveDetachedSpawnArgs(
       makeInput({
         contentDir: '/Users/me/notes',
         projectDir: '/tmp/ok-ephemeral-xyz',
         singleFile: '/Users/me/notes/todo.md',
+        totalMemBytes,
       }),
     );
     expect(args).toEqual([
-      '--max-old-space-size=16384',
+      `--max-old-space-size=${SERVER_MAX_OLD_SPACE_CAP_MB}`,
       `${PARENT_APP}/Contents/Resources/app.asar.unpacked/dist/cli.mjs`,
       'start',
       '--react-shell-dist-dir',
@@ -209,9 +215,27 @@ describe('resolveDetachedSpawnArgs', () => {
     expect(opts.cwd).toBe('/tmp/ok-ephemeral-xyz');
   });
 
-  test('non-ephemeral spawn carries no single-file flags (absent fields omit cleanly)', () => {
-    const { args } = resolveDetachedSpawnArgs(makeInput());
-    expect(args).not.toContain('--single-file');
-    expect(args).not.toContain('--project-dir');
+  test('heap cap defaults to min(4096, 25% RAM)', () => {
+    expect(resolveServerMaxOldSpaceMb({}, 20 * 1024 ** 3)).toBe(SERVER_MAX_OLD_SPACE_CAP_MB);
+    expect(resolveServerMaxOldSpaceMb({}, 8 * 1024 ** 3)).toBe(2048);
+    expect(resolveServerMaxOldSpaceMb({}, 1024 ** 3)).toBe(SERVER_MAX_OLD_SPACE_MIN_MB);
+  });
+
+  test('OK_SERVER_MAX_OLD_SPACE_MB overrides the heap cap', () => {
+    const twentyGb = 20 * 1024 ** 3;
+    expect(resolveServerMaxOldSpaceMb({ OK_SERVER_MAX_OLD_SPACE_MB: '8192' }, twentyGb)).toBe(8192);
+    const { args } = resolveDetachedSpawnArgs(
+      makeInput({
+        env: { PATH: '/usr/bin', OK_SERVER_MAX_OLD_SPACE_MB: '8192' },
+        totalMemBytes: twentyGb,
+      }),
+    );
+    expect(args[0]).toBe('--max-old-space-size=8192');
+  });
+
+  test('malformed heap override falls back to the RAM-derived default', () => {
+    const eightGb = 8 * 1024 ** 3;
+    expect(resolveServerMaxOldSpaceMb({ OK_SERVER_MAX_OLD_SPACE_MB: 'lots' }, eightGb)).toBe(2048);
+    expect(resolveServerMaxOldSpaceMb({ OK_SERVER_MAX_OLD_SPACE_MB: '64' }, eightGb)).toBe(2048);
   });
 });

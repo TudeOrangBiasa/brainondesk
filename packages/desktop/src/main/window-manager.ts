@@ -340,9 +340,10 @@ export interface WindowManagerDeps {
   forkUtility(
     entry: string,
     args: string[],
-    opts: { windowLifecycleBound?: boolean; serviceName: string },
+    opts: { windowLifecycleBound?: boolean; serviceName: string; execArgv?: readonly string[] },
   ): UtilityProcessLike;
   utilityEntryPath: string;
+  serverHeapExecArgv?: readonly string[];
   spawnDetachedServer?: SpawnCliServer;
   spawnSingleFileServer?: SpawnCliServer;
   createEphemeralProjectDir?(contentDir: string): string;
@@ -1434,6 +1435,9 @@ export class WindowManager {
       {
         windowLifecycleBound: true,
         serviceName,
+        ...(this.deps.serverHeapExecArgv !== undefined
+          ? { execArgv: this.deps.serverHeapExecArgv }
+          : {}),
       },
     );
     const forkedAt = Date.now();
