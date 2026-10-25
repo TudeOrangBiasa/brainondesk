@@ -1,0 +1,16 @@
+export const MOBILE_BROWSER_SAFE_SUBPATHS = [
+  './markdown',
+  './extensions/wiki-link',
+  './extensions/tag',
+  './extensions/frontmatter',
+  './utils/wiki-link-resolve',
+  './utils/slug',
+  './frontmatter/schema',
+  './constants/upload',
+  './constants/github',
+  './registry',
+  './search/workspace-search',
+  './markdown/lint',
+  './bridge',
+  './config/auto-sync-mode',
+] as const;

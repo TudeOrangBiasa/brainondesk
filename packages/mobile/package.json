@@ -1,0 +1,31 @@
+{
+  "name": "@inkeep/open-knowledge-mobile",
+  "version": "0.84.0",
+  "license": "GPL-3.0-or-later",
+  "private": true,
+  "main": "expo/AppEntry.js",
+  "engines": {
+    "node": ">=24.2.0"
+  },
+  "scripts": {
+    "start": "EXPO_NO_TELEMETRY=1 expo start --dev-client",
+    "android": "EXPO_NO_TELEMETRY=1 expo run:android --device",
+    "prebuild:android": "EXPO_NO_TELEMETRY=1 expo prebuild --platform android",
+    "assemble:debug": "EXPO_NO_TELEMETRY=1 expo prebuild --platform android && cd android && ./gradlew assembleDebug",
+    "typecheck": "tsc --noEmit",
+    "test": "node scripts/assert-local-only.mjs"
+  },
+  "dependencies": {
+    "@inkeep/open-knowledge-core": "workspace:*",
+    "expo": "57.0.27",
+    "expo-dev-client": "57.0.19",
+    "expo-status-bar": "57.0.1",
+    "react": "19.2.5",
+    "react-native": "0.86.3"
+  },
+  "devDependencies": {
+    "@types/react": "~19.2.14",
+    "babel-preset-expo": "~57.0.14",
+    "typescript": "~7.0.2"
+  }
+}
