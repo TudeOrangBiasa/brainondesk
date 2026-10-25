@@ -51,7 +51,7 @@ const lintConfigListeners = new Set<() => void>();
 function emitLintConfigChangedForTest(): void {
   for (const listener of lintConfigListeners) listener();
 }
-vi.doMock('@/editor/lint-config-client', () => ({
+vi.doMock('@/editor/lint-config-hooks', () => ({
   emitLintConfigChanged: () => {},
   subscribeToLintConfigChanged: (onChange: () => void) => {
     lintConfigListeners.add(onChange);
@@ -65,6 +65,12 @@ vi.doMock('@/editor/lint-config-client', () => ({
   useProjectLintConfig: () => ({ data: projectLintConfigData }),
   fetchEffectiveLintConfig: async () => null,
   writeMarkdownlintRule: async () => ({ ok: false, errorDetail: null }),
+}));
+vi.doMock('@/editor/lint-fix-loader', () => ({
+  sweepFixLintDoc: (docName: string) => {
+    fixLintDocCalls.push(docName);
+    return fixLintDocImpl(docName);
+  },
 }));
 vi.doMock('@/editor/validation-audit-client', () => ({
   AUDIT_SUPERSEDED,

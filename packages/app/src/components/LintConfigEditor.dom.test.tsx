@@ -28,7 +28,7 @@ const NESTED_CONFIG = 'docs/.markdownlint.json';
 
 let mockProjectLintData: { configFile: string | null } | null = null;
 
-vi.doMock('@/editor/lint-config-client', () => ({
+vi.doMock('@/editor/lint-config-hooks', () => ({
   useProjectLintConfig: () => ({ data: mockProjectLintData }),
 }));
 
