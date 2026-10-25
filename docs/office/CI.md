@@ -37,6 +37,21 @@ Test `server` (>15 menit) dan `cli` (~6 menit, dua test bergantung pada lokasi `
 
 `scripts/verify.sh` menjalankan urutan yang sama dengan CI: install frozen, policy (pakai `gh pr view` kalau PR sudah ada, kalau belum hanya menampilkan path terlindungi yang tersentuh), gitleaks (kalau terpasang, `sudo dnf install gitleaks`), lint, typecheck, unit test core/app/desktop, build desktop. `VERIFY_SKIP_INSTALL=1` melewati install, `VERIFY_BASE` mengganti base (default `origin/main`).
 
+## Protokol klaim "pra-existing" (wajib untuk worker dan verifier)
+
+"Gagal juga di main" hanya sah bila dibuktikan di worktree detached pada base SHA yang
+terpisah (bukan `git stash` di tree kerja — stash tidak mencakup untracked files dan
+mudah terkontaminasi symlink `node_modules`). Perintah yang sama, log gagal yang sama,
+baru bandingkan pola gagal per-test base-vs-head. Tanpa bukti itu, merah = milik-PR:
+perbaiki dulu, jangan buka PR.
+
+## Self-check risiko sebelum push (wajib untuk worker)
+
+Jalankan `pnpm pr:risk` (pembungkus `scripts/check-pr-policy.mjs`) sebelum push pertama
+setiap branch. Label risiko mengikuti saran checker (diff >400 baris/15 file, di luar
+lockfiles/generated/fixtures, = `risk:high`), bukan mengikuti badan tiket. Badan tiket
+yang mematok label risiko bersifat saran dan kalah oleh checker.
+
 ## Yang dihapus dari upstream
 
 - Workflow rilis: `release`, `point-release`, `promote-stable`, `select-beta-to-promote`

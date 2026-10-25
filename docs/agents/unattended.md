@@ -8,3 +8,9 @@ How agent runs proceed without the user watching in this repo. Read by the `goal
 - **Queues vs goals:** issue queues run through `/runner`; single long goals run through the `goal` playbook. Landing follows the risk tier (low lands on PASS with no human touch, high waits for the human).
 - **Verification skill:** `skills/verify-brainondesk/` (launch → doctor → drive → evidence → cleanup); upkeep via `/maintain-verification`, scope limited to that directory.
 - **Scheduled maintenance:** `/retro` stale-docs sweep plus verification upkeep, daily, proposals filed, never auto-applied. Wake: harness non-interactive invocation on this workstation. Output sink: issue(s) labelled `type:chore`.
+- **Paralelisme:** maksimal 4 subagent pekerja bersamaan (plus verifier independen
+  sesuai kebutuhan). Batas ini dari Tude; worker ke-5 mengantre sampai satu selesai.
+- **Otonomi tanpa approval:** agen jalan terus tanpa menunggu persetujuan per langkah.
+  Kabari Tude hanya bila risikonya setingkat seluruh proyek (diff besar lintas paket,
+  perubahan arsitektur, migrasi data, secret/infra). Selain itu: putuskan sendiri,
+  catat di laporan, lanjut.
