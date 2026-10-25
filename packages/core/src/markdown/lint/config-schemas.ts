@@ -4,56 +4,23 @@ import {
   BrokenLinkSuppressionSchema,
   LocalTargetDiagnosticEvidenceSchema,
 } from '../../schemas/api/agent-write.ts';
-import { DEFAULT_MARKDOWNLINT_CONFIG } from './default-config.ts';
-import type { OkfRuleId } from './okf-rule-meta.ts';
-import { LINT_PLUGINS, type LinterConfig } from './plugins.ts';
-import type { FrontmatterSchemaMapping, MarkdownlintRuleSetting } from './types.ts';
+import { type PersistedLinterConfig, toEffectiveBase } from './config-base.ts';
+import type { LinterConfig } from './plugin-meta.ts';
+import { LINT_SLICE_SCHEMAS } from './plugins.ts';
 import { FRONTMATTER_SCOPES } from './types.ts';
 
-interface PersistedMarkdownlintSlice {
-  enabled: boolean;
-  rules?: Record<string, MarkdownlintRuleSetting>;
-}
-interface PersistedFrontmatterSlice {
-  enabled: boolean;
-  schemas?: FrontmatterSchemaMapping[];
-}
-interface PersistedOkfSlice {
-  enabled: boolean;
-  rules?: Partial<Record<OkfRuleId, boolean>>;
-  generate?: { index?: boolean };
-}
-export interface PersistedLinterConfig {
-  enabled?: boolean;
-  markdownlint: PersistedMarkdownlintSlice;
-  frontmatter?: PersistedFrontmatterSlice;
-  okf?: PersistedOkfSlice;
-}
+export type {
+  LintConfigResponse,
+  ValidationAuditCountsResponse,
+  ValidationAuditResponse,
+  ValidationDocCounts,
+  ValidationDocResult,
+  ValidationSourceCounts,
+} from './wire-types.ts';
+export type { PersistedLinterConfig };
+export { toEffectiveBase };
 
-export function toEffectiveBase(persisted: PersistedLinterConfig): LinterConfig {
-  return {
-    enabled: persisted.enabled ?? true,
-    plugins: {
-      markdownlint: {
-        ...persisted.markdownlint,
-        rules: persisted.markdownlint.rules ?? DEFAULT_MARKDOWNLINT_CONFIG,
-      },
-      frontmatter: {
-        enabled: persisted.frontmatter?.enabled ?? false,
-        schemas: persisted.frontmatter?.schemas ?? [],
-      },
-      okf: {
-        enabled: persisted.okf?.enabled ?? false,
-        ...(persisted.okf?.rules === undefined ? {} : { rules: persisted.okf.rules }),
-        generate: { index: persisted.okf?.generate?.index ?? false },
-      },
-    },
-  };
-}
-
-const fullPluginShape = Object.fromEntries(
-  LINT_PLUGINS.map((plugin) => [plugin.id, plugin.sliceSchema]),
-) as z.ZodRawShape;
+const fullPluginShape = { ...LINT_SLICE_SCHEMAS } as z.ZodRawShape;
 
 export const LinterConfigSchema = z.object({
   enabled: z.boolean(),
@@ -161,8 +128,6 @@ export const FrontmatterSchemasListSuccessSchema = z
   .strict();
 export type FrontmatterSchemasListSuccess = z.infer<typeof FrontmatterSchemasListSuccessSchema>;
 
-export type LintConfigResponse = z.infer<typeof LintConfigResponseSchema>;
-
 const LintPositionSchema = z.object({ line: z.number(), character: z.number() });
 const LintRangeSchema = z.object({ start: LintPositionSchema, end: LintPositionSchema });
 
@@ -218,9 +183,6 @@ export const ValidationAuditResponseSchema = z.object({
   brokenLinkSuppression: BrokenLinkSuppressionSchema.optional(),
 });
 
-export type ValidationDocResult = z.infer<typeof ValidationDocResultSchema>;
-export type ValidationAuditResponse = z.infer<typeof ValidationAuditResponseSchema>;
-
 const ValidationSourceCountsSchema = z.object({
   errorCount: z.number().int().nonnegative(),
   warningCount: z.number().int().nonnegative(),
@@ -240,9 +202,6 @@ export const ValidationAuditCountsResponseSchema = z.object({
   warnings: z.array(z.string()),
   brokenLinkSuppression: BrokenLinkSuppressionSchema.optional(),
 });
-
-export type ValidationDocCounts = z.infer<typeof ValidationDocCountsSchema>;
-export type ValidationAuditCountsResponse = z.infer<typeof ValidationAuditCountsResponseSchema>;
 
 export const LintFixRequestSchema = z
   .object({

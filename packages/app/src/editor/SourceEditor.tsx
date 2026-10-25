@@ -7,7 +7,7 @@ import {
   DEFAULT_LINTER_CONFIG,
   type PersistedLinterConfig,
   toEffectiveBase,
-} from '@inkeep/open-knowledge-core/markdown/lint';
+} from '@inkeep/open-knowledge-core/markdown/lint/light';
 import { useTheme } from 'next-themes';
 import { useEffect, useRef, useState } from 'react';
 import { yCollab, yUndoManagerKeymap } from 'y-codemirror.next';
@@ -22,6 +22,8 @@ import {
   createNestedCMExtensions,
   darkTheme,
   lightTheme,
+  loadNestedCMMarkdownLanguage,
+  nestedCMLanguageCompartment,
 } from '@/editor/extensions/nested-cm-extensions';
 import type { RawMdxNavDetail } from '@/editor/extensions/raw-mdx-nav-event';
 import { useConfigContext } from '@/lib/config-provider';
@@ -31,7 +33,8 @@ import { claimNoteWindowInitialFocus } from '@/lib/note-window-focus';
 import { createSourceClipboardExtension } from './clipboard/index.ts';
 import { type CmCacheEntry, mountCmEditor, parkCmEditor } from './editor-cache';
 import { registerFullPageCmView, unregisterFullPageCmView } from './full-page-cm-views';
-import { useDocLintConfig } from './lint-config-client';
+import { useDocLintConfig } from './lint-config-hooks';
+import { preloadLintRunner } from './lint-runner-lazy.ts';
 import { startSourceLanding } from './mode-switch-landing';
 import { getMountId } from './mount-id-registry';
 import { markUserTyping } from './observers';
@@ -260,6 +263,9 @@ export function SourceEditor({
               ],
             });
             const view = new EditorView({ state, parent: el });
+            void loadNestedCMMarkdownLanguage().then((language) => {
+              view.dispatch({ effects: nestedCMLanguageCompartment.reconfigure(language) });
+            });
             publishSelectionStats(resolvedDocName, 'source', selectionStatsFromSource(view));
             publishSelectionContext(
               resolvedDocName,
@@ -308,6 +314,15 @@ export function SourceEditor({
       cleanupSourceEditorEntry(docName, cur);
     };
   }, [ytext, provider]);
+
+  useEffect(() => {
+    if (typeof window.requestIdleCallback === 'function') {
+      const handle = window.requestIdleCallback(() => preloadLintRunner(), { timeout: 1000 });
+      return () => window.cancelIdleCallback(handle);
+    }
+    const timer = window.setTimeout(() => preloadLintRunner(), 0);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     sourceModeActiveRef.current = isSourceModeActive;

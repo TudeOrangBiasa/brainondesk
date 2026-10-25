@@ -75,6 +75,7 @@ import { scopeExtensionsToDocument, sharedExtensions } from './extensions/shared
 import { SkillPathLinks } from './extensions/skill-path-links';
 import { uploadDecorationPlugin } from './image-upload/index.ts';
 import type { LandingHandle } from './landing-controller';
+import { preloadLintRunner } from './lint-runner-lazy';
 import { startWysiwygLanding } from './mode-switch-landing';
 import { getMountId } from './mount-id-registry';
 import { mountTiptapEditorPromise } from './mount-promise';
@@ -502,13 +503,21 @@ const TiptapEditorChrome: FC<TiptapEditorChromeProps> = ({
     }
   }, [editor, portalTarget]);
   useEffect(() => {
+    if (typeof window.requestIdleCallback === 'function') {
+      const handle = window.requestIdleCallback(() => preloadLintRunner(), { timeout: 1000 });
+      return () => window.cancelIdleCallback(handle);
+    }
+    const timer = window.setTimeout(() => preloadLintRunner(), 0);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
     const docName = provider.configuration.name ?? null;
     setEditorDocName(editor, docName);
     return () => {
       setEditorDocName(editor, null);
     };
   }, [editor, provider]);
-
   useEffect(() => {
     const docName = provider.configuration.name;
     if (!docName) return;

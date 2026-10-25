@@ -4,8 +4,8 @@ import type {
   LintDiagnostic,
   LinterConfig,
   LintPosition,
-} from '@inkeep/open-knowledge-core/markdown/lint';
-import { lintDocument } from '@inkeep/open-knowledge-core/markdown/lint';
+} from '@inkeep/open-knowledge-core/markdown/lint/light';
+import { lintDocumentLazy } from '../lint-runner-lazy.ts';
 
 export function createMarkdownLintExtension(config: LinterConfig, docName?: string): Extension {
   if (!config.enabled) return [];
@@ -15,7 +15,7 @@ export function createMarkdownLintExtension(config: LinterConfig, docName?: stri
       async (view) =>
         mapLintDiagnostics(
           view.state.doc,
-          await lintDocument(view.state.doc.toString(), config, docName),
+          await lintDocumentLazy(view.state.doc.toString(), config, docName),
         ),
       {
         delay: 600,

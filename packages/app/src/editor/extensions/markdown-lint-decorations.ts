@@ -1,13 +1,12 @@
 import { autoUpdate, computePosition, flip, offset, shift, size } from '@floating-ui/dom';
 import { sharedExtensions as coreExtensions } from '@inkeep/open-knowledge-core/extensions/shared';
 import { MarkdownManager } from '@inkeep/open-knowledge-core/markdown';
-import {
-  isFrontmatterScoped,
-  type LintDiagnostic,
-  type LinterConfig,
-  type LintTextEdit,
-  lintDocument,
-} from '@inkeep/open-knowledge-core/markdown/lint';
+import type {
+  LintDiagnostic,
+  LinterConfig,
+  LintTextEdit,
+} from '@inkeep/open-knowledge-core/markdown/lint/light';
+import { isFrontmatterScoped } from '@inkeep/open-knowledge-core/markdown/lint/light';
 import { t } from '@lingui/core/macro';
 import { type Editor, Extension } from '@tiptap/core';
 import type { Node as PmNode } from '@tiptap/pm/model';
@@ -27,7 +26,9 @@ import {
 } from '@/editor/utils/editor-visible-region';
 import { cn } from '@/lib/utils';
 import { blockIndexForLine, comparableChildCount, computeSourceBlockSpans } from '../block-spans';
-import { fetchEffectiveLintConfig, subscribeToLintConfigChanged } from '../lint-config-client';
+import { subscribeToLintConfigChanged } from '../lint-config-events';
+import { fetchEffectiveLintConfig } from '../lint-config-hooks';
+import { lintDocumentLazy } from '../lint-runner-lazy';
 import { runScrollNavigation } from '../scroll-restore-coordination';
 
 const LINT_CALLOUT_GAP_PX = 6;
@@ -376,7 +377,7 @@ export const MarkdownLintDecorations = Extension.create<MarkdownLintDecorationsO
           async function computeSet(activeConfig: LinterConfig): Promise<ComputeOutcome> {
             const doc = view.state.doc;
             const source = getSource?.() ?? md.serialize(doc.toJSON());
-            const diagnostics = await lintDocument(source, activeConfig, docName);
+            const diagnostics = await lintDocumentLazy(source, activeConfig, docName);
             if (!view.state.doc.eq(doc)) return { kind: 'stale' };
             const { spans } = computeSourceBlockSpans(source, md);
             if (spans.length !== comparableChildCount(doc)) return { kind: 'mismatch' };

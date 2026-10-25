@@ -1,7 +1,7 @@
 import {
   type LinterConfig,
   selectGoverningFrontmatterSchemas,
-} from '@inkeep/open-knowledge-core/markdown/lint';
+} from '@inkeep/open-knowledge-core/markdown/lint/light';
 
 export interface FieldEnumConstraint {
   values: string[];

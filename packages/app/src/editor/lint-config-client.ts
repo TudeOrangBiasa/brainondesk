@@ -1,49 +1,15 @@
 import {
   type FrontmatterFieldConstraint,
-  FrontmatterSchemasListSuccessSchema,
   type LintConfigResponse,
   LintConfigResponseSchema,
-  type LinterConfig,
   type LintFixResult,
   LintFixResultSchema,
   type MarkdownlintRuleWriteValue,
   type SchemaParentPathSegment,
 } from '@inkeep/open-knowledge-core/markdown/lint';
-import { useEffect, useState } from 'react';
+import { emitLintConfigChanged } from './lint-config-events.ts';
 
-const LINT_CONFIG_CHANGED_EVENT = 'open-knowledge:lint-config-changed';
-
-export function emitLintConfigChanged(): void {
-  window.dispatchEvent(new CustomEvent(LINT_CONFIG_CHANGED_EVENT));
-}
-
-export function subscribeToLintConfigChanged(onChange: () => void): () => void {
-  const listener = () => onChange();
-  window.addEventListener(LINT_CONFIG_CHANGED_EVENT, listener);
-  return () => window.removeEventListener(LINT_CONFIG_CHANGED_EVENT, listener);
-}
-
-async function fetchLintConfig(docName?: string): Promise<LintConfigResponse | null> {
-  try {
-    const query = docName !== undefined ? `?doc=${encodeURIComponent(docName)}` : '';
-    const res = await fetch(`/api/lint/config${query}`);
-    if (!res.ok) return null;
-    const body = await res.json().catch(() => null);
-    const parsed = LintConfigResponseSchema.safeParse(body);
-    if (!parsed.success) {
-      console.warn('[lint] lint-config response failed schema validation', parsed.error.issues);
-      return null;
-    }
-    return parsed.data;
-  } catch {
-    return null;
-  }
-}
-
-export async function fetchEffectiveLintConfig(docName: string): Promise<LinterConfig | null> {
-  const response = await fetchLintConfig(docName);
-  return response?.effective ?? null;
-}
+export { emitLintConfigChanged };
 
 export const LINT_FIX_TIMEOUT_MS = 30_000;
 
@@ -160,25 +126,6 @@ export async function writeFrontmatterSchemaField(
   return postFrontmatterSchema({ file, field, constraint, parentPath: wireParentPath(parentPath) });
 }
 
-async function listFrontmatterSchemas(): Promise<string[]> {
-  try {
-    const res = await fetch('/api/lint/frontmatter-schemas');
-    if (!res.ok) return [];
-    const body = await res.json().catch(() => null);
-    const parsed = FrontmatterSchemasListSuccessSchema.safeParse(body);
-    if (!parsed.success) {
-      console.warn(
-        '[lint] frontmatter-schemas response failed schema validation',
-        parsed.error.issues,
-      );
-      return [];
-    }
-    return parsed.data.schemas;
-  } catch {
-    return [];
-  }
-}
-
 export async function createEmptyFrontmatterSchema(
   file: string,
 ): Promise<{ ok: true } | { ok: false; errorDetail: string | null }> {
@@ -215,70 +162,4 @@ export async function deleteFrontmatterSchema(
   const result = await postFrontmatterSchema({ file, delete: true });
   if (result.ok) emitLintConfigChanged();
   return result;
-}
-
-export function useFrontmatterSchemaFiles(): { schemas: string[]; refresh: () => void } {
-  const [schemas, setSchemas] = useState<string[]>([]);
-  const refresh = () => {
-    void listFrontmatterSchemas().then(setSchemas);
-  };
-  useEffect(() => {
-    let cancelled = false;
-    const load = () => {
-      void listFrontmatterSchemas().then((next) => {
-        if (!cancelled) setSchemas(next);
-      });
-    };
-    load();
-    const unsub = subscribeToLintConfigChanged(load);
-    return () => {
-      cancelled = true;
-      unsub();
-    };
-  }, []);
-  return { schemas, refresh };
-}
-
-export function useDocLintConfig(docName: string | null): {
-  data: LintConfigResponse | null;
-} {
-  const [data, setData] = useState<LintConfigResponse | null>(null);
-  useEffect(() => {
-    if (!docName) {
-      setData(null);
-      return;
-    }
-    let cancelled = false;
-    const load = () => {
-      void fetchLintConfig(docName).then((next) => {
-        if (!cancelled) setData(next);
-      });
-    };
-    load();
-    const unsub = subscribeToLintConfigChanged(load);
-    return () => {
-      cancelled = true;
-      unsub();
-    };
-  }, [docName]);
-  return { data };
-}
-
-export function useProjectLintConfig(): { data: LintConfigResponse | null } {
-  const [data, setData] = useState<LintConfigResponse | null>(null);
-  useEffect(() => {
-    let cancelled = false;
-    const load = () => {
-      void fetchLintConfig().then((next) => {
-        if (!cancelled) setData(next);
-      });
-    };
-    load();
-    const unsub = subscribeToLintConfigChanged(load);
-    return () => {
-      cancelled = true;
-      unsub();
-    };
-  }, []);
-  return { data };
 }

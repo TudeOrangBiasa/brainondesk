@@ -2,7 +2,7 @@ import type { FrontmatterType } from '@inkeep/open-knowledge-core/frontmatter/sc
 import {
   type LinterConfig,
   selectGoverningFrontmatterSchemas,
-} from '@inkeep/open-knowledge-core/markdown/lint';
+} from '@inkeep/open-knowledge-core/markdown/lint/light';
 
 export interface SchemaField {
   type: FrontmatterType;

@@ -8,7 +8,7 @@ import {
   RULE_DISPLAY_CATEGORIES,
   type RuleCatalogEntry,
   type RuleDisplayCategory,
-} from '@inkeep/open-knowledge-core/markdown/lint';
+} from '@inkeep/open-knowledge-core/markdown/lint/light';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import { ArrowUpRight, ChevronRight, Info, RotateCcw } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -22,11 +22,8 @@ import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import {
-  emitLintConfigChanged,
-  useProjectLintConfig,
-  writeMarkdownlintRule,
-} from '@/editor/lint-config-client';
+import { writeMarkdownlintRule } from '@/editor/lint-config-client';
+import { emitLintConfigChanged, useProjectLintConfig } from '@/editor/lint-config-hooks';
 import { dispatchExternalLinkClick } from '@/lib/external-link';
 import { RuleOptionField, type RuleOptionValue } from './rule-option-field';
 

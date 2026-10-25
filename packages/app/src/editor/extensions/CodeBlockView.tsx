@@ -18,7 +18,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
-import { useEffect, useId, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useId, useRef, useState } from 'react';
 import { emitStartComment } from '@/comments/store';
 import {
   Command,
@@ -34,7 +34,11 @@ import { useIsEmbedded } from '@/hooks/use-is-embedded';
 import { subscribeColorThemeEpoch } from '@/lib/color-theme-epoch';
 import { cn } from '@/lib/utils';
 import { OPT_OUT_ATTR } from '../clipboard/index.ts';
-import { CodePreviewEditModal } from '../components/CodePreviewEditModal';
+
+const CodePreviewEditModal = lazy(async () => ({
+  default: (await import('../components/CodePreviewEditModal')).CodePreviewEditModal,
+}));
+
 import { PreviewBlockedNotice } from '../components/PreviewBlockedNotice';
 import { ResizeHandles } from '../components/ResizeHandles.tsx';
 import { CODE_BLOCK_LANGUAGES, normalizeCodeLanguage } from './code-block-languages';
@@ -516,23 +520,25 @@ export function CodeBlockView({ node, updateAttributes, editor, getPos, selected
           </button>
         ) : null}
       </div>
-      {editable && previewActive ? (
-        <CodePreviewEditModal
-          open={editOpen}
-          onOpenChange={setEditOpen}
-          initialValue={node.textContent}
-          language={normalized === 'xml' ? 'html' : 'plain'}
-          title={t`Edit source`}
-          renderPreview={(value) => (
-            <iframe
-              title={t`HTML preview`}
-              sandbox="allow-scripts"
-              className="size-full border-0"
-              srcDoc={buildPreviewIframeHeader(bakedTheme) + value}
-            />
-          )}
-          onSave={handleEditSave}
-        />
+      {editable && previewActive && editOpen ? (
+        <Suspense fallback={null}>
+          <CodePreviewEditModal
+            open={editOpen}
+            onOpenChange={setEditOpen}
+            initialValue={node.textContent}
+            language={normalized === 'xml' ? 'html' : 'plain'}
+            title={t`Edit source`}
+            renderPreview={(value) => (
+              <iframe
+                title={t`HTML preview`}
+                sandbox="allow-scripts"
+                className="size-full border-0"
+                srcDoc={buildPreviewIframeHeader(bakedTheme) + value}
+              />
+            )}
+            onSave={handleEditSave}
+          />
+        </Suspense>
       ) : null}
     </NodeViewWrapper>
   );
