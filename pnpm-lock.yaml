@@ -581,6 +581,9 @@ importers:
       date-fns:
         specifier: ^4.1.0
         version: 4.4.0
+      dompurify:
+        specifier: ~3.4.13
+        version: 3.4.13
       frimousse:
         specifier: ^0.3.0
         version: 0.3.0(react@19.2.5)(typescript@7.0.2)
@@ -614,6 +617,9 @@ importers:
       pdfjs-dist:
         specifier: ^6.2.108
         version: 6.2.108
+      pele:
+        specifier: 1.7.0
+        version: 1.7.0
       radix-ui:
         specifier: 1.4.3
         version: 1.4.3(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
