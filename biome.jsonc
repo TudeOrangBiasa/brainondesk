@@ -127,6 +127,7 @@
       "!packages/native-config/index.js",
       "!packages/native-config/index.d.ts",
       "!packages/native-config/target",
+      "!packages/office-sheets/native/xlsx-engine/target",
       "!**/.ok-skill-publish-*",
       "!**/.next",
       "!**/.source",

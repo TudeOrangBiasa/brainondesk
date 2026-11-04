@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+WORKTREE="."
+SOURCE=""
+CHECK=0
+while (($#)); do case "$1" in
+  --worktree) WORKTREE="$2"; shift 2 ;;
+  --source) SOURCE="$2"; shift 2 ;;
+  --check) CHECK=1; shift ;;
+  -h|--help) sed -n '1,25p' "$0"; exit 0 ;;
+  *) echo "ensure-worktree-hooks: unknown flag $1" >&2; exit 2 ;;
+esac; done
+
+[[ -d "$WORKTREE" ]] || { echo "ensure-worktree-hooks: not a dir: $WORKTREE" >&2; exit 2; }
+
+resolve_source() {
+  local dir f
+  if [[ -n "$SOURCE" ]]; then
+    [[ -d "$SOURCE" ]] || { echo "ensure-worktree-hooks: source dir missing: $SOURCE" >&2; return 2; }
+    f="$SOURCE/pre-push"
+    [[ -f "$f" ]] || { echo "ensure-worktree-hooks: no pre-push in source dir: $SOURCE" >&2; return 2; }
+    printf '%s\n' "$f"; return 0
+  fi
+  if [[ -n "${WHIPS_HOOKS_SOURCE:-}" ]]; then
+    f="${WHIPS_HOOKS_SOURCE%/}/pre-push"
+    [[ -f "$f" ]] || { echo "ensure-worktree-hooks: no pre-push under WHIPS_HOOKS_SOURCE: $WHIPS_HOOKS_SOURCE" >&2; return 2; }
+    printf '%s\n' "$f"; return 0
+  fi
+  for dir in "$WORKTREE/.husky" ".husky"; do
+    if [[ -f "$dir/pre-push" ]]; then printf '%s\n' "$dir/pre-push"; return 0; fi
+  done
+  local main_hooks=""
+  main_hooks="$(git -C "$WORKTREE" rev-parse --git-path hooks 2>/dev/null || true)"
+  if [[ -n "$main_hooks" && -f "$main_hooks/pre-push" ]]; then
+    printf '%s\n' "$main_hooks/pre-push"; return 0
+  fi
+  echo ""
+}
+
+target_hook() {
+  local gitdir=""
+  gitdir="$(git -C "$WORKTREE" rev-parse --absolute-git-dir 2>/dev/null || true)"
+  [[ -n "$gitdir" ]] || { echo "ensure-worktree-hooks: not a git worktree: $WORKTREE" >&2; return 2; }
+  printf '%s/hooks/pre-push\n' "$gitdir"
+}
+
+hook_ok() { [[ -f "$1" && -x "$1" ]]; }
+
+TARGET="$(target_hook)" || exit 2
+
+if ((CHECK)); then
+  if hook_ok "$TARGET"; then
+    echo "ensure-worktree-hooks: ok: $TARGET"
+    exit 0
+  fi
+  echo "ensure-worktree-hooks: missing pre-push hook: $TARGET (worktree incomplete)" >&2
+  exit 1
+fi
+
+SRC="$(resolve_source)" || exit 2
+if [[ -z "$SRC" ]]; then
+  echo "ensure-worktree-hooks: no pre-push source found (.husky/pre-push)" >&2
+  exit 1
+fi
+
+mkdir -p "$(dirname "$TARGET")"
+cp "$SRC" "$TARGET"
+chmod +x "$TARGET"
+if hook_ok "$TARGET"; then
+  echo "ensure-worktree-hooks: installed $TARGET from $SRC"
+  exit 0
+fi
+echo "ensure-worktree-hooks: hook still missing after copy: $TARGET" >&2
+exit 1

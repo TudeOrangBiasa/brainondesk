@@ -1,55 +1,60 @@
-# CI dan gerbang verifikasi BrainOnDesk
+# Verification gate (local verifier, no Actions)
 
-Workflow upstream OpenKnowledge butuh secret, GitHub App, Linear, Vercel, dan signing milik Inkeep. Di fork ini semuanya sudah dihapus. Yang tersisa satu workflow, `verify`, yang jalan di runner GitHub-hosted, tanpa secret, dengan token read-only.
+BrainOnDesk is **solo**: there are no GitHub Actions workflows. The merge gate is the local verifier. Agents and humans run it before every push (pre-push hook) and again before opening a PR. Merges trust that gate; do not wait on `gh pr checks`.
 
-## Workflow `verify` (`.github/workflows/verify.yml`)
+Upstream OpenKnowledge workflows that needed Inkeep secrets, GitHub Apps, Linear, Vercel, and signing were already removed from this fork. The remaining `verify` and `slow-tests` Actions workflows were deleted too: Actions minutes were noise, and nightly slow-tests stayed red without blocking merges.
 
-Jalan di setiap PR (termasuk saat judul/body/label diubah), push ke `main`, dan manual. Push baru ke PR yang sama membatalkan run lama (`cancel-in-progress`).
+## Local: `pnpm verify`
 
-| Job | Isi | Kapan |
-| --- | --- | --- |
-| `policy` | judul Conventional Commit, `Closes #N` di body, path terlindungi, gitleaks atas commit PR | hanya PR |
-| `lint, typecheck, build` | `pnpm run lint` (biome + oxlint + aturan no-comments), `pnpm run typecheck`, `turbo run build:desktop` untuk desktop, test script policy | selalu |
-| `test (core/app/desktop)` | unit test per paket via turbo, paralel | selalu |
-| `verify` | agregator: hijau hanya kalau semua job di atas sukses (`policy` boleh skip di push) | selalu |
+`scripts/verify.sh` is the only gate. Details and env knobs: [docs/agents/verifier.md](../agents/verifier.md). Mode: [docs/agents/repo-mode.md](../agents/repo-mode.md).
 
-Branch protection cukup mewajibkan satu check: **`verify`**. Nama job ini jangan diubah.
+| Step | What |
+| --- | --- |
+| install | `pnpm install --frozen-lockfile` (skip with `VERIFY_SKIP_INSTALL=1`) |
+| policy | Conventional Commit title, `Closes #N` / `no-issue`, risk label, protected paths (+ gitleaks when installed) |
+| lint | biome + oxlint + no-comments |
+| typecheck | turbo typecheck |
+| unit tests | core, app, desktop, `packages/office-*`, plus policy script tests |
+| build | `build:desktop` (electron-vite; no packaging) |
+| smoke | CLI vault lifecycle via `skills/verify-brainondesk/scripts/verify-loop.sh` (skip with `VERIFY_SKIP_SMOKE=1`) |
 
-Cache: store pnpm (kunci `pnpm-lock.yaml`) dan `.turbo/cache` per job (kunci commit, restore dari run sebelumnya). Paket yang tidak berubah jadi cache hit, jadi run berikutnya jauh lebih cepat dari run pertama.
+### Why `build:desktop`, not `build:dir`
 
-### Kenapa build-nya `build:desktop`, bukan `build:dir`
+`build:desktop` (electron-vite) compiles main, preload, and renderer, and through turbo also builds core, server, app, CLI, and the Rust native-config addon. That catches almost all build errors. `build:dir` adds Electron binary download, native rebuild, and electron-builder packaging: minutes of cost for little PR signal. Packaging is checked when a release ticket asks for it.
 
-`build:desktop` (electron-vite) sudah mengompilasi main, preload, dan renderer, dan lewat dependensi turbo ikut membangun core, server, app, CLI, dan addon Rust native-config. Itu menangkap hampir semua error build. `build:dir` menambah download binary Electron, rebuild modul native, dan packaging electron-builder: beberapa menit ekstra tanpa banyak sinyal tambahan untuk PR. Packaging dicek saat rilis (tiket fase 6).
+### Why unit tests are only core, app, desktop, office
 
-### Kenapa test-nya hanya core, app, desktop
+Server tests (>15 min) and CLI/native-config suites make a 15+ minute gate. Run `pnpm test:slow` locally when you change those packages. DOM, integration, e2e, and perf suites stay out of the gate.
 
-Test `server` (>15 menit) dan `cli` (~6 menit, dua test bergantung pada lokasi `npx` di mesin) membuat gerbang lewat dari 15 menit. Jalankan `pnpm run check` di lokal kalau mengubah server atau CLI. Test DOM, integrasi, e2e, dan perf juga tidak masuk gerbang.
+### App-driving proof
 
-## Aturan PR (`scripts/check-pr-policy.mjs`)
+`skills/verify-brainondesk/` is the project-local verification skill (launch → doctor → drive → evidence → cleanup). The verifier's smoke step covers vault lifecycle. Broader journeys live in `skills/verify-brainondesk/features/`.
 
-- Judul: `<type>(<scope>)!: <ringkasan>`, type salah satu `feat fix docs style refactor perf test build ci chore revert`, scope huruf kecil.
-- Body: `Closes #N` / `Fixes #N` / `Resolves #N`. Label `no-issue` untuk PR tanpa issue.
-- Label risiko wajib tepat satu: `risk:low` atau `risk:high`. Label hanya membaca blast radius diff dan mengatur verifikasi otomatis yang berlaku — bukan siapa yang boleh merge. `risk:high` wajib kalau sentuh path terlindungi atau breaking change (`!`); tanpa label atau `risk:low` di PR seperti itu ditolak policy.
-- Path terlindungi butuh label `protected-paths-ok`: `.github/workflows/`, `.github/actions/`, `.github/CODEOWNERS`, `LICENSE*`, `LICENSES/`, `NOTICE*`, `LICENSE.upstream`/`NOTICE.upstream`, `THIRD_PARTY_NOTICES.md`, `scripts/verify.sh`, `scripts/check-pr-policy.mjs`. Agents memasang label ini sendiri setelah cek otomatis lolos (verdict independen PASS + output `blast-radius` di body PR). Label hanya polisi tidur; perlindungan sebenarnya adalah check `verify` + verifikasi otomatis ekstra ini.
-- Semua PR dibuka ready. Agents merge semua tier — termasuk `risk:high` — setelah `verify` hijau di head sekarang, verdict independen PASS di head yang sama, tidak ada thread `fix` yang terbuka, PR mergeable, dan PR sesuai ticket-nya. CI merah berarti perbaiki sampai hijau lalu merge; jangan pernah melemahkan gerbang: perbaiki penyebabnya, atau laporkan kegagalan beserta lognya. Keputusan owner di sesi adalah otorisasi; teks basi jadi ticket.
-- Secret: gitleaks `8.30.1` (checksum diverifikasi) memindai commit `base..head` PR.
+## Pre-push hook
 
-## Lokal: `pnpm verify`
+`.husky/pre-push` runs `pnpm verify` with `VERIFY_SKIP_INSTALL=1`. New worktrees must install the hook:
 
-`scripts/verify.sh` menjalankan urutan yang sama dengan CI: install frozen, policy (pakai `gh pr view` kalau PR sudah ada, kalau belum hanya menampilkan path terlindungi yang tersentuh), gitleaks (kalau terpasang, `sudo dnf install gitleaks`), lint, typecheck, unit test core/app/desktop, build desktop. `VERIFY_SKIP_INSTALL=1` melewati install, `VERIFY_BASE` mengganti base (default `origin/main`).
+```bash
+scripts/ensure-worktree-hooks --worktree <path>
+scripts/ensure-worktree-hooks --worktree <path> --check
+```
 
-## Yang dihapus dari upstream
+Never `git push --no-verify`.
 
-- Workflow rilis: `release`, `point-release`, `promote-stable`, `select-beta-to-promote`
-- Desktop: `desktop-*`, `publish-linux-repo`, `native-config-prebuild` (matriks macOS/Windows untuk publish CLI ke npm)
-- Integrasi Inkeep: `linear-*`, `monorepo-pr-bridge`, `write-back`, `bug-lane*`, `share-contract-*` beserta composite action-nya, `stale`
-- `CLA.md` (CLA ke Inkeep tidak berlaku di fork)
-- Link Discord/openknowledge.ai/advisory Inkeep di issue template, `SECURITY.md`, `CONTRIBUTING.md` diarahkan ke repo ini
+## PR policy (`scripts/check-pr-policy.mjs`)
 
-Script pendukung di `.github/scripts/` masih disimpan karena `packages/desktop/tests/unit/packaged-report-path.uncached.test.mjs` mengimpor salah satunya. Test bentuknya dikeluarkan dari `vitest.scripts.config.ts` karena membaca workflow yang sudah dihapus.
+- Title: `<type>(<scope>)!: <summary>`; types `feat fix docs style refactor perf test build ci chore revert`.
+- Body: `Closes #N` / `Fixes #N` / `Resolves #N`, or label `no-issue`.
+- Exactly one risk label: `risk:low` or `risk:high`. The label describes blast radius and which automated checks apply, not who may merge. `risk:high` is required for protected paths or breaking (`!`) changes.
+- Protected paths need `protected-paths-ok`: `.github/workflows/`, `.github/actions/`, `.github/CODEOWNERS`, `LICENSE*`, `LICENSES/`, `NOTICE*`, `LICENSE.upstream`/`NOTICE.upstream`, `THIRD_PARTY_NOTICES.md`, `scripts/verify.sh`, `scripts/check-pr-policy.mjs`. Agents attach the label after an independent PASS verdict plus `blast-radius` output in the PR body.
+- Open every PR ready. Agents merge every tier — including `risk:high` — once the local verifier passed at the current head, an independent verdict is PASS at that head, no `fix` thread is open, the PR is mergeable, and the PR matches its ticket. A red verifier means fix until green, then merge; never weaken a gate. An owner's decision in session is authorization; stale text becomes a ticket.
 
-## Catatan
+## What remains from upstream cleanup
 
-- Kegagalan yang sudah ada di `main` (bukan regresi, tidak masuk gerbang): `scripts/check-override-floors.test.mjs`, `scripts/check-typescript-resolution.test.mjs`, `test-support/setup-files-contract.test.ts`, `packages/desktop/tests/smoke/_helpers/dock-state-ready.test.ts`.
-- `packages/core` `terminal-launch.test.ts` (2 test: PowerShell parser round-trip) merah di Fedora — butuh parser PowerShell asli; gagal identik di `main` tanpa perubahan apa pun (cek 2026-10-23). Di luar gerbang sampai ada yang investigasi.
-- Pengecualian lint untuk paket port `packages/office-*` (biome/oxlint/no-comments/knip) dibawa oleh PR engine office (#34) bersama kodenya, supaya tidak konflik.
+- No release, desktop publish, Linear, monorepo-bridge, or CLA workflows.
+- Supporting scripts under `.github/scripts/` may still exist when a unit test imports them.
+- Known reds outside the gate (including slow server/CLI/native-config) are tracked in `docs/TESTING.md` / known-reds, not in Actions.
+
+## Branch protection note
+
+If GitHub branch protection on `main` still lists a required status check named `verify` from the Actions app, that check can never go green after workflows are deleted. An admin must clear that required check (or the whole status-check requirement). Solo mode does not need it.

@@ -6,6 +6,8 @@ cd "$(git rev-parse --show-toplevel)"
 BASE_REF="${VERIFY_BASE:-origin/main}"
 export TURBO_TELEMETRY_DISABLED=1
 export DO_NOT_TRACK=1
+export ELECTRON_SKIP_BINARY_DOWNLOAD="${ELECTRON_SKIP_BINARY_DOWNLOAD:-1}"
+export ELECTRON_SKIP_REBUILD="${ELECTRON_SKIP_REBUILD:-1}"
 
 step() {
   printf '\n==> %s\n' "$1"
@@ -38,7 +40,7 @@ step "secret scan (gitleaks, commits since $BASE_REF)"
 if command -v gitleaks >/dev/null 2>&1; then
   gitleaks git --no-banner --redact --log-opts="${BASE_SHA}..HEAD" .
 else
-  skip "gitleaks not installed (CI runs it; Fedora: sudo dnf install gitleaks)"
+  skip "gitleaks not installed (Fedora: sudo dnf install gitleaks)"
 fi
 
 step "lint"
@@ -59,5 +61,16 @@ pnpm exec vitest run --config vitest.scripts.config.ts scripts/check-pr-policy.t
 step "build desktop bundle"
 pnpm exec turbo run build:desktop --filter=@inkeep/open-knowledge-desktop --output-logs=errors-only
 
+if [ "${VERIFY_SKIP_SMOKE:-0}" != "1" ]; then
+  step "CLI vault smoke (verify-brainondesk)"
+  if [ ! -f packages/cli/dist/cli.mjs ]; then
+    pnpm exec turbo run build --filter=@inkeep/open-knowledge --output-logs=errors-only
+  fi
+  bash skills/verify-brainondesk/scripts/verify-loop.sh
+else
+  skip "VERIFY_SKIP_SMOKE=1"
+fi
+
 printf '\nverify: all gates passed\n'
 printf 'slow tests (server, cli, native-config) are not part of verify: pnpm test:slow, see docs/TESTING.md\n'
+printf 'app-driving proof skill: skills/verify-brainondesk/\n'
