@@ -14,7 +14,7 @@ Primary surface: **CLI + local server + web editor** (`ok` binary, one-port HTTP
 Build once, drive each run in its own isolated vault:
 
 ```sh
-pnpm --filter @inkeep/open-knowledge-cli run build
+pnpm --filter @inkeep/open-knowledge run build
 export VDIR=$(mktemp -d)/vault HOME_TMP=$(mktemp -d)
 mkdir -p "$VDIR"
 HOME="$HOME_TMP" node packages/cli/dist/cli.mjs init --local-only --no-mcp --cwd "$VDIR"

@@ -75,19 +75,20 @@ If lint stops you, the diagnostic names the class of comment, the fix, and links
 
 ## Opening a pull request
 
-There is no CLA in this fork. Every PR must pass the `verify` check (see [docs/office/CI.md](./docs/office/CI.md)); run `pnpm verify` locally first and follow the checklist in the [Pull Request Template](./.github/pull_request_template.md):
+There is no CLA in this fork. There are no GitHub Actions. Every PR must pass the local verifier (see [docs/office/CI.md](./docs/office/CI.md) and [docs/agents/verifier.md](./docs/agents/verifier.md)); run `pnpm verify` locally first (the pre-push hook also runs it) and follow the checklist in the [Pull Request Template](./.github/pull_request_template.md):
 
 - Use a Conventional Commit PR title (`feat(office): ...`, `fix(core): ...`) and link the issue with `Closes #N`.
 - Keep PRs focused and small enough to review.
 - Add tests — or a clear manual-verification note — for behavior changes.
 - Write no code comments outside the allowlist above — `pnpm run lint` fails on the rest.
 - Add a changeset by running `pnpm run changeset` if your pull request changes user-facing or programmatic behavior. Open Knowledge is pre-1.0, so a breaking change rides as `minor` and a `major` changeset is rejected — reaching 1.0.0 is a team decision, not one a single changeset makes.
-- Run `pnpm verify` and confirm it passes. `pnpm run check` runs the wider suite (including the slow server and CLI tests).
+- Run `pnpm verify` and confirm it passes. Paste the real output in the PR body. `pnpm run check` / `pnpm test:slow` cover the wider suite (including the slow server and CLI tests) when you change those packages.
+- Never `git push --no-verify`. New worktrees need `scripts/ensure-worktree-hooks --worktree <path>`.
 - Commit `pnpm-lock.yaml` when dependencies change, and run `pnpm run notices` to refresh `THIRD_PARTY_NOTICES.md` if third-party packages changed.
 - Never include secrets, credentials, customer data, or local machine paths.
 - Enable **Allow edits from maintainers** so reviewers can push fixes to your branch.
 
-The maintainer reviews and merges; accepted PRs are merged normally on `main`.
+Accepted PRs merge on `main` once the local verifier passed; do not wait on GitHub status checks.
 
 ## License
 

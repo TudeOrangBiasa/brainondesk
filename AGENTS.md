@@ -26,17 +26,17 @@ Orca/harness loop on this workstation; tiered auto-land; daily `/retro` + verifi
 
 ## Verification gate (required)
 
-Every PR must pass the `verify` GitHub Actions check before it can merge. Agents must:
+This repo is **solo**: there are no GitHub Actions. Every PR must pass the local verifier (`pnpm verify`) before it can merge. The pre-push hook runs it on every push. Agents must:
 
-1. Run `pnpm verify` locally and get `verify: all gates passed` before pushing. It mirrors CI: frozen install, PR policy, gitleaks (if installed), lint, typecheck, unit tests for core/app/desktop, and the desktop bundle build. Set `VERIFY_SKIP_INSTALL=1` to skip the install step on reruns.
+1. Run `pnpm verify` locally and get `verify: all gates passed` before pushing, and again right before `gh pr create`. It covers frozen install, PR policy, gitleaks (if installed), lint, typecheck, unit tests for core/app/desktop/office, the desktop bundle build, and the CLI vault smoke. Set `VERIFY_SKIP_INSTALL=1` to skip install on reruns; `VERIFY_SKIP_SMOKE=1` skips the smoke. Never `git push --no-verify`. New worktrees: `scripts/ensure-worktree-hooks --worktree <path>`.
 2. Title the PR as a Conventional Commit (`feat(office): ...`, `fix(core): ...`, `ci: ...`).
 3. Put `Closes #N` in the PR body. Use the `no-issue` label only when Tude asks for a PR without an issue.
-4. Fill in the checklist in `.github/pull_request_template.md`, including the verify evidence.
+4. Fill in the checklist in `.github/pull_request_template.md`, including the verify evidence (paste real `pnpm verify` output).
 5. Not edit protected paths (`.github/workflows/`, `.github/actions/`, `.github/CODEOWNERS`, `LICENSE*`, `LICENSES/`, `NOTICE*`, `*.upstream` license files, `THIRD_PARTY_NOTICES.md`, `scripts/verify.sh`, `scripts/check-pr-policy.mjs`) unless the task says so. Those PRs need the `protected-paths-ok` label, which the agent attaches itself after the automated protected-path checks pass (an independent verdict plus the `blast-radius` output in the PR body).
-6. Label every PR with exactly one risk label: `risk:low` or `risk:high`. The label only describes the diff's blast radius and which automated verification applies — never who may merge. `risk:high` is required when the PR touches protected paths or is a breaking change (`!`); CI rejects `risk:low` on such PRs and rejects PRs with no risk label at all.
-7. Open every PR ready. Agents merge every tier — including `risk:high` — once `verify` is green at the current head, an independent verdict is PASS at that head, no `fix` thread is open, the PR is mergeable, and the PR matches its ticket. Red CI means fix until green, then merge; never weaken a gate to get green: fix the cause, or report the failure with its log. An owner's decision in session is authorization; stale text becomes a ticket.
+6. Label every PR with exactly one risk label: `risk:low` or `risk:high`. The label only describes the diff's blast radius and which automated verification applies — never who may merge. `risk:high` is required when the PR touches protected paths or is a breaking change (`!`); the verifier rejects `risk:low` on such PRs and rejects PRs with no risk label at all.
+7. Open every PR ready. Agents merge every tier — including `risk:high` — once the local verifier passed at the current head, an independent verdict is PASS at that head, no `fix` thread is open, the PR is mergeable, and the PR matches its ticket. A red verifier means fix until green, then merge; never weaken a gate to get green: fix the cause, or report the failure with its log. Do not wait on GitHub status checks. An owner's decision in session is authorization; stale text becomes a ticket.
 
-Details and the reasoning behind each gate: [docs/office/CI.md](./docs/office/CI.md).
+Details: [docs/agents/verifier.md](./docs/agents/verifier.md), [docs/agents/repo-mode.md](./docs/agents/repo-mode.md), [docs/office/CI.md](./docs/office/CI.md). App-driving skill: `skills/verify-brainondesk/`.
 
 ## Start Here
 
@@ -116,7 +116,7 @@ Shell scripts are declared in scope by `no-comments.config.jsonc`, but the sweep
 
 - Upstream OpenKnowledge is generated from a private monorepo; some source-only folders referenced by tooling are absent here. Do not rely on them.
 - PRs merge normally on `main` of this fork. Nothing syncs back to Inkeep automatically, and nothing here may call Inkeep services, secrets, or release infrastructure.
-- Do not add secrets, private customer context, internal-only specs, local paths, or generated debug artifacts. CI runs gitleaks on every PR.
+- Do not add secrets, private customer context, internal-only specs, local paths, or generated debug artifacts. The local verifier runs gitleaks on every push when the binary is installed.
 - Keep dependency updates paired with `pnpm-lock.yaml`. Run `pnpm run notices` when third-party notices may change.
 
 ## Changesets
