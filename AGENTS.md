@@ -18,7 +18,7 @@ Multi-context: `GLOSSARY-MAP.md` at root points to per-context glossaries; ADRs 
 
 ### Unattended runs
 
-Orca/harness loop on this workstation; tiered auto-land; daily `/retro` + verification upkeep, proposals only. See `docs/agents/unattended.md`.
+Tiered auto-land per `RISK.md`; daily `/retro` + verification upkeep, proposals only. See `docs/agents/unattended.md`.
 
 ### Meta docs
 

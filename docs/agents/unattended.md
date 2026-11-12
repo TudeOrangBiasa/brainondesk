@@ -1,13 +1,13 @@
 # Unattended Runs
 
-How agent runs proceed without the user watching in this repo. Read by the `goal` playbook and the `runner` skill.
+How agent runs proceed without the user watching in this repo. No scheduler, no runner: every run starts from a Tude invocation in chat.
 
-- **Wake mechanism:** orca/harness loop on this workstation, re-invoking `/whips` (issue queues via `/runner`, single long goals via the `goal` playbook).
-- **Run log:** `.scratch/whips/<run>/log.md`, one row per iteration (what changed, check run, predicate movement). The morning report's source.
+- **Wake mechanism:** none scheduled. Runs start when Tude invokes `/whips` in chat (issue queues via intake, single long goals via the `goal` playbook). No orca, no runner loop, no cron on any machine.
+- **Run log:** `.scratch/whips/<run>/log.md`, one row per iteration (what changed, check run, predicate movement).
 - **Budget habit:** predicate first, then a stated cap (iterations, hours, PR count). Hitting the cap is a stop, reported as such.
-- **Queues vs goals:** issue queues run through `/runner`; single long goals run through the `goal` playbook. Landing follows the risk tier (low lands on PASS with no human touch, high waits for the human).
+- **Queues vs goals:** issue queues through `/whips` intake, single long goals through the `goal` playbook. Landing follows `RISK.md` (low lands on PASS with no human touch, high waits for the human).
 - **Verification skill:** `skills/verify-brainondesk/` (launch → doctor → drive → evidence → cleanup); upkeep via `/maintain-verification`, scope limited to that directory.
-- **Scheduled maintenance:** `/retro` stale-docs sweep plus verification upkeep, daily, proposals filed, never auto-applied. Wake: harness non-interactive invocation on this workstation. Output sink: issue(s) labelled `type:chore`.
+- **Maintenance:** `/retro` stale-docs sweep plus verification upkeep on Tude invocation, proposals filed, never auto-applied. Output sink: issue(s) labelled `type:chore`.
 - **Paralelisme:** maksimal 4 subagent pekerja bersamaan (plus verifier independen
   sesuai kebutuhan). Batas ini dari Tude; worker ke-5 mengantre sampai satu selesai.
 - **Otonomi tanpa approval:** agen jalan terus tanpa menunggu persetujuan per langkah.
