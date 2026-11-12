@@ -78,6 +78,15 @@ Mocks only where a production boundary already isolates (GitHub API via `OK_GH_T
 
 `ok stop` for the started instance, then `rm -rf` the temp vault and temp HOME. Evidence in `.scratch/verify/<run>/` survives; scratch instances and logs do not. Run cleanup after every failed iteration so nothing strands processes or ports.
 
+## Verdict
+
+PASS needs both lanes green on the same head SHA:
+
+- Formal lane: `pnpm verify` exits 0 (policy, gitleaks where installed, lint, typecheck, unit tests, desktop bundle). A red outside the diff proves pre-existing per `docs/office/CI.md` claim protocol (detached worktree at base SHA, same command, same failure); unproven red belongs to the PR.
+- Empirical lane: drive the touched features per `features/` (launch, doctor, drive, evidence in `.scratch/verify/<run>/`). `verified-unreachable` only when the feature file says so; never substitute a weaker assertion.
+
+FAIL in either lane, or INCONCLUSIVE when the harness cannot drive the surface, blocks the auto-merge lane: label `needs-human`, report what each lane needs, keep building everything else meanwhile. Conflicts route through `ship-merge-fix` before any verdict. `risk:low` + PASS in both lanes merges per `playbooks/shipping.md`; everything else waits for the human.
+
 ## Features
 
 Index: `skills/verify-brainondesk/features/README.md`. One file per user-facing feature: what it is, how a user reaches it, how the harness drives it, what observable end state proves it, gotchas.
