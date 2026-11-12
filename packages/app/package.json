@@ -107,6 +107,7 @@
     "@hocuspocus/provider": "4.0.0-rc.1",
     "@hookform/resolvers": "^5.0.0",
     "@inkeep/open-knowledge-core": "workspace:*",
+    "@inkeep/open-knowledge-office-docx": "workspace:*",
     "@inkeep/open-knowledge-server": "workspace:*",
     "@lezer/highlight": "^1.2.3",
     "@lezer/markdown": "^1.6.3",
